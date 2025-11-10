@@ -357,7 +357,7 @@ export default function AppDrawer() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-[#A7B0B8] space-y-3">
-                <p className="leading-relaxed">{app.description || "No description available."}</p>
+                <p className="leading-relaxed">{app.about || app.description || "No description available."}</p>
                 <div className="flex items-center gap-4 text-xs text-[#A7B0B8] pt-2 border-t border-border/50">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
@@ -379,11 +379,10 @@ export default function AppDrawer() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {Object.entries(scopeGroups).map(([group, scopes]) => (
-                  <div key={group}>
-                    <div className="text-xs font-semibold text-[#47D7FF] mb-2 uppercase tracking-wide">{group}</div>
+                {app.scopes.length > 0 ? (
+                  <>
                     <div className="flex flex-wrap gap-2">
-                      {scopes.map((s, i) => (
+                      {app.scopes.map((s, i) => (
                         <TooltipProvider key={i}>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -401,9 +400,10 @@ export default function AppDrawer() {
                         </TooltipProvider>
                       ))}
                     </div>
-                  </div>
-                ))}
-                {app.scopes.length === 0 && <div className="text-sm text-[#A7B0B8]">No special permissions found.</div>}
+                  </>
+                ) : (
+                  <div className="text-sm text-[#A7B0B8]">(none special)</div>
+                )}
               </CardContent>
             </Card>
 
@@ -426,34 +426,38 @@ export default function AppDrawer() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {app.users.slice(0, 8).map((u) => (
-                    <TooltipProvider key={u.id}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge
-                            variant="outline"
-                            className="bg-[#0B0F12] border-border/50 text-[#E9EEF2] hover:border-[#47D7FF]/30 cursor-help transition-colors"
-                          >
-                            {u.name}
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs font-medium">{u.email}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {u.dept}
-                            {u.role ? ` • ${u.role}` : ""}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
-                  {app.users.length > 8 && (
-                    <Badge variant="secondary" className="bg-[#0B0F12] border border-border/50 text-[#A7B0B8]">
-                      +{app.users.length - 8} more
-                    </Badge>
-                  )}
-                </div>
+                {app.topUsers ? (
+                  <p className="text-sm text-[#E9EEF2] leading-relaxed">{app.topUsers}</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {app.users.slice(0, 8).map((u) => (
+                      <TooltipProvider key={u.id}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge
+                              variant="outline"
+                              className="bg-[#0B0F12] border-border/50 text-[#E9EEF2] hover:border-[#47D7FF]/30 cursor-help transition-colors"
+                            >
+                              {u.name}
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs font-medium">{u.email}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {u.dept}
+                              {u.role ? ` • ${u.role}` : ""}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ))}
+                    {app.users.length > 8 && (
+                      <Badge variant="secondary" className="bg-[#0B0F12] border border-border/50 text-[#A7B0B8]">
+                        +{app.users.length - 8} more
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -465,14 +469,18 @@ export default function AppDrawer() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2">
-                  {uniqueRiskFactors.map((factor, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-[#A7B0B8]">
-                      <Shield className="h-4 w-4 text-[#FF4D4D] mt-0.5 flex-shrink-0" />
-                      <span>{factor}</span>
-                    </li>
-                  ))}
-                </ul>
+                {app.riskFactors ? (
+                  <p className="text-sm text-[#A7B0B8] leading-relaxed">{app.riskFactors}</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {uniqueRiskFactors.map((factor, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#A7B0B8]">
+                        <Shield className="h-4 w-4 text-[#FF4D4D] mt-0.5 flex-shrink-0" />
+                        <span>{factor}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </CardContent>
             </Card>
 
@@ -487,46 +495,15 @@ export default function AppDrawer() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {app.rationale?.summary && (
+                {app.aiExplanation ? (
+                  <p className="text-sm text-[#E9EEF2] leading-relaxed font-medium bg-[#47D7FF]/5 p-3 rounded-lg border border-[#47D7FF]/20">
+                    {app.aiExplanation}
+                  </p>
+                ) : app.rationale?.summary ? (
                   <p className="text-sm text-[#E9EEF2] leading-relaxed font-medium bg-[#47D7FF]/5 p-3 rounded-lg border border-[#47D7FF]/20">
                     {app.rationale.summary}
                   </p>
-                )}
-                {app.rationale?.reasons && app.rationale.reasons.length > 0 && (
-                  <div>
-                    <div className="text-xs font-semibold text-[#47D7FF] mb-2 uppercase tracking-wide">Reasons</div>
-                    <ol className="list-decimal pl-5 text-sm text-[#A7B0B8] space-y-2">
-                      {app.rationale.reasons.map((r, i) => (
-                        <li key={i}>
-                          {r.text}
-                          {r.citation !== undefined && (
-                            <sup className="text-[#47D7FF] ml-1 font-semibold">[{r.citation}]</sup>
-                          )}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-                {app.rationale?.sources && app.rationale.sources.length > 0 && (
-                  <div>
-                    <div className="text-xs font-semibold text-[#47D7FF] mb-2 uppercase tracking-wide">Sources</div>
-                    <ul className="text-sm text-[#A7B0B8] space-y-1">
-                      {app.rationale.sources.map((s, i) => (
-                        <li key={i}>
-                          <a
-                            href={s.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#47D7FF] hover:underline"
-                          >
-                            [{i}] {s.title}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {!app.rationale?.summary && !app.rationale?.reasons?.length && (
+                ) : (
                   <div className="text-sm text-[#A7B0B8]">No AI explanation available.</div>
                 )}
               </CardContent>

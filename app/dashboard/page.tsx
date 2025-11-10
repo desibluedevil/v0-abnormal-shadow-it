@@ -333,6 +333,9 @@ function HighRiskApps() {
                     </Badge>
                   )}
                 </div>
+                {(app as any).subtext && (
+                  <div className="text-xs text-muted-foreground italic mt-1.5">{(app as any).subtext}</div>
+                )}
               </div>
               <Link href={`/inventory?focus=${app.id}`}>
                 <Button variant="primary" size="sm">
@@ -348,13 +351,6 @@ function HighRiskApps() {
 }
 
 function GeneratedSummary() {
-  const { kpis, apps } = useShadowStore()
-  const { totalUnsanctioned, highRisk, remediated } = kpis()
-  const topRiskApps = apps
-    .filter((a) => a.riskLevel === "High")
-    .slice(0, 3)
-    .map((a) => a.name)
-
   return (
     <Card className="border-dashed shadow-abnormal">
       <CardHeader>
@@ -364,45 +360,19 @@ function GeneratedSummary() {
         <ul className="space-y-2 text-sm text-foreground">
           <li className="flex items-start gap-2">
             <span className="text-accent-cyan mt-0.5">•</span>
-            <span>
-              Currently tracking <span className="font-semibold">{totalUnsanctioned}</span> unsanctioned applications
-              across your organization
-            </span>
+            <span>Monitoring 5 unsanctioned apps; 2 high-risk need immediate action.</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-accent-cyan mt-0.5">•</span>
-            <span>
-              <Badge variant="destructive" className="mr-1">
-                {highRisk}
-              </Badge>
-              high-risk apps require immediate attention and review
-            </span>
+            <span>54 users affected; Avg TTRemediation 9.6h (14d).</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-accent-cyan mt-0.5">•</span>
-            <span>
-              <span className="font-semibold">{remediated}</span> remediation actions completed in the current period
-            </span>
+            <span>Priority: Revoke high-risk OAuth grants + notify impacted users.</span>
           </li>
-          {topRiskApps.length > 0 && (
-            <li className="flex items-start gap-2">
-              <span className="text-accent-cyan mt-0.5">•</span>
-              <span>
-                Top risk apps:{" "}
-                {topRiskApps.map((name, i) => (
-                  <span key={i}>
-                    <span className="font-medium text-risk-high">{name}</span>
-                    {i < topRiskApps.length - 1 && ", "}
-                  </span>
-                ))}
-              </span>
-            </li>
-          )}
           <li className="flex items-start gap-2">
             <span className="text-accent-cyan mt-0.5">•</span>
-            <span className="text-muted-foreground italic">
-              Focus: Drive down high-risk OAuth grants and notify affected users
-            </span>
+            <span>Expected risk reduction after today's actions: –62% (8→3 users).</span>
           </li>
         </ul>
       </CardContent>

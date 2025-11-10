@@ -46,6 +46,12 @@ export interface ShadowApp {
   status: AppStatus
   tags: string[]
   description?: string
+  subtext?: string // Added subtext field for high-risk app cards
+  about?: string
+  topUsers?: string
+  riskFactors?: string
+  aiExplanation?: string
+  // </CHANGE>
   rationale: Rationale
 }
 

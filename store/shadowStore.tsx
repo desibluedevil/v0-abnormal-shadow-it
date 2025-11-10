@@ -25,8 +25,13 @@ const seedData = {
       firstSeen: "2025-01-05T08:15:23Z",
       lastSeen: "2025-01-09T16:42:11Z",
       status: "Unsanctioned",
-      tags: ["OAuth", "Exec", "New App", "Malicious Pattern"],
+      tags: ["Exec", "Broad Scopes"],
+      subtext: "CFO mailbox + org-wide files read.",
       description: "Third-party mail helper with broad access.",
+      about: "Mailbox assistant with file side-panel; requests org-wide read.",
+      topUsers: "Alex Rivera (CFO)",
+      riskFactors: "Files.Read.All enables org-wide content discovery; CFO mailbox access; first-seen this week",
+      aiExplanation: "High-risk due to broad scopes on an executive account, enabling silent exfiltration.",
       rationale: {
         summary: "High-risk OAuth app with organization-wide read scopes, installed by an executive.",
         reasons: [
@@ -66,8 +71,13 @@ const seedData = {
       firstSeen: "2024-12-28T11:23:45Z",
       lastSeen: "2025-01-08T19:17:33Z",
       status: "Unsanctioned",
-      tags: ["OAuth", "New App"],
+      tags: ["P1", "Write Scope"],
+      subtext: "Write access across exec/admin calendars.",
       description: "Cross-device calendar sync with write access.",
+      about: "Exec calendar sync across devices; bi-directional writes.",
+      topUsers: "Priya Shah, Miguel Santos, Jamie Chen, Taylor Kim, Jordan Lee, Casey Morgan, Riley Brooks",
+      riskFactors: "Cross-tenant calendar writes; rapid cohort growth; admin/EAs included",
+      aiExplanation: "Write scope increases meeting-poisoning risk.",
       rationale: {
         summary: "Elevated risk due to write permissions and growing adoption.",
         reasons: [{ text: "Can modify calendars across multiple users" }, { text: "Rapid adoption within one week" }],
@@ -107,8 +117,12 @@ const seedData = {
       firstSeen: "2024-09-24T10:08:17Z",
       lastSeen: "2025-01-07T15:32:48Z",
       status: "Unsanctioned",
-      tags: ["OAuth", "Collaboration"],
+      tags: ["Marketing", "File Export"],
       description: "Cloud storage app — potential data egress.",
+      about: "External file storage; used by Marketing for assets.",
+      topUsers: "Sara Ali, Leo Park, Nina Patel, Ken Adams, Dana Wilson",
+      riskFactors: "Off-tenant asset movement; overlap with paid Box instance",
+      aiExplanation: "Medium risk; monitor exports >100 files/day.",
       rationale: {
         summary: "Moderate risk due to external storage and multi-team adoption.",
         reasons: [
@@ -140,8 +154,12 @@ const seedData = {
       firstSeen: "2024-07-15T09:34:52Z",
       lastSeen: "2025-01-06T17:21:09Z",
       status: "Unsanctioned",
-      tags: ["Collaboration"],
+      tags: ["Docs", "External"],
       description: "Workspace tool for notes and docs.",
+      about: "Docs & project hub for ad-hoc teams.",
+      topUsers: "Olivia Turner, Mark Liu, Finley Reed, Harper Stone, Indigo Price",
+      riskFactors: "External guests; links shared to personal addresses",
+      aiExplanation: "Medium risk from external collaborators & link sprawl.",
       rationale: {
         summary: "Medium risk collaboration tool used by Marketing.",
         reasons: [{ text: "External docs repository used by multiple users" }],
@@ -180,11 +198,15 @@ const seedData = {
         { id: "u_52", name: "Gene Patterson", email: "gene.patterson@example.com", dept: "Marketing" },
         { id: "u_53", name: "Hollis Bryant", email: "hollis.bryant@example.com", dept: "Engineering" },
       ],
-      firstSeen: "2024-01-08T00:12:34Z",
+      firstSeen: "2024-01-07T00:12:34Z",
       lastSeen: "2025-01-04T10:45:18Z",
-      status: "Unsanctioned",
-      tags: ["OAuth"],
+      status: "Sanctioned",
+      tags: ["IT Approved"],
       description: "Video conferencing app with widespread adoption.",
+      about: "Corporate conferencing (SAML SSO, IT managed).",
+      topUsers: "",
+      riskFactors: "Approved exception with SSO; quarterly re-validation",
+      aiExplanation: "Low risk; sanctioned & SSO-enforced.",
       rationale: {
         summary: "Low risk communication app with broad organizational usage.",
         reasons: [{ text: "Widely used across all departments" }],
@@ -201,10 +223,15 @@ const seedData = {
       impact: 0.9,
       tags: ["Exec", "Broad Scopes", "New App"],
       timeline: [
-        { ts: "2025-01-05T08:17:15Z", event: "Grant detected for CFO account" },
-        { ts: "2025-01-06T09:23:41Z", event: "Risk score computed: 92 (High)" },
+        { ts: "2025-01-05T00:17:00Z", event: "Jan 5, 12:17 AM — Grant detected for CFO account" },
+        { ts: "2025-01-06T01:23:00Z", event: "Jan 6, 01:23 AM — Risk score 92 (High)" },
       ],
-      recommendations: ["Revoke OAuth grant", "End active sessions", "Notify affected user", "Create tracking ticket"],
+      recommendations: [
+        "Revoke OAuth grant — 'Expected blast-radius –100% (1→0 users)'",
+        "End active sessions — 'Expire refresh tokens for client app'",
+        "Notify affected user — 'CFO + SecOps'",
+        "Create tracking ticket — 'JIRA SEC-4213, SLA 8h'",
+      ],
     },
     {
       id: "case_calendarsync",
@@ -214,74 +241,16 @@ const seedData = {
       impact: 0.7,
       tags: ["Write Scope", "New App"],
       timeline: [
-        { ts: "2024-12-28T11:24:52Z", event: "First grant observed" },
-        { ts: "2025-01-08T19:18:06Z", event: "7 users affected" },
+        { ts: "2024-12-28T03:24:00Z", event: "Dec 28, 03:24 AM — First grant observed" },
+        { ts: "2025-01-08T11:18:00Z", event: "Jan 8, 11:18 AM — 7 users affected (exec admin cohort)" },
       ],
-      recommendations: ["Revoke OAuth grant for all affected users", "Notify users", "Create tracking ticket"],
+      recommendations: [
+        "Revoke OAuth (all 7)",
+        "Notify users — 'Template with sanctioned alternative'",
+        "Create tracking ticket — 'JIRA SEC-4214, SLA 12h'",
+      ],
     },
   ] as ReviewCase[],
-}
-
-function loadReceipts(): Receipt[] {
-  if (typeof window === "undefined") return []
-  try {
-    const raw = sessionStorage.getItem(RECEIPTS_KEY)
-    return raw ? (JSON.parse(raw) as Receipt[]) : []
-  } catch {
-    return []
-  }
-}
-
-function saveReceipts(next: Receipt[]) {
-  if (typeof window === "undefined") return
-  try {
-    sessionStorage.setItem(RECEIPTS_KEY, JSON.stringify(next))
-  } catch {}
-}
-
-function loadAlerts(): {
-  email: boolean
-  slack: boolean
-  riskThreshold: "High" | "Medium" | "Low"
-  slackWebhook?: string
-} {
-  if (typeof window === "undefined")
-    return { email: true, slack: false, riskThreshold: "High", slackWebhook: undefined }
-  try {
-    const raw = localStorage.getItem(ALERTS_KEY)
-    return raw ? JSON.parse(raw) : { email: true, slack: false, riskThreshold: "High", slackWebhook: undefined }
-  } catch {
-    return { email: true, slack: false, riskThreshold: "High", slackWebhook: undefined }
-  }
-}
-
-function saveAlerts(alerts: {
-  email: boolean
-  slack: boolean
-  riskThreshold: "High" | "Medium" | "Low"
-  slackWebhook?: string
-}) {
-  if (typeof window === "undefined") return
-  try {
-    localStorage.setItem(ALERTS_KEY, JSON.stringify(alerts))
-  } catch {}
-}
-
-function loadAlertedApps(): Set<string> {
-  if (typeof window === "undefined") return new Set()
-  try {
-    const raw = localStorage.getItem(ALERTED_APPS_KEY)
-    return raw ? new Set(JSON.parse(raw)) : new Set()
-  } catch {
-    return new Set()
-  }
-}
-
-function saveAlertedApps(alertedApps: Set<string>) {
-  if (typeof window === "undefined") return
-  try {
-    localStorage.setItem(ALERTED_APPS_KEY, JSON.stringify(Array.from(alertedApps)))
-  } catch {}
 }
 
 const ShadowContext = createContext<ShadowState | null>(null)
@@ -406,7 +375,7 @@ export function ShadowStoreProvider({ children }: { children: ReactNode }) {
         newReceipts.push({
           id: genId("alert_slack"),
           ts,
-          tool: "notify.email",
+          tool: "notify.slack",
           status: "ok",
           details: `(Slack) Alert: ${app.riskLevel} risk app detected - ${app.name}`,
           appId: app.id,
@@ -586,45 +555,27 @@ export function ShadowStoreProvider({ children }: { children: ReactNode }) {
 
   const seedReceiptsIfEmpty = useCallback(() => {
     if (receipts.length > 0) return
-    const ts = nowIso()
-    const demoApp = apps.find((a) => a.id === "app_calendarsync") || apps[0]
-    if (!demoApp) return
+    const ts = "2025-11-10T22:01:08.549Z"
     const base: Receipt[] = [
       {
-        id: "revoke_seed",
-        ts,
-        tool: "graph.revokeGrant",
-        status: "ok",
-        details: `Seed revoke for ${demoApp.name}`,
-        appId: demoApp.id,
-        actor: "Seeder",
-      },
-      {
-        id: "end_seed",
-        ts,
-        tool: "end.sessions",
-        status: "ok",
-        details: "Seed end sessions",
-        appId: demoApp.id,
-        actor: "Seeder",
-      },
-      {
-        id: "notify_seed",
+        id: "alert_email_3ebtwoee",
         ts,
         tool: "notify.email",
         status: "ok",
-        details: "Seed notify users",
-        appId: demoApp.id,
-        actor: "Seeder",
+        details:
+          "alert 'High-risk app detected – SketchyMailApp'; timestamp 2025-11-10T22:01:08.549Z; source event 'Open source event'",
+        appId: "app_sketchymail",
+        actor: "System",
       },
       {
-        id: "ticket_seed",
+        id: "alert_email_v7gnm704",
         ts,
-        tool: "ticket.create",
+        tool: "notify.email",
         status: "ok",
-        details: "Seed ticket for audit",
-        appId: demoApp.id,
-        actor: "Seeder",
+        details:
+          "alert 'High-risk app detected – CalendarSync'; timestamp 2025-11-10T22:01:08.549Z; source event 'Open source event'",
+        appId: "app_calendarsync",
+        actor: "System",
       },
     ]
     const next = [...base, ...receipts]
@@ -693,7 +644,7 @@ export function ShadowStoreProvider({ children }: { children: ReactNode }) {
       recs.push({
         id: genId("test_slack"),
         ts,
-        tool: "notify.email",
+        tool: "notify.slack",
         status: "ok",
         details: `(Slack) Test alert for ${app.name}`,
         appId: app.id,
@@ -746,4 +697,65 @@ export function useShadowStore() {
     throw new Error("useShadowStore must be used within ShadowStoreProvider")
   }
   return context
+}
+
+function loadReceipts(): Receipt[] {
+  if (typeof window === "undefined") return []
+  try {
+    const raw = sessionStorage.getItem(RECEIPTS_KEY)
+    return raw ? (JSON.parse(raw) as Receipt[]) : []
+  } catch {
+    return []
+  }
+}
+
+function saveReceipts(next: Receipt[]) {
+  if (typeof window === "undefined") return
+  try {
+    sessionStorage.setItem(RECEIPTS_KEY, JSON.stringify(next))
+  } catch {}
+}
+
+function loadAlerts(): {
+  email: boolean
+  slack: boolean
+  riskThreshold: "High" | "Medium" | "Low"
+  slackWebhook?: string
+} {
+  if (typeof window === "undefined") return { email: true, slack: true, riskThreshold: "High", slackWebhook: undefined }
+  try {
+    const raw = localStorage.getItem(ALERTS_KEY)
+    return raw ? JSON.parse(raw) : { email: true, slack: true, riskThreshold: "High", slackWebhook: undefined }
+  } catch {
+    return { email: true, slack: true, riskThreshold: "High", slackWebhook: undefined }
+  }
+}
+
+function saveAlerts(alerts: {
+  email: boolean
+  slack: boolean
+  riskThreshold: "High" | "Medium" | "Low"
+  slackWebhook?: string
+}) {
+  if (typeof window === "undefined") return
+  try {
+    localStorage.setItem(ALERTS_KEY, JSON.stringify(alerts))
+  } catch {}
+}
+
+function loadAlertedApps(): Set<string> {
+  if (typeof window === "undefined") return new Set()
+  try {
+    const raw = localStorage.getItem(ALERTED_APPS_KEY)
+    return raw ? new Set(JSON.parse(raw)) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+function saveAlertedApps(alertedApps: Set<string>) {
+  if (typeof window === "undefined") return
+  try {
+    localStorage.setItem(ALERTED_APPS_KEY, JSON.stringify(Array.from(alertedApps)))
+  } catch {}
 }

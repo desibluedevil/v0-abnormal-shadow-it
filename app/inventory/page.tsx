@@ -76,6 +76,7 @@ function InventoryPageContent() {
   }, [])
 
   const apps = filteredApps()
+
   const focusAppId = searchParams.get("focus")
 
   const updateFilters = (updates: Partial<typeof filters>) => {

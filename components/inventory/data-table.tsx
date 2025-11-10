@@ -28,7 +28,7 @@ interface DataTableProps {
   changedRowIds?: Set<string>
 }
 
-const MemoizedTableRow = memo(function TableRow({
+const MemoizedDataTableRow = memo(function DataTableRow({
   row,
   columns,
   isFocused,
@@ -50,7 +50,6 @@ const MemoizedTableRow = memo(function TableRow({
   onToggleExpansion: (rowId: string) => void
 }) {
   if (!row || !row.id) {
-    console.log("[v0] Skipping invalid row data:", row)
     return null
   }
 
@@ -144,12 +143,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
   }, [focusId])
 
   const validData = useMemo(() => {
-    console.log("[v0] DataTable received data length:", data.length)
-    const valid = data.filter((row) => row && row.id && row.status)
-    if (valid.length !== data.length) {
-      console.log("[v0] Filtered out", data.length - valid.length, "invalid rows")
-    }
-    return valid
+    return data.filter((row) => row && row.id && row.status)
   }, [data])
 
   const sortedData = useMemo(() => {
@@ -295,7 +289,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
                   const isFocused = focusId === row.id
                   const isKeyboardFocused = focusedRowIndex === index
                   return (
-                    <MemoizedTableRow
+                    <MemoizedDataTableRow
                       key={row.id}
                       row={row}
                       columns={columns}
