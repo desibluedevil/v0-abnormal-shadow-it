@@ -177,14 +177,14 @@ function AuditPageContent() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Audit Trail</h1>
-        <p className="text-sm text-muted-foreground">
-          Prove remediation outcomes with exportable, time-stamped receipts for compliance and reporting
-        </p>
-      </div>
-
       <div className="space-y-4">
+        <div>
+          <h1 className="text-3xl font-semibold text-foreground">Audit Trail</h1>
+          <p className="text-sm text-muted-foreground mt-1.5">
+            Complete record of all remediation actions and system events
+          </p>
+        </div>
+
         {filteredReceipts.length > 0 && (
           <div className="flex items-center gap-6 text-sm">
             <div className="flex items-center gap-2">

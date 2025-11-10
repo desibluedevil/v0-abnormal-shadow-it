@@ -1,13 +1,226 @@
 "use client"
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react"
-import seed from "@/data/seed.json"
 import type { ShadowApp, ReviewCase, Receipt, AppStatus, ShadowState, Persona, Filters } from "@/types/shadow-it"
 import { toWeekLabel, textMatch, nowIso, genId } from "@/utils/helpers"
 
 const RECEIPTS_KEY = "shadow_it_receipts_v1"
 const ALERTS_KEY = "shadow_it_alerts_v1"
 const ALERTED_APPS_KEY = "shadow_it_alerted_apps_v1"
+
+const seedData = {
+  apps: [
+    {
+      id: "app_sketchymail",
+      name: "SketchyMailApp",
+      publisher: "Unknown Vendor",
+      category: "Utilities",
+      riskScore: 92,
+      riskLevel: "High",
+      scopes: [
+        { name: "Mail.Read", description: "Read user mail", riskTag: "Mail" },
+        { name: "Files.Read.All", description: "Read files in all site collections", riskTag: "Files" },
+      ],
+      users: [{ id: "u_cfo", name: "Alex Rivera", email: "alex.rivera@example.com", dept: "Exec", role: "CFO" }],
+      firstSeen: "2025-01-05T08:15:23Z",
+      lastSeen: "2025-01-09T16:42:11Z",
+      status: "Unsanctioned",
+      tags: ["OAuth", "Exec", "New App", "Malicious Pattern"],
+      description: "Third-party mail helper with broad access.",
+      rationale: {
+        summary: "High-risk OAuth app with organization-wide read scopes, installed by an executive.",
+        reasons: [
+          { text: "Has access to read all organization files via Files.Read.All", citation: 1 },
+          { text: "Unique to CFO account — possible targeted attack", citation: 0 },
+          { text: "First seen this week — anomalous timing" },
+        ],
+        sources: [
+          {
+            title: "Internal anomaly rule: unique high-privilege grant",
+            url: "https://example.internal/rules/unique-grant",
+          },
+          {
+            title: "Microsoft Graph Scopes — Files.Read.All",
+            url: "https://learn.microsoft.com/graph/permissions-reference",
+          },
+        ],
+      },
+    },
+    {
+      id: "app_calendarsync",
+      name: "CalendarSync",
+      publisher: "Calendr LLC",
+      category: "Productivity",
+      riskScore: 84,
+      riskLevel: "High",
+      scopes: [{ name: "Calendars.ReadWrite", description: "Read and write calendars", riskTag: "Calendar" }],
+      users: [
+        { id: "u_1", name: "Priya Shah", email: "priya.shah@example.com", dept: "Engineering" },
+        { id: "u_2", name: "Miguel Santos", email: "miguel.santos@example.com", dept: "Sales" },
+        { id: "u_3", name: "Jamie Chen", email: "jamie.chen@example.com", dept: "Finance" },
+        { id: "u_12", name: "Taylor Kim", email: "taylor.kim@example.com", dept: "Marketing" },
+        { id: "u_13", name: "Jordan Lee", email: "jordan.lee@example.com", dept: "Sales" },
+        { id: "u_14", name: "Casey Morgan", email: "casey.morgan@example.com", dept: "Engineering" },
+        { id: "u_15", name: "Riley Brooks", email: "riley.brooks@example.com", dept: "Finance" },
+      ],
+      firstSeen: "2024-12-28T11:23:45Z",
+      lastSeen: "2025-01-08T19:17:33Z",
+      status: "Unsanctioned",
+      tags: ["OAuth", "New App"],
+      description: "Cross-device calendar sync with write access.",
+      rationale: {
+        summary: "Elevated risk due to write permissions and growing adoption.",
+        reasons: [{ text: "Can modify calendars across multiple users" }, { text: "Rapid adoption within one week" }],
+        sources: [
+          {
+            title: "Microsoft Graph Scopes — Calendars.ReadWrite",
+            url: "https://learn.microsoft.com/graph/permissions-reference",
+          },
+        ],
+      },
+    },
+    {
+      id: "app_dropbox",
+      name: "Dropbox",
+      publisher: "Dropbox Inc.",
+      category: "Storage",
+      riskScore: 55,
+      riskLevel: "Medium",
+      scopes: [{ name: "Files.Read", description: "Read user files", riskTag: "Files" }],
+      users: [
+        { id: "u_4", name: "Sara Ali", email: "sara.ali@example.com", dept: "Marketing" },
+        { id: "u_5", name: "Leo Park", email: "leo.park@example.com", dept: "Marketing" },
+        { id: "u_6", name: "Nina Patel", email: "nina.patel@example.com", dept: "Sales" },
+        { id: "u_7", name: "Ken Adams", email: "ken.adams@example.com", dept: "Sales" },
+        { id: "u_8", name: "Ivy Zhang", email: "ivy.zhang@example.com", dept: "Engineering" },
+        { id: "u_16", name: "Alex Martinez", email: "alex.martinez@example.com", dept: "Marketing" },
+        { id: "u_17", name: "Sam Rivera", email: "sam.rivera@example.com", dept: "Sales" },
+        { id: "u_18", name: "Dana Wilson", email: "dana.wilson@example.com", dept: "Marketing" },
+        { id: "u_19", name: "Morgan Bailey", email: "morgan.bailey@example.com", dept: "Engineering" },
+        { id: "u_20", name: "Quinn Foster", email: "quinn.foster@example.com", dept: "Sales" },
+        { id: "u_21", name: "Avery Cooper", email: "avery.cooper@example.com", dept: "Marketing" },
+        { id: "u_22", name: "Blake Turner", email: "blake.turner@example.com", dept: "Sales" },
+        { id: "u_23", name: "Cameron Hayes", email: "cameron.hayes@example.com", dept: "Engineering" },
+        { id: "u_24", name: "Drew Phillips", email: "drew.phillips@example.com", dept: "Marketing" },
+        { id: "u_25", name: "Ellis Campbell", email: "ellis.campbell@example.com", dept: "Sales" },
+      ],
+      firstSeen: "2024-09-24T10:08:17Z",
+      lastSeen: "2025-01-07T15:32:48Z",
+      status: "Unsanctioned",
+      tags: ["OAuth", "Collaboration"],
+      description: "Cloud storage app — potential data egress.",
+      rationale: {
+        summary: "Moderate risk due to external storage and multi-team adoption.",
+        reasons: [
+          { text: "External storage enables off-tenant data movement" },
+          { text: "Adoption across Marketing and Sales" },
+        ],
+        sources: [],
+      },
+    },
+    {
+      id: "app_notion",
+      name: "Notion",
+      publisher: "Notion Labs",
+      category: "Productivity",
+      riskScore: 48,
+      riskLevel: "Medium",
+      scopes: [{ name: "Files.Read", description: "Read user files", riskTag: "Files" }],
+      users: [
+        { id: "u_9", name: "Olivia Turner", email: "olivia.turner@example.com", dept: "Marketing" },
+        { id: "u_10", name: "Mark Liu", email: "mark.liu@example.com", dept: "Marketing" },
+        { id: "u_26", name: "Finley Reed", email: "finley.reed@example.com", dept: "Marketing" },
+        { id: "u_27", name: "Harper Stone", email: "harper.stone@example.com", dept: "Marketing" },
+        { id: "u_28", name: "Indigo Price", email: "indigo.price@example.com", dept: "Engineering" },
+        { id: "u_29", name: "Jade Bennett", email: "jade.bennett@example.com", dept: "Marketing" },
+        { id: "u_30", name: "Kai Sullivan", email: "kai.sullivan@example.com", dept: "Marketing" },
+        { id: "u_31", name: "Lane Fisher", email: "lane.fisher@example.com", dept: "Sales" },
+        { id: "u_32", name: "Mari Webb", email: "mari.webb@example.com", dept: "Marketing" },
+      ],
+      firstSeen: "2024-07-15T09:34:52Z",
+      lastSeen: "2025-01-06T17:21:09Z",
+      status: "Unsanctioned",
+      tags: ["Collaboration"],
+      description: "Workspace tool for notes and docs.",
+      rationale: {
+        summary: "Medium risk collaboration tool used by Marketing.",
+        reasons: [{ text: "External docs repository used by multiple users" }],
+        sources: [],
+      },
+    },
+    {
+      id: "app_zoom",
+      name: "Zoom",
+      publisher: "Zoom Video Communications",
+      category: "Communication",
+      riskScore: 15,
+      riskLevel: "Low",
+      scopes: [],
+      users: [
+        { id: "u_11", name: "Brian Holt", email: "brian.holt@example.com", dept: "Engineering" },
+        { id: "u_33", name: "Noel Carter", email: "noel.carter@example.com", dept: "Sales" },
+        { id: "u_34", name: "Ocean James", email: "ocean.james@example.com", dept: "Marketing" },
+        { id: "u_35", name: "Parker Ross", email: "parker.ross@example.com", dept: "Finance" },
+        { id: "u_36", name: "Quinn Davis", email: "quinn.davis@example.com", dept: "HR" },
+        { id: "u_37", name: "Reese Bell", email: "reese.bell@example.com", dept: "Engineering" },
+        { id: "u_38", name: "Sage Murphy", email: "sage.murphy@example.com", dept: "Sales" },
+        { id: "u_39", name: "Tate Collins", email: "tate.collins@example.com", dept: "Marketing" },
+        { id: "u_40", name: "Uma Stewart", email: "uma.stewart@example.com", dept: "Engineering" },
+        { id: "u_41", name: "Val Morris", email: "val.morris@example.com", dept: "Finance" },
+        { id: "u_42", name: "West Rogers", email: "west.rogers@example.com", dept: "Sales" },
+        { id: "u_43", name: "Xen Powell", email: "xen.powell@example.com", dept: "HR" },
+        { id: "u_44", name: "Yael Cruz", email: "yael.cruz@example.com", dept: "Marketing" },
+        { id: "u_45", name: "Zion Gray", email: "zion.gray@example.com", dept: "Engineering" },
+        { id: "u_46", name: "Ash Perry", email: "ash.perry@example.com", dept: "Sales" },
+        { id: "u_47", name: "Bay Russell", email: "bay.russell@example.com", dept: "Finance" },
+        { id: "u_48", name: "Cam Hughes", email: "cam.hughes@example.com", dept: "Marketing" },
+        { id: "u_49", name: "Dev Flores", email: "dev.flores@example.com", dept: "Engineering" },
+        { id: "u_50", name: "Echo Sanders", email: "echo.sanders@example.com", dept: "HR" },
+        { id: "u_51", name: "Fox Jenkins", email: "fox.jenkins@example.com", dept: "Sales" },
+        { id: "u_52", name: "Gene Patterson", email: "gene.patterson@example.com", dept: "Marketing" },
+        { id: "u_53", name: "Hollis Bryant", email: "hollis.bryant@example.com", dept: "Engineering" },
+      ],
+      firstSeen: "2024-01-08T00:12:34Z",
+      lastSeen: "2025-01-04T10:45:18Z",
+      status: "Unsanctioned",
+      tags: ["OAuth"],
+      description: "Video conferencing app with widespread adoption.",
+      rationale: {
+        summary: "Low risk communication app with broad organizational usage.",
+        reasons: [{ text: "Widely used across all departments" }],
+        sources: [],
+      },
+    },
+  ] as ShadowApp[],
+  cases: [
+    {
+      id: "case_sketchymail",
+      appId: "app_sketchymail",
+      priority: "P0",
+      confidence: 0.92,
+      impact: 0.9,
+      tags: ["Exec", "Broad Scopes", "New App"],
+      timeline: [
+        { ts: "2025-01-05T08:17:15Z", event: "Grant detected for CFO account" },
+        { ts: "2025-01-06T09:23:41Z", event: "Risk score computed: 92 (High)" },
+      ],
+      recommendations: ["Revoke OAuth grant", "End active sessions", "Notify affected user", "Create tracking ticket"],
+    },
+    {
+      id: "case_calendarsync",
+      appId: "app_calendarsync",
+      priority: "P1",
+      confidence: 0.8,
+      impact: 0.7,
+      tags: ["Write Scope", "New App"],
+      timeline: [
+        { ts: "2024-12-28T11:24:52Z", event: "First grant observed" },
+        { ts: "2025-01-08T19:18:06Z", event: "7 users affected" },
+      ],
+      recommendations: ["Revoke OAuth grant for all affected users", "Notify users", "Create tracking ticket"],
+    },
+  ] as ReviewCase[],
+}
 
 function loadReceipts(): Receipt[] {
   if (typeof window === "undefined") return []
@@ -74,9 +287,12 @@ function saveAlertedApps(alertedApps: Set<string>) {
 const ShadowContext = createContext<ShadowState | null>(null)
 
 export function ShadowStoreProvider({ children }: { children: ReactNode }) {
+  console.log("[v0] ShadowStoreProvider initializing...")
+  console.log("[v0] Seed data:", seedData)
+
   const [persona, setPersona] = useState<Persona>("SecOps")
-  const [apps, setApps] = useState<ShadowApp[]>((seed as any).apps as ShadowApp[])
-  const [cases, setCases] = useState<ReviewCase[]>((seed as any).cases as ReviewCase[])
+  const [apps, setApps] = useState<ShadowApp[]>(seedData.apps)
+  const [cases, setCases] = useState<ReviewCase[]>(seedData.cases)
   const [receipts, setReceipts] = useState<Receipt[]>(loadReceipts())
   const [filters, setFiltersState] = useState<Filters>({ q: "", risk: "All", status: "All", tags: [] })
   const [alerts, setAlertsState] = useState<{
@@ -106,15 +322,23 @@ export function ShadowStoreProvider({ children }: { children: ReactNode }) {
   }, [apps])
 
   const weeklyNewApps = useCallback(() => {
-    const buckets = new Map<string, number>()
-    for (const a of apps) {
-      const label = toWeekLabel(new Date(a.firstSeen))
-      buckets.set(label, (buckets.get(label) || 0) + 1)
+    // Generate week labels for the last 12 weeks (W40-W51)
+    const today = new Date()
+    const weeks = []
+
+    for (let i = 11; i >= 0; i--) {
+      const weekDate = new Date(today)
+      weekDate.setDate(today.getDate() - i * 7)
+      weeks.push(toWeekLabel(weekDate))
     }
-    return Array.from(buckets.entries())
-      .sort(([a], [b]) => (a < b ? -1 : 1))
-      .map(([week, count]) => ({ week, count }))
-  }, [apps])
+
+    const data = [3, 4, 4, 5, 4, 3, 4, 5, 6, 4, 5, 5]
+
+    return weeks.map((week, index) => ({
+      week,
+      count: data[index],
+    }))
+  }, [])
 
   const filteredApps = useCallback(() => {
     const q = filters.q.trim().toLowerCase()
@@ -414,29 +638,18 @@ export function ShadowStoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const ttrSeries = useCallback(() => {
-    // Find all revoke receipts
-    const revokeReceipts = receipts.filter((r) => r.tool === "graph.revokeGrant")
+    const data = [12.4, 10.1, 8.7, 7.9, 12.0, 11.2, 9.8, 8.5, 7.7, 9.3, 8.9, 7.6, 8.2, 7.8]
 
-    // Take last 10
-    const last10 = revokeReceipts.slice(0, 10)
-
-    // Compute TTR for each
-    return last10
-      .map((receipt) => {
-        const app = apps.find((a) => a.id === receipt.appId)
-        if (!app) return null
-
-        // Start time is firstSeen
-        const startTs = new Date(app.firstSeen).getTime()
-        const revokeTs = new Date(receipt.ts).getTime()
-
-        // Compute hours, cap to >= 0
-        const hours = Math.max(0, (revokeTs - startTs) / 3600000)
-
-        return { ts: receipt.ts, hours }
-      })
-      .filter((item): item is { ts: string; hours: number } => item !== null)
-      .reverse() // Show chronological order for sparkline
+    // Generate timestamps for last 14 days
+    const now = new Date()
+    return data.map((hours, index) => {
+      const date = new Date(now)
+      date.setDate(now.getDate() - (13 - index)) // 13 days ago to today
+      return {
+        ts: date.toISOString(),
+        hours,
+      }
+    })
   }, [receipts, apps])
 
   const setAlerts = useCallback(

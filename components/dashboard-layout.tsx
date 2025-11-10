@@ -10,16 +10,7 @@ import { cn } from "@/lib/utils"
 import { useShadowStore } from "@/store/shadowStore"
 import NotifyModal from "@/components/notify/notify-modal"
 import { KeyboardHelpModal } from "@/components/keyboard/help-modal"
-import {
-  LayoutDashboard,
-  Package,
-  FileSearch,
-  ShieldCheck,
-  Settings,
-  ChevronDown,
-  Clock,
-  RotateCcw,
-} from "lucide-react"
+import { LayoutDashboard, Package, FileSearch, ShieldCheck, Settings, ChevronDown, Clock } from "lucide-react"
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -70,15 +61,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const handlePersonaChange = (newPersona: "SecOps" | "CISO") => {
     console.log("[v0] Persona changed from", persona, "to", newPersona)
     setPersona(newPersona)
-  }
-
-  const handleDemoRefresh = () => {
-    console.log("[v0] Demo data refresh initiated")
-    // Clear localStorage and reload
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("shadow-it-store")
-      window.location.reload()
-    }
   }
 
   console.log("[v0] DashboardLayout rendered with persona:", persona)
@@ -147,47 +129,34 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDemoRefresh}
-              className="gap-2 text-muted-foreground hover:text-[#47D7FF] hover:bg-[#47D7FF]/10 transition-all duration-200"
-              aria-label="Reset demo data to initial state"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Demo Reset
-            </Button>
-
-            {/* Persona Switcher */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="secondary"
-                  className="gap-2 rounded-full px-4 py-2 hover:shadow-[0_0_12px_rgba(71,215,255,0.2)] transition-all duration-200"
-                  onClick={() => console.log("[v0] Dropdown trigger clicked")}
-                  aria-label={`Current persona: ${persona}. Click to change persona`}
+          {/* Persona Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="secondary"
+                className="gap-2 rounded-full px-4 py-2 hover:shadow-[0_0_12px_rgba(71,215,255,0.2)] transition-all duration-200"
+                onClick={() => console.log("[v0] Dropdown trigger clicked")}
+                aria-label={`Current persona: ${persona}. Click to change persona`}
+              >
+                {persona}
+                <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              {personas.map((p) => (
+                <DropdownMenuItem
+                  key={p.id}
+                  onClick={() => {
+                    console.log("[v0] MenuItem clicked:", p.id)
+                    handlePersonaChange(p.id)
+                  }}
+                  className={cn(persona === p.id && "bg-accent text-accent-foreground")}
                 >
-                  {persona}
-                  <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                {personas.map((p) => (
-                  <DropdownMenuItem
-                    key={p.id}
-                    onClick={() => {
-                      console.log("[v0] MenuItem clicked:", p.id)
-                      handlePersonaChange(p.id)
-                    }}
-                    className={cn(persona === p.id && "bg-accent text-accent-foreground")}
-                  >
-                    {p.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                  {p.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
         {/* Main Content */}

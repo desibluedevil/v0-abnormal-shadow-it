@@ -390,8 +390,6 @@ export default function AppDrawer() {
                               <Badge
                                 variant="secondary"
                                 className="bg-[#0B0F12] border border-border/50 text-[#E9EEF2] hover:border-[#47D7FF]/30 cursor-help transition-colors"
-                                data-scope-chip
-                                data-testid={`scope-${s.name.replace(/\s+/g, "-").toLowerCase()}`}
                               >
                                 {s.name}
                               </Badge>

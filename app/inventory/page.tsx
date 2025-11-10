@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useShadowStore } from "@/store/shadowStore"
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -160,7 +160,7 @@ function InventoryPageContent() {
 
   if (isBooting) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-4">
         {persona === "CISO" && <CISOBanner />}
         <TableSkeleton />
       </div>
@@ -170,18 +170,13 @@ function InventoryPageContent() {
   const canExport = apps.length > 0
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-4">
       {persona === "CISO" && <CISOBanner />}
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
-          <div className="space-y-3">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Shadow App Inventory</h1>
-            <p className="text-sm text-muted-foreground">
-              Triage detected applications by risk, status, and user activity
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <CardTitle className="text-2xl font-semibold">Shadow App Inventory</CardTitle>
+          <div className="flex items-center gap-2">
             <InputGroup className="w-80">
               <InputGroupAddon align="inline-start">
                 <InputGroupText>
@@ -205,7 +200,7 @@ function InventoryPageContent() {
                       onClick={handleExportCsv}
                       disabled={!canExport}
                       aria-label="Export inventory to CSV"
-                      className="gap-2 focus:ring-2 focus:ring-[#47D7FF]"
+                      className="gap-2"
                     >
                       <FileDown className="size-4" />
                       Export CSV
@@ -223,7 +218,7 @@ function InventoryPageContent() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-3">
               <div className="text-sm font-medium text-muted-foreground">Risk:</div>
               <ToggleGroup
@@ -235,28 +230,28 @@ function InventoryPageContent() {
                 <ToggleGroupItem
                   value="All"
                   aria-pressed={filters.risk === "All"}
-                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
                 >
                   All
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="High"
                   aria-pressed={filters.risk === "High"}
-                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
                 >
                   High
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="Medium"
                   aria-pressed={filters.risk === "Medium"}
-                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
                 >
                   Medium
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="Low"
                   aria-pressed={filters.risk === "Low"}
-                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
                 >
                   Low
                 </ToggleGroupItem>
@@ -274,35 +269,35 @@ function InventoryPageContent() {
                 <ToggleGroupItem
                   value="All"
                   aria-pressed={filters.status === "All"}
-                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
                 >
                   All
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="Unsanctioned"
                   aria-pressed={filters.status === "Unsanctioned"}
-                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
                 >
                   Unsanctioned
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="Sanctioned"
                   aria-pressed={filters.status === "Sanctioned"}
-                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
                 >
                   Sanctioned
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="Revoked"
                   aria-pressed={filters.status === "Revoked"}
-                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
                 >
                   Revoked
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="Dismissed"
                   aria-pressed={filters.status === "Dismissed"}
-                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
                 >
                   Dismissed
                 </ToggleGroupItem>

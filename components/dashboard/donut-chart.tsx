@@ -92,15 +92,15 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
       {/* Legend with risk colors */}
       <div className="flex gap-4 text-sm text-foreground">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#FF4D4D" }} />
+          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "#FF4D4D" }} />
           <span className="font-medium">High ({high})</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#FFB02E" }} />
+          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "#FFB02E" }} />
           <span className="font-medium">Med ({med})</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#39D98A" }} />
+          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "#39D98A" }} />
           <span className="font-medium">Low ({low})</span>
         </div>
       </div>

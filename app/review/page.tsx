@@ -242,18 +242,13 @@ function ReviewPageContent() {
     <div className="space-y-6">
       {isCISO && <CISOBanner />}
 
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Review Queue</h1>
-        <p className="text-sm text-muted-foreground">
-          Remediate high-priority security findings with one-click approval or dismissal
-        </p>
-        <p className="text-xs text-muted-foreground/80 mt-1">
-          {enrichedCases.length} case{enrichedCases.length !== 1 ? "s" : ""} pending review
-        </p>
-      </div>
-
       <div className="space-y-4">
-        <div>{/* Removed redundant text */}</div>
+        <div>
+          <h1 className="text-3xl font-semibold text-foreground">Review Queue</h1>
+          <p className="text-sm text-muted-foreground mt-1.5">
+            {enrichedCases.length} case{enrichedCases.length !== 1 ? "s" : ""} pending review
+          </p>
+        </div>
 
         {enrichedCases.length > 0 && (
           <div className="space-y-3">
@@ -407,8 +402,6 @@ function ReviewPageContent() {
             return (
               <Card
                 key={reviewCase.id}
-                data-case-card
-                data-testid={`case-${reviewCase.id}`}
                 className={`overflow-hidden bg-[#12171C] border transition-all duration-200 ${
                   isSelected
                     ? "border-[#47D7FF] shadow-[0_0_12px_rgba(71,215,255,0.3)]"
@@ -423,7 +416,6 @@ function ReviewPageContent() {
                         onCheckedChange={() => handleToggleSelect(reviewCase.id)}
                         className="mt-1 data-[state=checked]:bg-[#47D7FF] data-[state=checked]:border-[#47D7FF]"
                         disabled={isCISO}
-                        data-testid={`checkbox-${reviewCase.id}`}
                       />
 
                       <div className="space-y-3 flex-1 min-w-0">
@@ -493,7 +485,6 @@ function ReviewPageContent() {
                               onClick={() => handleApprove(app.id)}
                               disabled={isCISO || isProcessing}
                               className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 shadow-[0_0_8px_rgba(71,215,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
-                              data-testid={`approve-${app.id}`}
                             >
                               {isProcessing ? "Processing..." : "Approve"}
                             </Button>
@@ -513,7 +504,6 @@ function ReviewPageContent() {
                               onClick={() => handleDismiss(app.id)}
                               disabled={isCISO || isProcessing}
                               className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                              data-testid={`dismiss-${app.id}`}
                             >
                               Dismiss
                             </Button>

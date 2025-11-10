@@ -272,8 +272,6 @@ export default function SettingsPage() {
                     ? "border-[#FFB02E]/30 bg-[#FFB02E]/5"
                     : "border-[#39D98A]/30 bg-[#39D98A]/5"
               }`}
-              data-preview-card
-              data-testid="alert-preview"
             >
               <div className="flex items-start gap-3">
                 <div

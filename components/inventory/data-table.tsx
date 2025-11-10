@@ -28,7 +28,7 @@ interface DataTableProps {
   changedRowIds?: Set<string>
 }
 
-const MemoizedTableRow = memo(function InventoryTableRow({
+const MemoizedTableRow = memo(function TableRow({
   row,
   columns,
   isFocused,
@@ -49,29 +49,26 @@ const MemoizedTableRow = memo(function InventoryTableRow({
   onRowClick: (appId: string, e: React.MouseEvent) => void
   onToggleExpansion: (rowId: string) => void
 }) {
-  if (!row || !row.id || typeof row.status === "undefined") {
-    console.log("[v0] MemoizedTableRow received invalid row:", row)
+  if (!row || !row.id) {
+    console.log("[v0] Skipping invalid row data:", row)
     return null
   }
 
-  const isExpanded = expandedRows.has(row.id)
   const isRevoked = row.status === "Revoked"
-  const hasChanged = changedRowIds.has(row.id)
+  const isChanged = changedRowIds.has(row.id)
+  const isExpanded = expandedRows.has(row.id)
 
   return (
     <>
       <TableRow
-        ref={focusRowRef}
+        ref={isFocused ? focusRowRef : null}
         onClick={(e) => onRowClick(row.id, e)}
-        className={`
-          cursor-pointer transition-all
-          ${isFocused ? "bg-accent/20 ring-2 ring-primary/50" : "hover:bg-muted/40"}
-          ${isKeyboardFocused ? "ring-2 ring-cyan-500/50" : ""}
-          ${isRevoked ? "opacity-50" : ""}
-          ${hasChanged ? "animate-pulse-once bg-cyan-500/10" : ""}
-        `}
         tabIndex={0}
-        data-app-id={row.id}
+        className={`h-12 hover:bg-muted/50 hover:shadow-[0_2px_8px_rgba(71,215,255,0.15)] transition-all duration-200 cursor-pointer ${
+          isFocused ? "ring-2 ring-[#47D7FF] ring-inset bg-[#47D7FF]/10" : ""
+        } ${isKeyboardFocused ? "ring-2 ring-[#47D7FF] ring-inset" : ""} ${
+          isRevoked ? "text-muted-foreground" : ""
+        } ${isChanged ? "animate-pulse bg-[#39D98A]/10" : ""}`}
       >
         <TableCell className="md:hidden">
           <Button
@@ -147,18 +144,12 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
   }, [focusId])
 
   const validData = useMemo(() => {
-    console.log("[v0] DataTable received data:", data?.length || 0, "items")
-    if (!Array.isArray(data)) {
-      console.log("[v0] Data is not an array:", data)
-      return []
+    console.log("[v0] DataTable received data length:", data.length)
+    const valid = data.filter((row) => row && row.id && row.status)
+    if (valid.length !== data.length) {
+      console.log("[v0] Filtered out", data.length - valid.length, "invalid rows")
     }
-    return data.filter((item) => {
-      if (!item || !item.id || typeof item.status === "undefined") {
-        console.log("[v0] Filtering out invalid item:", item)
-        return false
-      }
-      return true
-    })
+    return valid
   }, [data])
 
   const sortedData = useMemo(() => {
@@ -342,7 +333,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
         <div className="flex items-center gap-2">
           <p className="text-sm text-muted-foreground">Rows per page:</p>
           <Select value={`${pageSize}`} onValueChange={(value) => setPageSize(Number(value))}>
-            <SelectTrigger className="h-8 w-[70px] focus:ring-2 focus:ring-[#47D7FF]">
+            <SelectTrigger className="h-8 w-[70px]">
               <SelectValue placeholder={pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
@@ -355,7 +346,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
           </Select>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           <div className="text-sm text-muted-foreground">
             Page {pageIndex + 1} of {pageCount || 1}
           </div>

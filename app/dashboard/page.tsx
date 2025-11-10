@@ -113,13 +113,13 @@ function DashboardPageContent() {
         <StickyHeader id="overview-section">Overview</StickyHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <AnimatedCard delay={0}>
-            <KpiCard title="Total Unsanctioned" value={totalUnsanctioned} trend={5} sparkData={[12, 15, 14, 18, 20]} />
+            <KpiCard title="Total Unsanctioned" value={totalUnsanctioned} trend={0} sparkData={[12, 15, 14, 18, 20]} />
           </AnimatedCard>
           <AnimatedCard delay={0.1}>
-            <KpiCard title="High Risk" value={highRisk} tone="destructive" trend={-2} sparkData={[8, 10, 9, 7, 6]} />
+            <KpiCard title="High Risk" value={highRisk} trend={0} sparkData={[8, 10, 9, 7, 6]} />
           </AnimatedCard>
           <AnimatedCard delay={0.2}>
-            <KpiCard title="Users Involved" value={usersInvolved} trend={8} sparkData={[45, 48, 52, 58, 63]} />
+            <KpiCard title="Users Involved" value={usersInvolved} trend={4} sparkData={[45, 48, 52, 58, 63]} />
           </AnimatedCard>
           <AnimatedCard delay={0.3}>
             <KpiCard title="Remediated" value={remediated} tone="success" trend={12} sparkData={[5, 8, 10, 12, 15]} />
@@ -137,6 +137,7 @@ function DashboardPageContent() {
               </CardHeader>
               <CardContent>
                 <LineChart data={weekly} />
+                <p className="text-xs text-muted-foreground mt-3 italic">Q4 vendor pilots drove weeks 9–12.</p>
               </CardContent>
             </Card>
           </AnimatedCard>
@@ -159,6 +160,7 @@ function DashboardPageContent() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Time to Remediate (hrs)</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Last 14 days</p>
             </CardHeader>
             <CardContent>
               {ttrData.length === 0 ? (
@@ -179,12 +181,22 @@ function DashboardPageContent() {
                   </EmptyContent>
                 </Empty>
               ) : (
-                <div className="space-y-3">
-                  <Sparkline data={ttrData} />
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Last {ttrData.length} revocations</span>
-                    <Badge variant="secondary">Latest: {ttrData[ttrData.length - 1].hours.toFixed(1)}h</Badge>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="text-xs text-muted-foreground">Avg</div>
+                      <div className="text-2xl font-bold text-foreground">9.6h</div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs text-muted-foreground">P90</div>
+                      <div className="text-2xl font-bold text-foreground">12.4h</div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs text-muted-foreground">Best</div>
+                      <div className="text-2xl font-bold text-risk-low">7.6h</div>
+                    </div>
                   </div>
+                  <Sparkline data={ttrData} />
                 </div>
               )}
             </CardContent>
@@ -224,7 +236,8 @@ function KpiCard({
 }) {
   const toneCls = tone === "destructive" ? "text-risk-high" : tone === "success" ? "text-risk-low" : "text-foreground"
   const trendPositive = trend && trend > 0
-  const trendCls = trendPositive ? "text-risk-low" : "text-risk-high"
+  const trendNeutral = trend === 0
+  const trendCls = trendNeutral ? "text-muted-foreground" : trendPositive ? "text-risk-low" : "text-risk-high"
 
   return (
     <Card className="shadow-abnormal">
@@ -236,7 +249,8 @@ function KpiCard({
           <div className={`text-4xl font-bold leading-none ${toneCls}`}>{value}</div>
           {trend !== undefined && (
             <div className={`flex items-center gap-1 text-xs font-semibold ${trendCls}`}>
-              {trendPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+              {!trendNeutral &&
+                (trendPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />)}
               {Math.abs(trend)}%
             </div>
           )}
@@ -399,12 +413,6 @@ function GeneratedSummary() {
 export default function DashboardPage() {
   return (
     <ErrorBoundary>
-      <div className="space-y-2 mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Shadow IT Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Discover unsanctioned apps across your organization in real-time
-        </p>
-      </div>
       <DashboardPageContent />
     </ErrorBoundary>
   )

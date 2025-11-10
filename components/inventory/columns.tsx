@@ -43,7 +43,7 @@ function RiskBadge({ level }: { level: "High" | "Medium" | "Low" }) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge className={`${colors[level]} text-xs font-semibold px-2 py-1 rounded-full shadow-sm`}>{level}</Badge>
+          <Badge className={`${colors[level]} text-xs font-medium px-2 py-1 rounded-full shadow-sm`}>{level}</Badge>
         </TooltipTrigger>
         <TooltipContent>
           <p className="text-xs">Risk based on scopes and usage patterns</p>
@@ -61,7 +61,7 @@ function StatusBadge({ status }: { status: ShadowApp["status"] }) {
     Dismissed: "bg-muted/50 text-muted-foreground/70 border-border/50",
   }
   return (
-    <Badge variant="outline" className={`${colors[status]} text-xs font-medium`}>
+    <Badge variant="outline" className={`${colors[status]} text-xs`}>
       {status}
     </Badge>
   )
@@ -137,7 +137,7 @@ function ActionsCell({ app }: { app: ShadowApp }) {
   const restrictedTooltip = "Restricted to SecOps role"
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -146,7 +146,7 @@ function ActionsCell({ app }: { app: ShadowApp }) {
               size="sm"
               onClick={handleExplain}
               aria-label={`Explain risk analysis for ${app.name}`}
-              className="text-xs font-medium focus:ring-2 focus:ring-[#47D7FF]"
+              className="text-xs"
             >
               Explain
             </Button>
@@ -162,12 +162,7 @@ function ActionsCell({ app }: { app: ShadowApp }) {
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label={`More actions for ${app.name}`}
-                  className="h-8 w-8 p-0 focus:ring-2 focus:ring-[#47D7FF]"
-                >
+                <Button variant="ghost" size="sm" aria-label={`More actions for ${app.name}`} className="h-8 w-8 p-0">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -325,12 +320,12 @@ export const columns = [
     cell: (app: ShadowApp) => (
       <div className="flex flex-wrap gap-1">
         {app.tags.slice(0, 2).map((tag) => (
-          <Badge key={tag} variant="secondary" className="text-xs font-medium bg-muted text-muted-foreground">
+          <Badge key={tag} variant="secondary" className="text-xs bg-muted text-muted-foreground">
             {tag}
           </Badge>
         ))}
         {app.tags.length > 2 && (
-          <Badge variant="secondary" className="text-xs font-medium bg-muted">
+          <Badge variant="secondary" className="text-xs bg-muted">
             +{app.tags.length - 2}
           </Badge>
         )}
