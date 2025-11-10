@@ -1,150 +1,84 @@
-"use client"
-import { useEffect, useState, useRef } from "react"
-
-function Check({ ok, label }: { ok: boolean; label: string }) {
-  return (
-    <div className="flex items-center gap-2 text-sm">
-      <span className={ok ? "text-green-400" : "text-red-400"}>{ok ? "✅" : "❌"}</span>
-      <span className="text-[var(--text-primary)]">{label}</span>
-    </div>
-  )
-}
-
-function MiniDonut() {
-  // simple SVG donut using risk colors
-  return (
-    <svg width="72" height="72" viewBox="0 0 36 36">
-      <circle cx="18" cy="18" r="16" fill="none" stroke="var(--risk-high)" strokeWidth="4" strokeDasharray="30 100" />
-      <circle
-        cx="18"
-        cy="18"
-        r="16"
-        fill="none"
-        stroke="var(--risk-medium)"
-        strokeWidth="4"
-        strokeDasharray="20 110"
-        transform="rotate(120 18 18)"
-      />
-      <circle
-        cx="18"
-        cy="18"
-        r="16"
-        fill="none"
-        stroke="var(--risk-low)"
-        strokeWidth="4"
-        strokeDasharray="10 120"
-        transform="rotate(220 18 18)"
-      />
-    </svg>
-  )
-}
+import { RbacBanner } from "@/components/dev/RbacBanner"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 
 export default function QAPage() {
-  const [results, setResults] = useState<{ label: string; ok: boolean; msg?: string }[]>([])
-  const testBtn = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    const out: { label: string; ok: boolean; msg?: string }[] = []
-
-    // 1) CSS variables present
-    const root = getComputedStyle(document.documentElement)
-    const mustVars = ["--risk-high", "--risk-medium", "--risk-low", "--surface-1", "--color-accent-500", "--focus-ring"]
-    const missing = mustVars.filter((v) => !root.getPropertyValue(v))
-    out.push({ label: "CSS variables present", ok: missing.length === 0, msg: missing.join(", ") })
-
-    // 2) Token components render (badge/button/card)
-    // We'll just render them and rely on styles; check via computed bg colors for a couple
-    const tmp = document.createElement("div")
-    tmp.className = "bg-surface-1 shadow-ab-1 rounded-md p-2"
-    document.body.appendChild(tmp)
-    const computedBg = getComputedStyle(tmp).backgroundColor
-    const okCard = !!computedBg
-    tmp.remove()
-    out.push({ label: "Card uses token surfaces & shadows", ok: okCard })
-
-    // 3) Focus ring available
-    const fr = root.getPropertyValue("--focus-ring")
-    out.push({ label: "Focus ring token available", ok: !!fr })
-
-    // 4) Charts palette (we will just assume presence of CSS vars; visual shown below)
-    out.push({ label: "Charts can access risk palette", ok: true })
-
-    // 5) RBAC banner styling token presence (color-mix uses accent; we just check accent var)
-    const accent = root.getPropertyValue("--color-accent-500")
-    out.push({ label: "RBAC banner accent token available", ok: !!accent })
-
-    setResults(out)
-  }, [])
-
-  // Manual focus check after mount
-  useEffect(() => {
-    if (testBtn.current) {
-      testBtn.current.focus()
-    }
-  }, [])
-
-  const allOk = results.every((r) => r.ok)
-
   return (
-    <main className="min-h-screen p-6 bg-surface-0 text-[var(--text-primary)] font-sans">
-      <h1 className="text-xl font-semibold mb-3">Theme Auditor</h1>
-      <p className="text-sm text-[var(--muted)] mb-4">
-        Verifies tokens, Tailwind mappings, core variants, charts palette, focus ring, and RBAC banner tokens.
-      </p>
+    <div className="container mx-auto p-6 space-y-6">
+      <RbacBanner />
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <section className="bg-surface-1 rounded-md shadow-ab-1 p-3">
-          <h2 className="text-sm font-semibold mb-2">Checks</h2>
-          <div className="space-y-1">
-            {results.map((r, i) => (
-              <Check key={i} ok={r.ok} label={r.ok ? r.label : `${r.label} — ${r.msg || "missing"}`} />
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary mb-2">QA Dashboard</h1>
+          <p className="text-text-secondary">Review and test shadow IT detections</p>
+        </div>
+        <Button variant="accent">Run New Test</Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Tests</CardTitle>
+            <CardDescription>All time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-text-primary">1,234</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Passed</CardTitle>
+            <CardDescription>Success rate</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-risk-low">98.5%</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Failed</CardTitle>
+            <CardDescription>Needs attention</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-risk-high">1.5%</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Test Results</CardTitle>
+          <CardDescription>Latest QA test executions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[
+              { name: "Email Detection Test", status: "passed", risk: "low" },
+              { name: "API Validation Test", status: "passed", risk: "low" },
+              { name: "Data Export Test", status: "warning", risk: "medium" },
+              { name: "Permission Test", status: "failed", risk: "high" },
+            ].map((test, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 bg-surface-0 rounded-lg border border-border-subtle"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="font-medium text-text-primary">{test.name}</div>
+                  <Badge
+                    variant={test.risk === "high" ? "riskHigh" : test.risk === "medium" ? "riskMedium" : "riskLow"}
+                  >
+                    {test.risk}
+                  </Badge>
+                </div>
+                <Badge variant={test.status === "failed" ? "destructive" : "default"}>{test.status}</Badge>
+              </div>
             ))}
           </div>
-          <div className="mt-3">
-            {allOk ? (
-              <div className="text-green-400 text-sm">All checks passed ✅</div>
-            ) : (
-              <div className="text-red-400 text-sm">
-                Some checks failed ❌ — fix applied by this prompt should have addressed them. Refresh if needed.
-              </div>
-            )}
-          </div>
-        </section>
-
-        <section className="bg-surface-1 rounded-md shadow-ab-1 p-3">
-          <h2 className="text-sm font-semibold mb-2">Visual Smoke Test</h2>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="badge-high">High</span>
-            <span className="badge-medium">Medium</span>
-            <span className="badge-low">Low</span>
-            <button
-              ref={testBtn}
-              className="bg-gradient-to-r from-[var(--color-accent-500)] to-[var(--color-accent-600)] text-[#031214] px-2 py-1 rounded-sm focus:outline-none focus:ring-[var(--focus-ring)]"
-            >
-              Accent Button
-            </button>
-          </div>
-          <MiniDonut />
-        </section>
-      </div>
-
-      <div className="mt-4 grid gap-2 text-sm">
-        <a className="underline" href="/dashboard">
-          Go to Dashboard
-        </a>
-        <a className="underline" href="/inventory">
-          Go to Inventory
-        </a>
-        <a className="underline" href="/review">
-          Go to Review Queue
-        </a>
-        <a className="underline" href="/audit">
-          Go to Case Audit
-        </a>
-        <a className="underline" href="/settings">
-          Go to Settings
-        </a>
-      </div>
-    </main>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

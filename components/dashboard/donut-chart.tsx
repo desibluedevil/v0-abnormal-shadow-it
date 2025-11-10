@@ -3,7 +3,7 @@
 export default function DonutChart({ high, med, low }: { high: number; med: number; low: number }) {
   const total = high + med + low
   if (total === 0) {
-    return <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">No data available</div>
+    return <div className="h-64 flex items-center justify-center text-sm text-text-muted">No data available</div>
   }
 
   // Calculate percentages
@@ -50,7 +50,7 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
   return (
     <div className="h-64 flex flex-col items-center justify-center">
       <svg width="240" height="240" viewBox="0 0 240 240" className="mb-4">
-        {segments.map((segment, i) => {
+        {segments.map((segment) => {
           const startAngle = currentAngle
           const endAngle = currentAngle + segment.angle
           currentAngle = endAngle
@@ -65,17 +65,17 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
             />
           )
         })}
-        {/* Center text - using text-primary token */}
-        <text x="120" y="115" textAnchor="middle" className="text-2xl font-semibold fill-[rgb(var(--text-primary))]">
+        {/* Center text */}
+        <text x="120" y="115" textAnchor="middle" className="text-2xl font-semibold fill-text-primary">
           {total}
         </text>
-        <text x="120" y="135" textAnchor="middle" className="text-xs fill-[rgb(var(--text-muted))]">
+        <text x="120" y="135" textAnchor="middle" className="text-xs fill-text-muted">
           Total Apps
         </text>
       </svg>
 
-      {/* Legend - using risk token classes */}
-      <div className="flex gap-4 text-xs text-[rgb(var(--text-primary))]">
+      {/* Legend */}
+      <div className="flex gap-4 text-xs text-text-primary">
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-sm bg-risk-high" />
           <span>High ({high})</span>

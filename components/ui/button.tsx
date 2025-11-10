@@ -6,12 +6,12 @@ const buttonVariants = {
   variant: {
     default: "bg-primary text-primary-foreground hover:bg-primary/90",
     destructive: "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600/20",
-    outline: "border border-neutral-300 bg-white shadow-sm hover:bg-neutral-50 hover:text-neutral-900",
+    outline: "border border-border-default bg-surface-0 shadow-sm hover:bg-surface-1 hover:text-text-primary",
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
     ghost: "hover:bg-accent hover:text-accent-foreground",
     link: "text-primary underline-offset-4 hover:underline",
     accent:
-      "bg-gradient-to-r from-[var(--color-accent-500)] to-[var(--color-accent-600)] text-[var(--surface-0)] shadow-ab-1 hover:shadow-ab-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-400)]/50 focus:ring-offset-2",
+      "bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-[var(--shadow-ab-1)] hover:shadow-[var(--shadow-ab-2)] focus:outline-none focus:ring-2 focus:ring-accent-400/50 focus:ring-offset-2",
   },
   size: {
     default: "h-9 px-4 py-2",

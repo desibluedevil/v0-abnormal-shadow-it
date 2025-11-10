@@ -7,7 +7,7 @@ interface DataPoint {
 
 export default function LineChart({ data }: { data: DataPoint[] }) {
   if (data.length === 0) {
-    return <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">No data available</div>
+    return <div className="h-64 flex items-center justify-center text-sm text-text-muted">No data available</div>
   }
 
   const maxCount = Math.max(...data.map((d) => d.count), 1)
@@ -30,18 +30,26 @@ export default function LineChart({ data }: { data: DataPoint[] }) {
   return (
     <div className="h-64">
       <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
-        {/* Grid lines - using muted grid color from tokens */}
+        {/* Grid lines */}
         {[0, 1, 2, 3, 4].map((i) => {
           const y = padding + (i * (height - padding * 2)) / 4
           return (
-            <line key={`grid-${i}`} x1={padding} y1={y} x2={width - padding} y2={y} stroke="rgba(255,255,255,0.1)" />
+            <line
+              key={`grid-${i}`}
+              x1={padding}
+              y1={y}
+              x2={width - padding}
+              y2={y}
+              stroke="rgb(var(--border-subtle))"
+              strokeOpacity="0.5"
+            />
           )
         })}
 
-        {/* Line - using abnormal.500 accent color */}
+        {/* Line */}
         <path d={linePath} fill="none" stroke="rgb(var(--color-accent-500))" strokeWidth="2" />
 
-        {/* Data points - using abnormal.500 */}
+        {/* Data points */}
         {data.map((d, i) => {
           const x = padding + i * xStep
           const y = height - padding - d.count * yScale
@@ -55,17 +63,11 @@ export default function LineChart({ data }: { data: DataPoint[] }) {
           )
         })}
 
-        {/* X-axis labels - using text-muted token */}
+        {/* X-axis labels */}
         {data.map((d, i) => {
           const x = padding + i * xStep
           return (
-            <text
-              key={`label-${i}`}
-              x={x}
-              y={height - 10}
-              textAnchor="middle"
-              className="text-xs fill-[rgb(var(--text-muted))]"
-            >
+            <text key={`label-${i}`} x={x} y={height - 10} textAnchor="middle" className="text-xs fill-text-muted">
               {d.week}
             </text>
           )
