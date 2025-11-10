@@ -1,0 +1,174 @@
+{
+  "apps": [
+    {
+      "id": "app_sketchymail",
+      "name": "SketchyMailApp",
+      "publisher": "Unknown Vendor",
+      "category": "Utilities",
+      "riskScore": 92,
+      "riskLevel": "High",
+      "scopes": [
+        { "name": "Mail.Read", "description": "Read user mail", "riskTag": "Mail" },
+        { "name": "Files.Read.All", "description": "Read files in all site collections", "riskTag": "Files" }
+      ],
+      "users": [
+        { "id": "u_cfo", "name": "Alex Rivera", "email": "alex.rivera@example.com", "dept": "Exec", "role": "CFO" }
+      ],
+      "firstSeen": "2025-11-01T08:00:00Z",
+      "lastSeen": "2025-11-07T16:10:00Z",
+      "status": "Unsanctioned",
+      "tags": ["OAuth", "Exec", "New App", "Malicious Pattern"],
+      "description": "Third-party mail helper with broad access.",
+      "rationale": {
+        "summary": "High-risk OAuth app with organization-wide read scopes, installed by an executive.",
+        "reasons": [
+          { "text": "Has access to read all organization files via Files.Read.All", "citation": 1 },
+          { "text": "Unique to CFO account — possible targeted attack", "citation": 0 },
+          { "text": "First seen this week — anomalous timing" }
+        ],
+        "sources": [
+          {
+            "title": "Internal anomaly rule: unique high-privilege grant",
+            "url": "https://example.internal/rules/unique-grant"
+          },
+          {
+            "title": "Microsoft Graph Scopes — Files.Read.All",
+            "url": "https://learn.microsoft.com/graph/permissions-reference"
+          }
+        ]
+      }
+    },
+    {
+      "id": "app_calendarsync",
+      "name": "CalendarSync",
+      "publisher": "Calendr LLC",
+      "category": "Productivity",
+      "riskScore": 84,
+      "riskLevel": "High",
+      "scopes": [{ "name": "Calendars.ReadWrite", "description": "Read and write calendars", "riskTag": "Calendar" }],
+      "users": [
+        { "id": "u_1", "name": "Priya Shah", "email": "priya.shah@example.com", "dept": "Engineering" },
+        { "id": "u_2", "name": "Miguel Santos", "email": "miguel.santos@example.com", "dept": "Sales" },
+        { "id": "u_3", "name": "Jamie Chen", "email": "jamie.chen@example.com", "dept": "Finance" }
+      ],
+      "firstSeen": "2025-10-29T11:00:00Z",
+      "lastSeen": "2025-11-06T19:30:00Z",
+      "status": "Unsanctioned",
+      "tags": ["OAuth", "New App"],
+      "description": "Cross-device calendar sync with write access.",
+      "rationale": {
+        "summary": "Elevated risk due to write permissions and growing adoption.",
+        "reasons": [
+          { "text": "Can modify calendars across multiple users" },
+          { "text": "Rapid adoption within one week" }
+        ],
+        "sources": [
+          {
+            "title": "Microsoft Graph Scopes — Calendars.ReadWrite",
+            "url": "https://learn.microsoft.com/graph/permissions-reference"
+          }
+        ]
+      }
+    },
+    {
+      "id": "app_dropbox",
+      "name": "Dropbox",
+      "publisher": "Dropbox Inc.",
+      "category": "Storage",
+      "riskScore": 55,
+      "riskLevel": "Medium",
+      "scopes": [{ "name": "Files.Read", "description": "Read user files", "riskTag": "Files" }],
+      "users": [
+        { "id": "u_4", "name": "Sara Ali", "email": "sara.ali@example.com", "dept": "Marketing" },
+        { "id": "u_5", "name": "Leo Park", "email": "leo.park@example.com", "dept": "Marketing" },
+        { "id": "u_6", "name": "Nina Patel", "email": "nina.patel@example.com", "dept": "Sales" },
+        { "id": "u_7", "name": "Ken Adams", "email": "ken.adams@example.com", "dept": "Sales" },
+        { "id": "u_8", "name": "Ivy Zhang", "email": "ivy.zhang@example.com", "dept": "Engineering" }
+      ],
+      "firstSeen": "2025-09-20T10:00:00Z",
+      "lastSeen": "2025-11-05T15:00:00Z",
+      "status": "Unsanctioned",
+      "tags": ["OAuth", "Collaboration"],
+      "description": "Cloud storage app — potential data egress.",
+      "rationale": {
+        "summary": "Moderate risk due to external storage and multi-team adoption.",
+        "reasons": [
+          { "text": "External storage enables off-tenant data movement" },
+          { "text": "Adoption across Marketing and Sales" }
+        ],
+        "sources": []
+      }
+    },
+    {
+      "id": "app_notion",
+      "name": "Notion",
+      "publisher": "Notion Labs",
+      "category": "Productivity",
+      "riskScore": 48,
+      "riskLevel": "Medium",
+      "scopes": [{ "name": "Files.Read", "description": "Read user files", "riskTag": "Files" }],
+      "users": [
+        { "id": "u_9", "name": "Olivia Turner", "email": "olivia.turner@example.com", "dept": "Marketing" },
+        { "id": "u_10", "name": "Mark Liu", "email": "mark.liu@example.com", "dept": "Marketing" }
+      ],
+      "firstSeen": "2025-07-12T09:00:00Z",
+      "lastSeen": "2025-11-04T17:00:00Z",
+      "status": "Unsanctioned",
+      "tags": ["Collaboration"],
+      "description": "Workspace tool for notes and docs.",
+      "rationale": {
+        "summary": "Medium risk collaboration tool used by Marketing.",
+        "reasons": [{ "text": "External docs repository used by multiple users" }],
+        "sources": []
+      }
+    },
+    {
+      "id": "app_zoom",
+      "name": "Zoom",
+      "publisher": "Zoom Video Communications",
+      "category": "Communication",
+      "riskScore": 15,
+      "riskLevel": "Low",
+      "scopes": [],
+      "users": [{ "id": "u_11", "name": "Brian Holt", "email": "brian.holt@example.com", "dept": "Engineering" }],
+      "firstSeen": "2025-01-01T00:00:00Z",
+      "lastSeen": "2025-11-02T10:00:00Z",
+      "status": "Sanctioned",
+      "tags": ["Approved"],
+      "description": "Video conferencing app, approved by IT.",
+      "rationale": {
+        "summary": "Known safe app, sanctioned by IT.",
+        "reasons": [{ "text": "Explicitly approved by IT policy" }],
+        "sources": []
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "case_sketchymail",
+      "appId": "app_sketchymail",
+      "priority": "P0",
+      "confidence": 0.92,
+      "impact": 0.9,
+      "tags": ["Exec", "Broad Scopes", "New App"],
+      "timeline": [
+        { "ts": "2025-11-01T08:05:00Z", "event": "Grant detected for CFO account" },
+        { "ts": "2025-11-02T09:00:00Z", "event": "Risk score computed: 92 (High)" }
+      ],
+      "recommendations": ["Revoke OAuth grant", "End active sessions", "Notify affected user", "Create tracking ticket"]
+    },
+    {
+      "id": "case_calendarsync",
+      "appId": "app_calendarsync",
+      "priority": "P1",
+      "confidence": 0.8,
+      "impact": 0.7,
+      "tags": ["Write Scope", "New App"],
+      "timeline": [
+        { "ts": "2025-10-29T11:10:00Z", "event": "First grant observed" },
+        { "ts": "2025-11-06T19:34:00Z", "event": "3 users affected" }
+      ],
+      "recommendations": ["Revoke OAuth grant for all affected users", "Notify users", "Create tracking ticket"]
+    }
+  ]
+}
