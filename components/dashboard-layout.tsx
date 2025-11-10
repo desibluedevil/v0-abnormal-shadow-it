@@ -119,9 +119,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   console.log("[v0] DashboardLayout rendered with persona:", persona)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-surface-0">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-sidebar-border bg-sidebar flex flex-col">
+      <aside className="w-64 border-r border-sidebar-border bg-surface-1 flex flex-col">
         {/* Sidebar Header */}
         <div className="p-6 border-b border-sidebar-border">
           <h1 className="text-xl font-semibold text-sidebar-foreground">Shadow IT</h1>
@@ -155,7 +155,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
+        <header className="h-16 border-b border-border bg-surface-1 text-[var(--text-primary)] flex items-center justify-between px-6">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-semibold text-card-foreground">{getPageTitle()}</h2>
           </div>

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* Import Abnormal AI design tokens */
+@import "../styles/abnormal-tokens.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -100,7 +102,25 @@
 }
 
 @theme inline {
-  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+  /* Abnormal AI token mappings for Tailwind v4 */
+  --color-abnormal-accent-400: var(--color-accent-400);
+  --color-abnormal-accent-500: var(--color-accent-500);
+  --color-abnormal-accent-600: var(--color-accent-600);
+  --color-risk-high: var(--risk-high);
+  --color-risk-medium: var(--risk-medium);
+  --color-risk-low: var(--risk-low);
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+
+  /* Shadows */
+  --shadow-ab-1: var(--elevation-1);
+  --shadow-ab-2: var(--elevation-2);
+
+  /* Standard shadcn tokens */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

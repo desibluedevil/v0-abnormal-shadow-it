@@ -1,0 +1,62 @@
+{
+  "hexToCssVar": {
+    "#ef4444": "var(--danger)",
+    "#dc2626": "var(--danger)",
+    "#f87171": "var(--danger)",
+    "#10b981": "var(--success)",
+    "#059669": "var(--success)",
+    "#34d399": "var(--success)",
+    "#f59e0b": "var(--warning)",
+    "#d97706": "var(--warning)",
+    "#fbbf24": "var(--warning)",
+    "#0b0f14": "var(--surface-0)",
+    "#0f1720": "var(--surface-1)",
+    "#111827": "var(--surface-2)",
+    "#9aa4ad": "var(--muted)",
+    "#e6eef6": "var(--text-primary)",
+    "#00f0ff": "var(--color-accent-500)",
+    "#00c2d1": "var(--color-accent-600)",
+    "#66f7ff": "var(--color-accent-400)"
+  },
+  "tailwindClassToTokenClass": {
+    "bg-red-500": "bg-danger",
+    "text-red-500": "text-danger",
+    "border-red-500": "border-danger",
+    "bg-green-500": "bg-success",
+    "text-green-500": "text-success",
+    "border-green-500": "border-success",
+    "bg-amber-500": "bg-warning",
+    "text-amber-500": "text-warning",
+    "border-amber-500": "border-warning",
+    "bg-gray-900": "bg-surface-0",
+    "bg-slate-900": "bg-surface-0",
+    "bg-gray-800": "bg-surface-1",
+    "bg-slate-800": "bg-surface-1",
+    "bg-gray-700": "bg-surface-2",
+    "bg-slate-700": "bg-surface-2",
+    "text-gray-400": "text-[var(--muted)]",
+    "text-slate-400": "text-[var(--muted)]",
+    "text-gray-300": "text-[var(--text-primary)]",
+    "text-slate-300": "text-[var(--text-primary)]",
+    "from-cyan-400": "from-[var(--color-accent-400)]",
+    "from-cyan-500": "from-[var(--color-accent-500)]",
+    "to-cyan-600": "to-[var(--color-accent-600)]",
+    "to-teal-500": "to-[var(--color-accent-500)]",
+    "ring-cyan-400": "ring-[var(--focus-ring)]",
+    "focus:ring-cyan-400": "focus:ring-[var(--focus-ring)]"
+  },
+  "shadowToVar": {
+    "0 1px 2px rgba(2,6,23,0.6)": "var(--elevation-1)",
+    "0 6px 24px rgba(2,6,23,0.5)": "var(--elevation-2)"
+  },
+  "stringToCssVar": {
+    "rgba(0, 192, 209, 0.18)": "rgba(0, 192, 209, 0.18)"
+  },
+  "notes": [
+    "This codemod prefers semantic classes you extended in Tailwind (success/danger/warning/surface-*).",
+    "Where a direct token class is unavailable, we use arbitrary values like text-[var(--muted)].",
+    "Review gradient mappings carefully; adjust as needed for your design.",
+    "shadowToVar maps box-shadow strings to elevation tokens for consistent depth hierarchy.",
+    "stringToCssVar handles rgba/hsla values; some like focus ring are left as-is for specificity."
+  ]
+}

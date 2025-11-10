@@ -1,0 +1,47 @@
+{
+  "summary": {
+    "filesChanged": 2,
+    "totalReplacements": 6,
+    "hexReplacements": 6,
+    "shadowReplacements": 0,
+    "timestamp": "2025-01-10T00:00:00.000Z"
+  },
+  "fileDetails": [
+    {
+      "filePath": "components/ui/button.tsx",
+      "replacements": [
+        {
+          "type": "hex",
+          "original": "#031214",
+          "replacement": "var(--surface-0)",
+          "line": 14,
+          "context": "accent button variant text color"
+        }
+      ]
+    },
+    {
+      "filePath": "components/ui/chart.tsx",
+      "replacements": [
+        {
+          "type": "hex",
+          "original": "#ccc",
+          "replacement": "hsl(var(--border))",
+          "line": 58,
+          "context": "recharts grid line stroke (3 instances)"
+        },
+        {
+          "type": "hex",
+          "original": "#fff",
+          "replacement": "transparent",
+          "line": 58,
+          "context": "recharts dot and sector stroke (2 instances)"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Replaced inline hex color #031214 with var(--surface-0) for dark text on accent buttons",
+    "Replaced Recharts stroke colors: #ccc → hsl(var(--border)) for grid lines, #fff → transparent for dot strokes",
+    "All hex colors now use Abnormal AI design tokens for consistent theming"
+  ]
+}

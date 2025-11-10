@@ -42,9 +42,9 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
 
   let currentAngle = 0
   const segments = [
-    { name: "High", value: high, pct: highPct, color: "#dc2626", angle: highAngle },
-    { name: "Medium", value: med, pct: medPct, color: "#facc15", angle: medAngle },
-    { name: "Low", value: low, pct: lowPct, color: "#16a34a", angle: lowAngle },
+    { name: "High", value: high, pct: highPct, color: "rgb(var(--risk-high))", angle: highAngle },
+    { name: "Medium", value: med, pct: medPct, color: "rgb(var(--risk-medium))", angle: medAngle },
+    { name: "Low", value: low, pct: lowPct, color: "rgb(var(--risk-low))", angle: lowAngle },
   ].filter((s) => s.value > 0)
 
   return (
@@ -60,32 +60,32 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
               key={segment.name}
               d={createArc(startAngle, endAngle)}
               fill={segment.color}
-              stroke="white"
+              stroke="rgb(var(--surface-1))"
               strokeWidth="2"
             />
           )
         })}
-        {/* Center text */}
-        <text x="120" y="115" textAnchor="middle" className="text-2xl font-semibold fill-neutral-900">
+        {/* Center text - using text-primary token */}
+        <text x="120" y="115" textAnchor="middle" className="text-2xl font-semibold fill-[rgb(var(--text-primary))]">
           {total}
         </text>
-        <text x="120" y="135" textAnchor="middle" className="text-xs fill-neutral-500">
+        <text x="120" y="135" textAnchor="middle" className="text-xs fill-[rgb(var(--text-muted))]">
           Total Apps
         </text>
       </svg>
 
-      {/* Legend */}
-      <div className="flex gap-4 text-xs">
+      {/* Legend - using risk token classes */}
+      <div className="flex gap-4 text-xs text-[rgb(var(--text-primary))]">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-red-600" />
+          <div className="w-3 h-3 rounded-sm bg-risk-high" />
           <span>High ({high})</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-yellow-400" />
+          <div className="w-3 h-3 rounded-sm bg-risk-medium" />
           <span>Med ({med})</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-green-600" />
+          <div className="w-3 h-3 rounded-sm bg-risk-low" />
           <span>Low ({low})</span>
         </div>
       </div>

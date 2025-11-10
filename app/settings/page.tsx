@@ -161,7 +161,7 @@ export default function SettingsPage() {
                   disabled={isReadOnly}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-red-500"></span>
+                    <span className="h-2 w-2 rounded-full bg-danger"></span>
                     High Risk Only
                   </span>
                 </Button>
@@ -172,7 +172,7 @@ export default function SettingsPage() {
                   disabled={isReadOnly}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+                    <span className="h-2 w-2 rounded-full bg-warning"></span>
                     Medium Risk & Above
                   </span>
                 </Button>
@@ -183,7 +183,7 @@ export default function SettingsPage() {
                   disabled={isReadOnly}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                    <span className="h-2 w-2 rounded-full bg-success"></span>
                     All Risk Levels
                   </span>
                 </Button>

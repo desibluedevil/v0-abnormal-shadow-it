@@ -113,11 +113,11 @@ function DashboardPageContent() {
 }
 
 function KpiCard({ title, value, tone }: { title: string; value: number | string; tone?: "destructive" | "success" }) {
-  const toneCls = tone === "destructive" ? "text-red-600" : tone === "success" ? "text-green-600" : "text-neutral-900"
+  const toneCls = tone === "destructive" ? "text-risk-high" : tone === "success" ? "text-risk-low" : "text-white"
   return (
-    <Card>
+    <Card className="kpi-card">
       <CardHeader>
-        <CardTitle className="text-sm text-neutral-500">{title}</CardTitle>
+        <CardTitle className="text-sm text-muted">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className={`text-3xl font-semibold ${toneCls}`}>{value}</div>
@@ -139,7 +139,12 @@ function CriticalAlerts() {
           High-Risk Apps Detected
         </CardTitle>
         <Link href="/inventory?risk=High">
-          <Button variant="outline" size="sm" aria-label="Review all high-risk apps in inventory">
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label="Review all high-risk apps in inventory"
+            className="focus:outline-none focus:ring-[rgb(var(--focus-ring))] bg-transparent"
+          >
             Review All
           </Button>
         </Link>
@@ -149,13 +154,18 @@ function CriticalAlerts() {
           <div key={app.id} className="flex items-center justify-between border rounded p-3">
             <div>
               <div className="font-medium">{app.name}</div>
-              <div className="text-xs text-neutral-500">
+              <div className="text-xs text-muted">
                 {app.publisher} • {app.users.length} user{app.users.length !== 1 ? "s" : ""} • First seen{" "}
                 {new Date(app.firstSeen).toLocaleDateString()}
               </div>
             </div>
             <Link href={`/inventory?focus=${app.id}`}>
-              <Button size="sm" variant="destructive" aria-label={`Review ${app.name} details`}>
+              <Button
+                size="sm"
+                variant="destructive"
+                aria-label={`Review ${app.name} details`}
+                className="focus:outline-none focus:ring-[rgb(var(--focus-ring))]"
+              >
                 Review
               </Button>
             </Link>
@@ -174,7 +184,7 @@ function GeneratedSummary() {
       <CardHeader>
         <CardTitle>Generated Summary (beta)</CardTitle>
       </CardHeader>
-      <CardContent className="text-sm text-neutral-700">
+      <CardContent className="text-sm text-[rgb(var(--text-primary))]">
         In the last reporting period, we're tracking <b>{totalUnsanctioned}</b> unsanctioned apps, including{" "}
         <b>{highRisk}</b> high-risk. Remediation actions completed: <b>{remediated}</b>. Focus this week: drive down
         high-risk OAuth grants and notify affected users.

@@ -10,6 +10,8 @@ const buttonVariants = {
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
     ghost: "hover:bg-accent hover:text-accent-foreground",
     link: "text-primary underline-offset-4 hover:underline",
+    accent:
+      "bg-gradient-to-r from-[var(--color-accent-500)] to-[var(--color-accent-600)] text-[var(--surface-0)] shadow-ab-1 hover:shadow-ab-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-400)]/50 focus:ring-offset-2",
   },
   size: {
     default: "h-9 px-4 py-2",
