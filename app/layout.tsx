@@ -43,7 +43,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className={`bg-surface-0 text-[var(--text-primary)] font-sans antialiased`}>
+      <body className={`bg-background text-foreground font-sans antialiased`}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#47D7FF] focus:text-[#0B0F12] focus:rounded-md focus:font-semibold focus:shadow-lg focus:ring-2 focus:ring-[#47D7FF] focus:ring-offset-2 focus:ring-offset-background"
+        >
+          Skip to main content
+        </a>
         <ShadowStoreProvider>
           {children}
           <Toaster />

@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useShadowStore } from "@/store/shadowStore"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Search, FileDown, FolderSearch } from "lucide-react"
 import type { RiskLevel, AppStatus } from "@/types/shadow-it"
 import { columns } from "@/components/inventory/columns"
 import { DataTable } from "@/components/inventory/data-table"
@@ -17,6 +19,7 @@ import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { ErrorBoundary } from "@/components/errors/error-boundary"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
 
 function InventoryPageContent() {
   const [isBooting, setIsBooting] = useState(true)
@@ -157,107 +160,178 @@ function InventoryPageContent() {
 
   if (isBooting) {
     return (
-      <div className="p-6 space-y-4">
+      <div className="p-6 space-y-6">
         {persona === "CISO" && <CISOBanner />}
         <TableSkeleton />
       </div>
     )
   }
 
+  const canExport = apps.length > 0
+
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-6">
       {persona === "CISO" && <CISOBanner />}
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-2xl font-semibold">Shadow App Inventory</CardTitle>
-          <div className="flex items-center gap-2">
-            <Input
-              ref={searchInputRef}
-              placeholder="Search by app, publisher, or tag…"
-              value={filters.q}
-              onChange={(e) => updateFilters({ q: e.target.value })}
-              className="w-80"
-              aria-label="Search apps by name, publisher, or tag"
-            />
-            <Button variant="outline" onClick={handleExportCsv} aria-label="Export inventory to CSV">
-              Export CSV
-            </Button>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
+          <div className="space-y-3">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Shadow App Inventory</h1>
+            <p className="text-sm text-muted-foreground">
+              Triage detected applications by risk, status, and user activity
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <InputGroup className="w-80">
+              <InputGroupAddon align="inline-start">
+                <InputGroupText>
+                  <Search className="size-4 text-[#47D7FF]" />
+                </InputGroupText>
+              </InputGroupAddon>
+              <InputGroupInput
+                ref={searchInputRef}
+                placeholder="Search by app, publisher, tag, or receipt id…"
+                value={filters.q}
+                onChange={(e) => updateFilters({ q: e.target.value })}
+                aria-label="Search apps by name, publisher, tag, or receipt id"
+              />
+            </InputGroup>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      variant="primary"
+                      onClick={handleExportCsv}
+                      disabled={!canExport}
+                      aria-label="Export inventory to CSV"
+                      className="gap-2 focus:ring-2 focus:ring-[#47D7FF]"
+                    >
+                      <FileDown className="size-4" />
+                      Export CSV
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!canExport && (
+                  <TooltipContent>
+                    <p>Export becomes available once a search returns results.</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="text-sm font-medium text-neutral-600">Risk:</div>
-              <Tabs
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="text-sm font-medium text-muted-foreground">Risk:</div>
+              <ToggleGroup
+                type="single"
                 value={filters.risk || "All"}
-                onValueChange={(v) => updateFilters({ risk: v as RiskLevel | "All" })}
+                onValueChange={(v) => v && updateFilters({ risk: v as RiskLevel | "All" })}
+                className="border border-border rounded-lg bg-muted/30"
               >
-                <TabsList>
-                  <TabsTrigger value="All" className="text-xs">
-                    All
-                  </TabsTrigger>
-                  <TabsTrigger value="High" className="text-xs">
-                    High
-                  </TabsTrigger>
-                  <TabsTrigger value="Medium" className="text-xs">
-                    Medium
-                  </TabsTrigger>
-                  <TabsTrigger value="Low" className="text-xs">
-                    Low
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+                <ToggleGroupItem
+                  value="All"
+                  aria-pressed={filters.risk === "All"}
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                >
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="High"
+                  aria-pressed={filters.risk === "High"}
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                >
+                  High
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="Medium"
+                  aria-pressed={filters.risk === "Medium"}
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                >
+                  Medium
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="Low"
+                  aria-pressed={filters.risk === "Low"}
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                >
+                  Low
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="text-sm font-medium text-neutral-600">Status:</div>
-              <Tabs
+            <div className="flex items-center gap-3">
+              <div className="text-sm font-medium text-muted-foreground">Status:</div>
+              <ToggleGroup
+                type="single"
                 value={filters.status || "All"}
-                onValueChange={(v) => updateFilters({ status: v as AppStatus | "All" })}
+                onValueChange={(v) => v && updateFilters({ status: v as AppStatus | "All" })}
+                className="border border-border rounded-lg bg-muted/30"
               >
-                <TabsList>
-                  <TabsTrigger value="All" className="text-xs">
-                    All
-                  </TabsTrigger>
-                  <TabsTrigger value="Unsanctioned" className="text-xs">
-                    Unsanctioned
-                  </TabsTrigger>
-                  <TabsTrigger value="Sanctioned" className="text-xs">
-                    Sanctioned
-                  </TabsTrigger>
-                  <TabsTrigger value="Revoked" className="text-xs">
-                    Revoked
-                  </TabsTrigger>
-                  <TabsTrigger value="Dismissed" className="text-xs">
-                    Dismissed
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+                <ToggleGroupItem
+                  value="All"
+                  aria-pressed={filters.status === "All"}
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                >
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="Unsanctioned"
+                  aria-pressed={filters.status === "Unsanctioned"}
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                >
+                  Unsanctioned
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="Sanctioned"
+                  aria-pressed={filters.status === "Sanctioned"}
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                >
+                  Sanctioned
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="Revoked"
+                  aria-pressed={filters.status === "Revoked"}
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                >
+                  Revoked
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="Dismissed"
+                  aria-pressed={filters.status === "Dismissed"}
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200 focus:ring-2 focus:ring-[#47D7FF]"
+                >
+                  Dismissed
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
           </div>
 
           {apps.length === 0 ? (
-            <div className="text-center py-16 space-y-4">
-              <div className="text-6xl">🔍</div>
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">No apps found</h3>
-                <p className="text-sm text-muted-foreground mt-1">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <FolderSearch className="w-6 h-6" />
+                </EmptyMedia>
+                <EmptyTitle>No apps found</EmptyTitle>
+                <EmptyDescription>
                   {hasActiveFilters ? "Try adjusting your filters to see more results" : "No shadow apps detected yet"}
-                </p>
-              </div>
-              <div className="flex items-center justify-center gap-3">
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
                 {hasActiveFilters && (
-                  <Button variant="outline" onClick={handleClearFilters}>
+                  <Button variant="primary" onClick={handleClearFilters}>
                     Clear Filters
                   </Button>
                 )}
                 <Link href="https://vercel.com/docs" target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost">View Documentation</Button>
+                  <Button variant="outline">View Documentation</Button>
                 </Link>
-              </div>
-            </div>
+              </EmptyContent>
+            </Empty>
           ) : (
             <DataTable columns={columns} data={apps} focusId={focusAppId || undefined} changedRowIds={changedRowIds} />
           )}

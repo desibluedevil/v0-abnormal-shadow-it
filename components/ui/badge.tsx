@@ -6,9 +6,9 @@ const badgeVariants = {
   secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
   destructive: "border-transparent bg-red-100 text-red-900 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400",
   outline: "text-foreground",
-  riskHigh: "border-transparent bg-risk-high text-white hover:bg-risk-high/90",
-  riskMedium: "border-transparent bg-risk-medium text-black hover:bg-risk-medium/90 dark:text-black",
-  riskLow: "border-transparent bg-risk-low text-white hover:bg-risk-low/90",
+  riskHigh: "border-transparent bg-red-500 text-white hover:bg-red-600",
+  riskMedium: "border-transparent bg-amber-500 text-white hover:bg-amber-600",
+  riskLow: "border-transparent bg-green-500 text-white hover:bg-green-600",
 }
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {

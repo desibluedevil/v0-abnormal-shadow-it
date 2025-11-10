@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useNotify } from "@/components/notify/notify-modal"
+import { MoreHorizontal } from "lucide-react"
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString)
@@ -33,16 +34,16 @@ function formatDate(dateString: string): string {
 }
 
 function RiskBadge({ level }: { level: "High" | "Medium" | "Low" }) {
-  const variants = {
-    High: "riskHigh" as const,
-    Medium: "riskMedium" as const,
-    Low: "riskLow" as const,
+  const colors = {
+    High: "bg-[#FF4D4D] text-white border-[#FF4D4D]",
+    Medium: "bg-[#FFB02E] text-[#0B0F12] border-[#FFB02E]",
+    Low: "bg-[#39D98A] text-[#0B0F12] border-[#39D98A]",
   }
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge variant={variants[level]}>{level}</Badge>
+          <Badge className={`${colors[level]} text-xs font-semibold px-2 py-1 rounded-full shadow-sm`}>{level}</Badge>
         </TooltipTrigger>
         <TooltipContent>
           <p className="text-xs">Risk based on scopes and usage patterns</p>
@@ -54,35 +55,15 @@ function RiskBadge({ level }: { level: "High" | "Medium" | "Low" }) {
 
 function StatusBadge({ status }: { status: ShadowApp["status"] }) {
   const colors = {
-    Unsanctioned: "bg-neutral-100 text-neutral-700 border-neutral-300",
-    Sanctioned: "bg-blue-100 text-blue-700 border-blue-300",
-    Revoked: "bg-red-100 text-red-700 border-red-300",
-    Dismissed: "bg-neutral-100 text-neutral-500 border-neutral-200",
+    Unsanctioned: "bg-muted text-muted-foreground border-border",
+    Sanctioned: "bg-blue-500/10 text-blue-500 border-blue-500/30",
+    Revoked: "bg-[#FF4D4D]/10 text-[#FF4D4D] border-[#FF4D4D]/30",
+    Dismissed: "bg-muted/50 text-muted-foreground/70 border-border/50",
   }
   return (
-    <Badge variant="outline" className={`${colors[status]} text-xs`}>
+    <Badge variant="outline" className={`${colors[status]} text-xs font-medium`}>
       {status}
     </Badge>
-  )
-}
-
-function MoreHorizontalIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="1" />
-      <circle cx="19" cy="12" r="1" />
-      <circle cx="5" cy="12" r="1" />
-    </svg>
   )
 }
 
@@ -156,16 +137,16 @@ function ActionsCell({ app }: { app: ShadowApp }) {
   const restrictedTooltip = "Restricted to SecOps role"
 
   return (
-    <div className="flex items-center gap-1.5">
-      {/* Explain - always visible primary action */}
+    <div className="flex items-center gap-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={handleExplain}
               aria-label={`Explain risk analysis for ${app.name}`}
+              className="text-xs font-medium focus:ring-2 focus:ring-[#47D7FF]"
             >
               Explain
             </Button>
@@ -176,14 +157,18 @@ function ActionsCell({ app }: { app: ShadowApp }) {
         </Tooltip>
       </TooltipProvider>
 
-      {/* Dropdown menu for all other actions - better for responsive */}
       <DropdownMenu>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" aria-label={`More actions for ${app.name}`}>
-                  <MoreHorizontalIcon />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`More actions for ${app.name}`}
+                  className="h-8 w-8 p-0 focus:ring-2 focus:ring-[#47D7FF]"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
@@ -193,7 +178,7 @@ function ActionsCell({ app }: { app: ShadowApp }) {
           </Tooltip>
         </TooltipProvider>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuLabel>More Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
           {!isCISO && (
@@ -261,16 +246,16 @@ function ActionsCell({ app }: { app: ShadowApp }) {
 export const columns = [
   {
     id: "name",
-    header: "Name",
+    header: "App",
     accessor: "name" as keyof ShadowApp,
     size: 200,
     cell: (app: ShadowApp) => {
       return (
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-xs font-semibold text-neutral-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-muted text-xs font-semibold text-muted-foreground">
             {app.name.charAt(0)}
           </div>
-          <span className="font-semibold text-neutral-900">{app.name}</span>
+          <span className="font-semibold text-foreground">{app.name}</span>
         </div>
       )
     },
@@ -281,7 +266,7 @@ export const columns = [
     accessor: "publisher" as keyof ShadowApp,
     size: 150,
     className: "hidden lg:table-cell",
-    cell: (app: ShadowApp) => <span className="text-sm text-neutral-600">{app.publisher}</span>,
+    cell: (app: ShadowApp) => <span className="text-sm text-muted-foreground">{app.publisher}</span>,
   },
   {
     id: "riskLevel",
@@ -310,7 +295,7 @@ export const columns = [
     size: 120,
     className: "hidden lg:table-cell",
     cell: (app: ShadowApp) => (
-      <span className="whitespace-nowrap font-mono text-xs text-neutral-600">{formatDate(app.firstSeen)}</span>
+      <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">{formatDate(app.firstSeen)}</span>
     ),
   },
   {
@@ -320,7 +305,7 @@ export const columns = [
     size: 120,
     className: "hidden xl:table-cell",
     cell: (app: ShadowApp) => (
-      <span className="whitespace-nowrap font-mono text-xs text-neutral-600">{formatDate(app.lastSeen)}</span>
+      <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">{formatDate(app.lastSeen)}</span>
     ),
   },
   {
@@ -340,12 +325,12 @@ export const columns = [
     cell: (app: ShadowApp) => (
       <div className="flex flex-wrap gap-1">
         {app.tags.slice(0, 2).map((tag) => (
-          <Badge key={tag} variant="secondary" className="text-xs bg-neutral-100 text-neutral-700">
+          <Badge key={tag} variant="secondary" className="text-xs font-medium bg-muted text-muted-foreground">
             {tag}
           </Badge>
         ))}
         {app.tags.length > 2 && (
-          <Badge variant="secondary" className="text-xs bg-neutral-100">
+          <Badge variant="secondary" className="text-xs font-medium bg-muted">
             +{app.tags.length - 2}
           </Badge>
         )}

@@ -1,13 +1,14 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo, memo } from "react"
 import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ChevronDown, ChevronRight, FolderSearch } from "lucide-react"
 import type { ShadowApp } from "@/types/shadow-it"
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
 
 interface Column {
   id: string
@@ -17,7 +18,7 @@ interface Column {
   size?: number
   sortable?: boolean
   sortingFn?: (a: ShadowApp, b: ShadowApp) => number
-  className?: string // Added className prop for responsive hiding
+  className?: string
 }
 
 interface DataTableProps {
@@ -27,12 +28,116 @@ interface DataTableProps {
   changedRowIds?: Set<string>
 }
 
+const MemoizedTableRow = memo(function InventoryTableRow({
+  row,
+  columns,
+  isFocused,
+  isKeyboardFocused,
+  focusRowRef,
+  changedRowIds,
+  expandedRows,
+  onRowClick,
+  onToggleExpansion,
+}: {
+  row: ShadowApp
+  columns: Column[]
+  isFocused: boolean
+  isKeyboardFocused: boolean
+  focusRowRef: React.RefObject<HTMLTableRowElement> | null
+  changedRowIds: Set<string>
+  expandedRows: Set<string>
+  onRowClick: (appId: string, e: React.MouseEvent) => void
+  onToggleExpansion: (rowId: string) => void
+}) {
+  if (!row || !row.id || typeof row.status === "undefined") {
+    console.log("[v0] MemoizedTableRow received invalid row:", row)
+    return null
+  }
+
+  const isExpanded = expandedRows.has(row.id)
+  const isRevoked = row.status === "Revoked"
+  const hasChanged = changedRowIds.has(row.id)
+
+  return (
+    <>
+      <TableRow
+        ref={focusRowRef}
+        onClick={(e) => onRowClick(row.id, e)}
+        className={`
+          cursor-pointer transition-all
+          ${isFocused ? "bg-accent/20 ring-2 ring-primary/50" : "hover:bg-muted/40"}
+          ${isKeyboardFocused ? "ring-2 ring-cyan-500/50" : ""}
+          ${isRevoked ? "opacity-50" : ""}
+          ${hasChanged ? "animate-pulse-once bg-cyan-500/10" : ""}
+        `}
+        tabIndex={0}
+        data-app-id={row.id}
+      >
+        <TableCell className="md:hidden">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleExpansion(row.id)
+            }}
+            aria-label={isExpanded ? "Collapse row" : "Expand row"}
+            aria-expanded={isExpanded}
+          >
+            {isExpanded ? <ChevronDown className="h-4 w-4 text-[#47D7FF]" /> : <ChevronRight className="h-4 w-4" />}
+          </Button>
+        </TableCell>
+        {columns.map((column) => (
+          <TableCell
+            key={column.id}
+            className={`px-3 py-2 text-sm whitespace-nowrap ${column.className || ""}`}
+            style={{
+              width: column.size ? `${column.size}px` : undefined,
+              minWidth: column.size ? `${column.size}px` : undefined,
+            }}
+          >
+            {column.cell(row)}
+          </TableCell>
+        ))}
+      </TableRow>
+      {isExpanded && (
+        <TableRow className="md:hidden bg-muted/30">
+          <TableCell colSpan={columns.length + 1} className="p-4">
+            <div className="space-y-2">
+              {getRowDetails(row).map((detail, idx) => (
+                <div key={idx} className="flex justify-between text-sm">
+                  <span className="font-medium text-muted-foreground">{detail.label}:</span>
+                  <span className="text-foreground">{detail.value}</span>
+                </div>
+              ))}
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
+    </>
+  )
+})
+
+function getRowDetails(row: ShadowApp) {
+  return [
+    { label: "Publisher", value: row.publisher },
+    { label: "Users", value: row.users.length.toString() },
+    { label: "First Seen", value: new Date(row.firstSeen).toLocaleDateString() },
+    { label: "Last Seen", value: new Date(row.lastSeen).toLocaleDateString() },
+    { label: "Status", value: row.status },
+    { label: "Tags", value: row.tags.slice(0, 3).join(", ") + (row.tags.length > 3 ? "..." : "") },
+  ]
+}
+
 export function DataTable({ columns, data, focusId, changedRowIds = new Set() }: DataTableProps) {
   const [sorting, setSorting] = useState<{ column: string; direction: "asc" | "desc" } | null>(null)
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize, setPageSize] = useState(25)
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [focusedRowIndex, setFocusedRowIndex] = useState<number>(-1)
 
   const focusRowRef = useRef<HTMLTableRowElement>(null)
+  const tableBodyRef = useRef<HTMLTableSectionElement>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -41,13 +146,28 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
     }
   }, [focusId])
 
+  const validData = useMemo(() => {
+    console.log("[v0] DataTable received data:", data?.length || 0, "items")
+    if (!Array.isArray(data)) {
+      console.log("[v0] Data is not an array:", data)
+      return []
+    }
+    return data.filter((item) => {
+      if (!item || !item.id || typeof item.status === "undefined") {
+        console.log("[v0] Filtering out invalid item:", item)
+        return false
+      }
+      return true
+    })
+  }, [data])
+
   const sortedData = useMemo(() => {
-    if (!sorting) return data
+    if (!sorting) return validData
 
     const column = columns.find((c) => c.id === sorting.column)
-    if (!column) return data
+    if (!column) return validData
 
-    return [...data].sort((a, b) => {
+    return [...validData].sort((a, b) => {
       let compareResult = 0
 
       if (column.sortingFn) {
@@ -67,7 +187,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
 
       return sorting.direction === "asc" ? compareResult : -compareResult
     })
-  }, [data, sorting, columns])
+  }, [validData, sorting, columns])
 
   const paginatedData = useMemo(() => {
     const start = pageIndex * pageSize
@@ -98,13 +218,62 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
     router.push(`/inventory?focus=${appId}`)
   }
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle keyboard navigation when table is focused
+      if (!tableBodyRef.current?.contains(document.activeElement)) return
+
+      const maxIndex = paginatedData.length - 1
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault()
+          setFocusedRowIndex((prev) => Math.min(prev + 1, maxIndex))
+          break
+        case "ArrowUp":
+          e.preventDefault()
+          setFocusedRowIndex((prev) => Math.max(prev - 1, 0))
+          break
+        case "Enter":
+          e.preventDefault()
+          if (focusedRowIndex >= 0 && focusedRowIndex <= maxIndex) {
+            const row = paginatedData[focusedRowIndex]
+            toggleRowExpansion(row.id)
+          }
+          break
+        case "Escape":
+          e.preventDefault()
+          setFocusedRowIndex(-1)
+          break
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [focusedRowIndex, paginatedData])
+
+  const toggleRowExpansion = (rowId: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev)
+      if (next.has(rowId)) {
+        next.delete(rowId)
+      } else {
+        next.add(rowId)
+      }
+      return next
+    })
+  }
+
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-neutral-200 bg-white">
+      <div className="rounded-lg border border-border bg-card shadow-[0_2px_16px_rgba(0,0,0,0.35)]">
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader className="sticky top-0 z-10 bg-white border-b border-neutral-200">
+            <TableHeader className="sticky top-0 z-10 bg-card border-b border-border">
               <TableRow className="hover:bg-transparent">
+                <TableHead className="w-12 md:hidden">
+                  <span className="sr-only">Expand</span>
+                </TableHead>
                 {columns.map((column) => (
                   <TableHead
                     key={column.id}
@@ -112,12 +281,12 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
                       width: column.size ? `${column.size}px` : undefined,
                       minWidth: column.size ? `${column.size}px` : undefined,
                     }}
-                    className={`h-11 px-3 text-xs font-semibold text-neutral-700 uppercase tracking-wide whitespace-nowrap ${column.className || ""}`}
+                    className={`h-11 px-3 text-xs font-semibold text-foreground uppercase tracking-wide whitespace-nowrap ${column.className || ""}`}
                   >
                     <div
                       className={
                         column.sortable !== false
-                          ? "cursor-pointer select-none flex items-center gap-2 hover:text-neutral-900"
+                          ? "cursor-pointer select-none flex items-center gap-2 hover:text-[#47D7FF] transition-colors"
                           : ""
                       }
                       onClick={() => column.sortable !== false && handleSort(column.id)}
@@ -129,44 +298,38 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
                 ))}
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody ref={tableBodyRef}>
               {paginatedData.length > 0 ? (
-                paginatedData.map((row) => {
+                paginatedData.map((row, index) => {
                   const isFocused = focusId === row.id
-                  const isRevoked = row.status === "Revoked"
-                  const isChanged = changedRowIds.has(row.id)
+                  const isKeyboardFocused = focusedRowIndex === index
                   return (
-                    <TableRow
+                    <MemoizedTableRow
                       key={row.id}
-                      ref={isFocused ? focusRowRef : null}
-                      onClick={(e) => handleRowClick(row.id, e)}
-                      className={`h-12 hover:bg-neutral-50 transition-colors cursor-pointer ${
-                        isFocused ? "ring-2 ring-indigo-400 ring-inset bg-indigo-50" : ""
-                      } ${isRevoked ? "text-neutral-400" : ""} ${isChanged ? "animate-pulse bg-green-50" : ""}`}
-                    >
-                      {columns.map((column) => (
-                        <TableCell
-                          key={column.id}
-                          className={`px-3 py-2 text-sm whitespace-nowrap ${column.className || ""}`}
-                          style={{
-                            width: column.size ? `${column.size}px` : undefined,
-                            minWidth: column.size ? `${column.size}px` : undefined,
-                          }}
-                        >
-                          {column.cell(row)}
-                        </TableCell>
-                      ))}
-                    </TableRow>
+                      row={row}
+                      columns={columns}
+                      isFocused={isFocused}
+                      isKeyboardFocused={isKeyboardFocused}
+                      focusRowRef={isFocused ? focusRowRef : null}
+                      changedRowIds={changedRowIds}
+                      expandedRows={expandedRows}
+                      onRowClick={handleRowClick}
+                      onToggleExpansion={toggleRowExpansion}
+                    />
                   )
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-48 text-center">
-                    <div className="flex flex-col items-center justify-center gap-2 text-neutral-500">
-                      <div className="text-4xl">📭</div>
-                      <p className="text-sm font-medium">No apps found</p>
-                      <p className="text-xs">Try adjusting your filters or search query</p>
-                    </div>
+                  <TableCell colSpan={columns.length + 1} className="h-48">
+                    <Empty className="border-0 bg-transparent">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <FolderSearch className="w-6 h-6" />
+                        </EmptyMedia>
+                        <EmptyTitle>No apps found</EmptyTitle>
+                        <EmptyDescription>Try adjusting your filters or search query</EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
                   </TableCell>
                 </TableRow>
               )}
@@ -177,9 +340,9 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
 
       <div className="flex items-center justify-between px-2">
         <div className="flex items-center gap-2">
-          <p className="text-sm text-neutral-700">Rows per page:</p>
+          <p className="text-sm text-muted-foreground">Rows per page:</p>
           <Select value={`${pageSize}`} onValueChange={(value) => setPageSize(Number(value))}>
-            <SelectTrigger className="h-8 w-[70px]">
+            <SelectTrigger className="h-8 w-[70px] focus:ring-2 focus:ring-[#47D7FF]">
               <SelectValue placeholder={pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
@@ -192,8 +355,8 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
           </Select>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="text-sm text-neutral-700">
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-muted-foreground">
             Page {pageIndex + 1} of {pageCount || 1}
           </div>
           <div className="flex items-center gap-2">
@@ -202,7 +365,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
               size="sm"
               onClick={() => setPageIndex((prev) => prev - 1)}
               disabled={pageIndex === 0}
-              className="focus:ring-2 focus:ring-indigo-400"
+              className="focus:ring-2 focus:ring-[#47D7FF]"
             >
               Previous
             </Button>
@@ -211,7 +374,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
               size="sm"
               onClick={() => setPageIndex((prev) => prev + 1)}
               disabled={pageIndex >= pageCount - 1}
-              className="focus:ring-2 focus:ring-indigo-400"
+              className="focus:ring-2 focus:ring-[#47D7FF]"
             >
               Next
             </Button>

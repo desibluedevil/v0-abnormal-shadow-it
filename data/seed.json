@@ -14,8 +14,8 @@
       "users": [
         { "id": "u_cfo", "name": "Alex Rivera", "email": "alex.rivera@example.com", "dept": "Exec", "role": "CFO" }
       ],
-      "firstSeen": "2025-11-01T08:00:00Z",
-      "lastSeen": "2025-11-07T16:10:00Z",
+      "firstSeen": "2025-01-05T08:15:23Z",
+      "lastSeen": "2025-01-09T16:42:11Z",
       "status": "Unsanctioned",
       "tags": ["OAuth", "Exec", "New App", "Malicious Pattern"],
       "description": "Third-party mail helper with broad access.",
@@ -49,10 +49,14 @@
       "users": [
         { "id": "u_1", "name": "Priya Shah", "email": "priya.shah@example.com", "dept": "Engineering" },
         { "id": "u_2", "name": "Miguel Santos", "email": "miguel.santos@example.com", "dept": "Sales" },
-        { "id": "u_3", "name": "Jamie Chen", "email": "jamie.chen@example.com", "dept": "Finance" }
+        { "id": "u_3", "name": "Jamie Chen", "email": "jamie.chen@example.com", "dept": "Finance" },
+        { "id": "u_12", "name": "Taylor Kim", "email": "taylor.kim@example.com", "dept": "Marketing" },
+        { "id": "u_13", "name": "Jordan Lee", "email": "jordan.lee@example.com", "dept": "Sales" },
+        { "id": "u_14", "name": "Casey Morgan", "email": "casey.morgan@example.com", "dept": "Engineering" },
+        { "id": "u_15", "name": "Riley Brooks", "email": "riley.brooks@example.com", "dept": "Finance" }
       ],
-      "firstSeen": "2025-10-29T11:00:00Z",
-      "lastSeen": "2025-11-06T19:30:00Z",
+      "firstSeen": "2024-12-28T11:23:45Z",
+      "lastSeen": "2025-01-08T19:17:33Z",
       "status": "Unsanctioned",
       "tags": ["OAuth", "New App"],
       "description": "Cross-device calendar sync with write access.",
@@ -83,10 +87,20 @@
         { "id": "u_5", "name": "Leo Park", "email": "leo.park@example.com", "dept": "Marketing" },
         { "id": "u_6", "name": "Nina Patel", "email": "nina.patel@example.com", "dept": "Sales" },
         { "id": "u_7", "name": "Ken Adams", "email": "ken.adams@example.com", "dept": "Sales" },
-        { "id": "u_8", "name": "Ivy Zhang", "email": "ivy.zhang@example.com", "dept": "Engineering" }
+        { "id": "u_8", "name": "Ivy Zhang", "email": "ivy.zhang@example.com", "dept": "Engineering" },
+        { "id": "u_16", "name": "Alex Martinez", "email": "alex.martinez@example.com", "dept": "Marketing" },
+        { "id": "u_17", "name": "Sam Rivera", "email": "sam.rivera@example.com", "dept": "Sales" },
+        { "id": "u_18", "name": "Dana Wilson", "email": "dana.wilson@example.com", "dept": "Marketing" },
+        { "id": "u_19", "name": "Morgan Bailey", "email": "morgan.bailey@example.com", "dept": "Engineering" },
+        { "id": "u_20", "name": "Quinn Foster", "email": "quinn.foster@example.com", "dept": "Sales" },
+        { "id": "u_21", "name": "Avery Cooper", "email": "avery.cooper@example.com", "dept": "Marketing" },
+        { "id": "u_22", "name": "Blake Turner", "email": "blake.turner@example.com", "dept": "Sales" },
+        { "id": "u_23", "name": "Cameron Hayes", "email": "cameron.hayes@example.com", "dept": "Engineering" },
+        { "id": "u_24", "name": "Drew Phillips", "email": "drew.phillips@example.com", "dept": "Marketing" },
+        { "id": "u_25", "name": "Ellis Campbell", "email": "ellis.campbell@example.com", "dept": "Sales" }
       ],
-      "firstSeen": "2025-09-20T10:00:00Z",
-      "lastSeen": "2025-11-05T15:00:00Z",
+      "firstSeen": "2024-09-24T10:08:17Z",
+      "lastSeen": "2025-01-07T15:32:48Z",
       "status": "Unsanctioned",
       "tags": ["OAuth", "Collaboration"],
       "description": "Cloud storage app — potential data egress.",
@@ -109,10 +123,17 @@
       "scopes": [{ "name": "Files.Read", "description": "Read user files", "riskTag": "Files" }],
       "users": [
         { "id": "u_9", "name": "Olivia Turner", "email": "olivia.turner@example.com", "dept": "Marketing" },
-        { "id": "u_10", "name": "Mark Liu", "email": "mark.liu@example.com", "dept": "Marketing" }
+        { "id": "u_10", "name": "Mark Liu", "email": "mark.liu@example.com", "dept": "Marketing" },
+        { "id": "u_26", "name": "Finley Reed", "email": "finley.reed@example.com", "dept": "Marketing" },
+        { "id": "u_27", "name": "Harper Stone", "email": "harper.stone@example.com", "dept": "Marketing" },
+        { "id": "u_28", "name": "Indigo Price", "email": "indigo.price@example.com", "dept": "Engineering" },
+        { "id": "u_29", "name": "Jade Bennett", "email": "jade.bennett@example.com", "dept": "Marketing" },
+        { "id": "u_30", "name": "Kai Sullivan", "email": "kai.sullivan@example.com", "dept": "Marketing" },
+        { "id": "u_31", "name": "Lane Fisher", "email": "lane.fisher@example.com", "dept": "Sales" },
+        { "id": "u_32", "name": "Mari Webb", "email": "mari.webb@example.com", "dept": "Marketing" }
       ],
-      "firstSeen": "2025-07-12T09:00:00Z",
-      "lastSeen": "2025-11-04T17:00:00Z",
+      "firstSeen": "2024-07-15T09:34:52Z",
+      "lastSeen": "2025-01-06T17:21:09Z",
       "status": "Unsanctioned",
       "tags": ["Collaboration"],
       "description": "Workspace tool for notes and docs.",
@@ -130,9 +151,32 @@
       "riskScore": 15,
       "riskLevel": "Low",
       "scopes": [],
-      "users": [{ "id": "u_11", "name": "Brian Holt", "email": "brian.holt@example.com", "dept": "Engineering" }],
-      "firstSeen": "2025-01-01T00:00:00Z",
-      "lastSeen": "2025-11-02T10:00:00Z",
+      "users": [
+        { "id": "u_11", "name": "Brian Holt", "email": "brian.holt@example.com", "dept": "Engineering" },
+        { "id": "u_33", "name": "Noel Carter", "email": "noel.carter@example.com", "dept": "Sales" },
+        { "id": "u_34", "name": "Ocean James", "email": "ocean.james@example.com", "dept": "Marketing" },
+        { "id": "u_35", "name": "Parker Ross", "email": "parker.ross@example.com", "dept": "Finance" },
+        { "id": "u_36", "name": "Quinn Davis", "email": "quinn.davis@example.com", "dept": "HR" },
+        { "id": "u_37", "name": "Reese Bell", "email": "reese.bell@example.com", "dept": "Engineering" },
+        { "id": "u_38", "name": "Sage Murphy", "email": "sage.murphy@example.com", "dept": "Sales" },
+        { "id": "u_39", "name": "Tate Collins", "email": "tate.collins@example.com", "dept": "Marketing" },
+        { "id": "u_40", "name": "Uma Stewart", "email": "uma.stewart@example.com", "dept": "Engineering" },
+        { "id": "u_41", "name": "Val Morris", "email": "val.morris@example.com", "dept": "Finance" },
+        { "id": "u_42", "name": "West Rogers", "email": "west.rogers@example.com", "dept": "Sales" },
+        { "id": "u_43", "name": "Xen Powell", "email": "xen.powell@example.com", "dept": "HR" },
+        { "id": "u_44", "name": "Yael Cruz", "email": "yael.cruz@example.com", "dept": "Marketing" },
+        { "id": "u_45", "name": "Zion Gray", "email": "zion.gray@example.com", "dept": "Engineering" },
+        { "id": "u_46", "name": "Ash Perry", "email": "ash.perry@example.com", "dept": "Sales" },
+        { "id": "u_47", "name": "Bay Russell", "email": "bay.russell@example.com", "dept": "Finance" },
+        { "id": "u_48", "name": "Cam Hughes", "email": "cam.hughes@example.com", "dept": "Marketing" },
+        { "id": "u_49", "name": "Dev Flores", "email": "dev.flores@example.com", "dept": "Engineering" },
+        { "id": "u_50", "name": "Echo Sanders", "email": "echo.sanders@example.com", "dept": "HR" },
+        { "id": "u_51", "name": "Fox Jenkins", "email": "fox.jenkins@example.com", "dept": "Sales" },
+        { "id": "u_52", "name": "Gene Patterson", "email": "gene.patterson@example.com", "dept": "Marketing" },
+        { "id": "u_53", "name": "Hollis Bryant", "email": "hollis.bryant@example.com", "dept": "Engineering" }
+      ],
+      "firstSeen": "2024-01-08T00:12:34Z",
+      "lastSeen": "2025-01-04T10:45:18Z",
       "status": "Sanctioned",
       "tags": ["Approved"],
       "description": "Video conferencing app, approved by IT.",
@@ -152,8 +196,8 @@
       "impact": 0.9,
       "tags": ["Exec", "Broad Scopes", "New App"],
       "timeline": [
-        { "ts": "2025-11-01T08:05:00Z", "event": "Grant detected for CFO account" },
-        { "ts": "2025-11-02T09:00:00Z", "event": "Risk score computed: 92 (High)" }
+        { "ts": "2025-01-05T08:17:15Z", "event": "Grant detected for CFO account" },
+        { "ts": "2025-01-06T09:23:41Z", "event": "Risk score computed: 92 (High)" }
       ],
       "recommendations": ["Revoke OAuth grant", "End active sessions", "Notify affected user", "Create tracking ticket"]
     },
@@ -165,8 +209,8 @@
       "impact": 0.7,
       "tags": ["Write Scope", "New App"],
       "timeline": [
-        { "ts": "2025-10-29T11:10:00Z", "event": "First grant observed" },
-        { "ts": "2025-11-06T19:34:00Z", "event": "3 users affected" }
+        { "ts": "2024-12-28T11:24:52Z", "event": "First grant observed" },
+        { "ts": "2025-01-08T19:18:06Z", "event": "7 users affected" }
       ],
       "recommendations": ["Revoke OAuth grant for all affected users", "Notify users", "Create tracking ticket"]
     }

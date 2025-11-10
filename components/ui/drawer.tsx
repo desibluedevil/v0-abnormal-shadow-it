@@ -1,10 +1,21 @@
 "use client"
 
-import type * as React from "react"
+import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { cn } from "@/lib/utils"
 
 function Drawer({ open, onOpenChange, ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
+  React.useEffect(() => {
+    if (open) {
+      document.body.classList.add("scroll-lock")
+    } else {
+      document.body.classList.remove("scroll-lock")
+    }
+    return () => {
+      document.body.classList.remove("scroll-lock")
+    }
+  }, [open])
+
   return <DialogPrimitive.Root open={open} onOpenChange={onOpenChange} {...props} />
 }
 
@@ -41,8 +52,8 @@ function DrawerContent({ className, children, ...props }: React.ComponentProps<t
         className={cn(
           "fixed z-50 flex h-full w-full max-w-xl flex-col bg-white shadow-2xl",
           "right-0 inset-y-0 border-l-2",
-          "data-[state=open]:animate-in data-[state=closed]:animate-out",
-          "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+          "data-[state=open]:drawer-slide data-[state=closed]:animate-out",
+          "data-[state=closed]:slide-out-to-right",
           "duration-300",
           className,
         )}

@@ -5,13 +5,16 @@ import { cn } from "@/lib/utils"
 const buttonVariants = {
   variant: {
     default: "bg-primary text-primary-foreground hover:bg-primary/90",
-    destructive: "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600/20",
-    outline: "border border-border-default bg-surface-0 shadow-sm hover:bg-surface-1 hover:text-text-primary",
-    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+    primary:
+      "bg-accent-cyan text-background shadow-lg hover:shadow-[0_0_16px_rgba(71,215,255,0.4)] focus:outline-none focus:ring-2 focus:ring-accent-cyan/50 focus:ring-offset-2 transition-all duration-200",
+    secondary: "bg-muted text-foreground hover:bg-muted/80 shadow-sm transition-all duration-200",
+    destructive:
+      "bg-risk-high text-white shadow-lg hover:shadow-[0_0_16px_rgba(255,77,77,0.4)] focus:outline-none focus:ring-2 focus:ring-risk-high/50 focus:ring-offset-2 transition-all duration-200",
+    outline: "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
     ghost: "hover:bg-accent hover:text-accent-foreground",
     link: "text-primary underline-offset-4 hover:underline",
     accent:
-      "bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-[var(--shadow-ab-1)] hover:shadow-[var(--shadow-ab-2)] focus:outline-none focus:ring-2 focus:ring-accent-400/50 focus:ring-offset-2",
+      "bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:ring-offset-2",
   },
   size: {
     default: "h-9 px-4 py-2",
@@ -41,6 +44,7 @@ function Button({ className, variant = "default", size = "default", asChild = fa
       data-slot="button"
       className={cn(
         "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        "btn-scale focus-glow",
         variantClass,
         sizeClass,
         className,

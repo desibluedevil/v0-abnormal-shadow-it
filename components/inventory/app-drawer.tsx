@@ -1,8 +1,22 @@
 "use client"
 
-import { useEffect, useMemo, useState, useRef } from "react"
+import { useEffect, useMemo, useState, useRef, memo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import {
+  X,
+  Shield,
+  Users,
+  Calendar,
+  AlertTriangle,
+  CheckCircle2,
+  Ban,
+  Mail,
+  FileText,
+  Copy,
+  Lock,
+  Sparkles,
+} from "lucide-react"
 import { useShadowStore } from "@/store/shadowStore"
 import type { ShadowApp, Scope } from "@/types/shadow-it"
 import { useNotify } from "@/components/notify/notify-modal"
@@ -26,15 +40,27 @@ function groupScopes(scopes: Scope[]) {
   return groups
 }
 
-function RiskPill({ level }: { level: ShadowApp["riskLevel"] }) {
+const RiskPill = memo(function RiskPill({ level }: { level: ShadowApp["riskLevel"] }) {
   const cls =
     level === "High"
-      ? "bg-red-100 text-red-700 border border-red-300"
+      ? "bg-[#FF4D4D] text-white border border-[#FF4D4D]"
       : level === "Medium"
-        ? "bg-yellow-100 text-yellow-700 border border-yellow-300"
-        : "bg-green-100 text-green-700 border border-green-300"
-  return <span className={`px-2 py-1 rounded text-xs font-medium ${cls}`}>{level}</span>
-}
+        ? "bg-[#FFB02E] text-white border border-[#FFB02E]"
+        : "bg-[#39D98A] text-white border border-[#39D98A]"
+  return <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${cls} shadow-sm`}>{level} Risk</span>
+})
+
+const StatusPill = memo(function StatusPill({ status }: { status: ShadowApp["status"] }) {
+  const cls =
+    status === "Revoked"
+      ? "bg-[#FF4D4D]/10 text-[#FF4D4D] border border-[#FF4D4D]/30"
+      : status === "Sanctioned"
+        ? "bg-[#39D98A]/10 text-[#39D98A] border border-[#39D98A]/30"
+        : status === "Dismissed"
+          ? "bg-muted text-muted-foreground border border-border"
+          : "bg-[#FFB02E]/10 text-[#FFB02E] border border-[#FFB02E]/30"
+  return <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${cls}`}>{status}</span>
+})
 
 export default function AppDrawer() {
   const params = useSearchParams()
@@ -238,179 +264,246 @@ export default function AppDrawer() {
 
   const scopeGroups = groupScopes(app.scopes)
 
+  const copyEmails = () => {
+    const emails = app.users.map((u) => u.email).join(", ")
+    navigator.clipboard.writeText(emails)
+    toast({
+      title: "Emails copied",
+      description: `Copied ${app.users.length} email addresses to clipboard`,
+    })
+  }
+
   return (
     <Drawer open={localOpen} onOpenChange={handleOpenChange}>
-      <DrawerContent className="h-full p-0 bg-white max-w-xl">
+      <DrawerContent className="h-full p-0 bg-[#0B0F12] max-w-2xl border-l border-[#47D7FF]/20">
         {isCISO && (
           <div className="px-6 pt-4">
-            <Alert className="border-blue-300 bg-blue-50" data-testid="ciso-banner-drawer">
-              <AlertDescription className="text-blue-900 font-medium text-sm">
-                📋 Read-only view (CISO). Only SecOps can perform actions.
+            <Alert className="border-[#47D7FF]/30 bg-[#47D7FF]/10" data-testid="ciso-banner-drawer">
+              <AlertDescription className="text-[#47D7FF] font-medium text-sm flex items-center gap-2">
+                <Lock className="h-4 w-4" />
+                Read-only view (CISO). Only SecOps can perform actions.
               </AlertDescription>
             </Alert>
           </div>
         )}
 
-        <DrawerHeader className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b shadow-sm px-6 py-4">
+        <DrawerHeader className="sticky top-0 z-10 bg-[#0B0F12]/95 backdrop-blur-md border-b border-[#47D7FF]/20 shadow-[0_2px_16px_rgba(0,0,0,0.35)] px-6 py-4">
           <div className="flex items-start justify-between gap-4 w-full">
-            <div className="flex-1 min-w-0">
-              <DrawerTitle
-                ref={titleRef}
-                tabIndex={-1}
-                data-testid="drawer-title"
-                className="text-xl font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-              >
-                {app.name}
-              </DrawerTitle>
-              <div className="mt-1 text-xs text-neutral-500">
-                {app.publisher} • {app.category}
-              </div>
-              <div className="mt-2 flex items-center gap-2 flex-wrap">
-                <RiskPill level={app.riskLevel} />
-                <Badge variant="secondary" className="text-xs">
-                  {app.status}
-                </Badge>
-              </div>
-            </div>
-            <div className="flex-shrink-0 flex items-start gap-2">
+            <div className="flex items-start gap-4 flex-1 min-w-0">
               <div
-                className="w-10 h-10 bg-gray-200 rounded border border-gray-300 flex items-center justify-center text-gray-500 text-xs"
+                className="w-12 h-12 bg-[#12171C] rounded-lg border border-[#47D7FF]/30 flex items-center justify-center text-[#47D7FF] text-lg font-bold flex-shrink-0 shadow-[0_0_12px_rgba(71,215,255,0.15)]"
                 role="img"
                 aria-label={`${app.name} logo`}
               >
-                Logo
+                {app.name.substring(0, 2).toUpperCase()}
               </div>
-              <DrawerClose asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-full hover:bg-gray-100"
-                  aria-label="Close drawer"
-                  type="button"
+
+              <div className="flex-1 min-w-0">
+                <DrawerTitle
+                  ref={titleRef}
+                  tabIndex={-1}
+                  data-testid="drawer-title"
+                  className="text-xl font-bold text-[#E9EEF2] focus:outline-none focus:ring-2 focus:ring-[#47D7FF] focus:ring-offset-2 focus:ring-offset-[#0B0F12] rounded mb-1"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-gray-700 pointer-events-none"
-                    aria-hidden="true"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </Button>
-              </DrawerClose>
+                  {app.name}
+                </DrawerTitle>
+                <div className="text-sm text-[#A7B0B8] mb-3">
+                  {app.publisher} • {app.category}
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <RiskPill level={app.riskLevel} />
+                  <StatusPill status={app.status} />
+                </div>
+              </div>
             </div>
+
+            <DrawerClose asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-lg hover:bg-[#12171C] hover:text-[#47D7FF] text-[#A7B0B8] transition-colors flex-shrink-0"
+                aria-label="Close drawer"
+                type="button"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </DrawerClose>
           </div>
         </DrawerHeader>
 
         {isDrawerLoading ? (
           <DrawerSkeleton />
         ) : (
-          <div className="p-6 space-y-4 overflow-y-auto bg-white pb-24">
+          <div className="p-6 space-y-4 overflow-y-auto bg-[#0B0F12] pb-24">
             {showSuccessBanner && bannerData && (
-              <Alert className="border-green-300 bg-green-50 text-green-800" role="status" aria-live="polite">
-                <AlertDescription className="flex items-center justify-between">
-                  <span className="font-medium">
-                    ✓ {bannerData.action} on {bannerData.ts} by {bannerData.actor}
+              <Alert className="border-[#39D98A]/30 bg-[#39D98A]/10" role="status" aria-live="polite">
+                <AlertDescription className="flex items-center justify-between text-[#39D98A]">
+                  <span className="font-medium flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4" />
+                    {bannerData.action} on {bannerData.ts} by {bannerData.actor}
                   </span>
-                  <Link href={`/audit?appId=${app.id}`} className="underline hover:text-green-900 font-medium ml-4">
+                  <Link href={`/audit?appId=${app.id}`} className="underline hover:text-[#39D98A]/80 font-medium ml-4">
                     View Audit →
                   </Link>
                 </AlertDescription>
               </Alert>
             )}
 
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader className="bg-white pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900">About</CardTitle>
+            <Card className="bg-[#12171C] border border-border/50 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-[#E9EEF2] flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-[#47D7FF]" />
+                  About
+                </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-700 space-y-2 bg-white">
-                <div>{app.description || "No description available."}</div>
-                <div className="text-xs text-neutral-500">
-                  First seen {new Date(app.firstSeen).toLocaleDateString()} • Last seen{" "}
-                  {new Date(app.lastSeen).toLocaleDateString()}
+              <CardContent className="text-sm text-[#A7B0B8] space-y-3">
+                <p className="leading-relaxed">{app.description || "No description available."}</p>
+                <div className="flex items-center gap-4 text-xs text-[#A7B0B8] pt-2 border-t border-border/50">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    First seen {new Date(app.firstSeen).toLocaleDateString()}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Last seen {new Date(app.lastSeen).toLocaleDateString()}
+                  </span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader className="bg-white pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900">Permissions</CardTitle>
+            <Card className="bg-[#12171C] border border-border/50 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-[#E9EEF2] flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-[#47D7FF]" />
+                  Permissions
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 bg-white">
+              <CardContent className="space-y-4">
                 {Object.entries(scopeGroups).map(([group, scopes]) => (
                   <div key={group}>
-                    <div className="text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wide">{group}</div>
-                    <ul className="pl-4 list-disc text-sm text-neutral-700 space-y-1">
+                    <div className="text-xs font-semibold text-[#47D7FF] mb-2 uppercase tracking-wide">{group}</div>
+                    <div className="flex flex-wrap gap-2">
                       {scopes.map((s, i) => (
-                        <li key={i}>
-                          <span className="font-medium">{s.name}</span> — {s.description}
-                        </li>
+                        <TooltipProvider key={i}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge
+                                variant="secondary"
+                                className="bg-[#0B0F12] border border-border/50 text-[#E9EEF2] hover:border-[#47D7FF]/30 cursor-help transition-colors"
+                                data-scope-chip
+                                data-testid={`scope-${s.name.replace(/\s+/g, "-").toLowerCase()}`}
+                              >
+                                {s.name}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p className="text-xs">{s.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 ))}
-                {app.scopes.length === 0 && (
-                  <div className="text-sm text-neutral-500">No special permissions found.</div>
-                )}
+                {app.scopes.length === 0 && <div className="text-sm text-[#A7B0B8]">No special permissions found.</div>}
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader className="bg-white pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900">Top Users</CardTitle>
+            <Card className="bg-[#12171C] border border-border/50 shadow-sm">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base font-semibold text-[#E9EEF2] flex items-center gap-2">
+                    <Users className="h-4 w-4 text-[#47D7FF]" />
+                    Top Users
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={copyEmails}
+                    className="h-8 text-xs text-[#47D7FF] hover:text-[#47D7FF] hover:bg-[#47D7FF]/10"
+                  >
+                    <Copy className="h-3 w-3 mr-1" />
+                    Copy Emails
+                  </Button>
+                </div>
               </CardHeader>
-              <CardContent className="bg-white">
-                <ul className="text-sm text-neutral-700 space-y-1">
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
                   {app.users.slice(0, 8).map((u) => (
-                    <li key={u.id}>
-                      <span className="font-medium">{u.name}</span> — {u.email} • {u.dept}
-                      {u.role ? ` • ${u.role}` : ""}
-                    </li>
+                    <TooltipProvider key={u.id}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge
+                            variant="outline"
+                            className="bg-[#0B0F12] border-border/50 text-[#E9EEF2] hover:border-[#47D7FF]/30 cursor-help transition-colors"
+                          >
+                            {u.name}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs font-medium">{u.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {u.dept}
+                            {u.role ? ` • ${u.role}` : ""}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   ))}
                   {app.users.length > 8 && (
-                    <li className="text-xs text-neutral-500">{`+${app.users.length - 8} more`}</li>
+                    <Badge variant="secondary" className="bg-[#0B0F12] border border-border/50 text-[#A7B0B8]">
+                      +{app.users.length - 8} more
+                    </Badge>
                   )}
-                </ul>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader className="bg-white pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900">Risk Factors</CardTitle>
+            <Card className="bg-[#12171C] border border-border/50 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-[#E9EEF2] flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-[#FFB02E]" />
+                  Risk Factors
+                </CardTitle>
               </CardHeader>
-              <CardContent className="bg-white">
-                <ul className="list-disc pl-5 text-sm text-neutral-700 space-y-1">
+              <CardContent>
+                <ul className="space-y-2">
                   {uniqueRiskFactors.map((factor, i) => (
-                    <li key={i}>{factor}</li>
+                    <li key={i} className="flex items-start gap-2 text-sm text-[#A7B0B8]">
+                      <Shield className="h-4 w-4 text-[#FF4D4D] mt-0.5 flex-shrink-0" />
+                      <span>{factor}</span>
+                    </li>
                   ))}
                 </ul>
               </CardContent>
             </Card>
 
-            <Card id="ai-explain" className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader className="bg-white pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900">AI Explanation</CardTitle>
+            <Card
+              id="ai-explain"
+              className="bg-[#12171C] border border-[#47D7FF]/30 shadow-[0_0_12px_rgba(71,215,255,0.1)]"
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-[#E9EEF2] flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-[#47D7FF]" />
+                  AI Explanation
+                </CardTitle>
               </CardHeader>
-              <CardContent className="bg-white space-y-3">
+              <CardContent className="space-y-4">
                 {app.rationale?.summary && (
-                  <div className="text-sm text-gray-700 font-medium">{app.rationale.summary}</div>
+                  <p className="text-sm text-[#E9EEF2] leading-relaxed font-medium bg-[#47D7FF]/5 p-3 rounded-lg border border-[#47D7FF]/20">
+                    {app.rationale.summary}
+                  </p>
                 )}
                 {app.rationale?.reasons && app.rationale.reasons.length > 0 && (
                   <div>
-                    <div className="text-xs font-semibold text-neutral-600 mb-2 uppercase tracking-wide">Reasons</div>
-                    <ol className="list-decimal pl-5 text-sm text-neutral-700 space-y-1">
+                    <div className="text-xs font-semibold text-[#47D7FF] mb-2 uppercase tracking-wide">Reasons</div>
+                    <ol className="list-decimal pl-5 text-sm text-[#A7B0B8] space-y-2">
                       {app.rationale.reasons.map((r, i) => (
                         <li key={i}>
                           {r.text}
-                          {r.citation !== undefined && <sup className="text-blue-600 ml-1">[{r.citation}]</sup>}
+                          {r.citation !== undefined && (
+                            <sup className="text-[#47D7FF] ml-1 font-semibold">[{r.citation}]</sup>
+                          )}
                         </li>
                       ))}
                     </ol>
@@ -418,15 +511,15 @@ export default function AppDrawer() {
                 )}
                 {app.rationale?.sources && app.rationale.sources.length > 0 && (
                   <div>
-                    <div className="text-xs font-semibold text-neutral-600 mb-2 uppercase tracking-wide">Sources</div>
-                    <ul className="text-sm text-neutral-700 space-y-1">
+                    <div className="text-xs font-semibold text-[#47D7FF] mb-2 uppercase tracking-wide">Sources</div>
+                    <ul className="text-sm text-[#A7B0B8] space-y-1">
                       {app.rationale.sources.map((s, i) => (
                         <li key={i}>
                           <a
                             href={s.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                            className="text-[#47D7FF] hover:underline"
                           >
                             [{i}] {s.title}
                           </a>
@@ -436,7 +529,7 @@ export default function AppDrawer() {
                   </div>
                 )}
                 {!app.rationale?.summary && !app.rationale?.reasons?.length && (
-                  <div className="text-sm text-neutral-500">No AI explanation available.</div>
+                  <div className="text-sm text-[#A7B0B8]">No AI explanation available.</div>
                 )}
               </CardContent>
             </Card>
@@ -444,151 +537,207 @@ export default function AppDrawer() {
         )}
 
         {persona === "SecOps" && (
-          <div className="sticky bottom-0 z-10 bg-white/90 backdrop-blur border-t shadow-lg px-6 py-3 flex items-center justify-end gap-2">
-            {app.status !== "Revoked" && (
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  console.log("[v0] Revoke button clicked")
-                  setConfirmOpen(true)
-                }}
-                aria-label={`Revoke access to ${app.name}`}
-              >
-                Revoke
-              </Button>
-            )}
-            {app.status !== "Sanctioned" && app.status !== "Revoked" && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  console.log("[v0] Sanction button clicked")
-                  sanctionApp(app.id)
-                  toast({
-                    title: "App Sanctioned",
-                    description: `${app.name} has been marked as sanctioned`,
-                  })
-                }}
-                aria-label={`Mark ${app.name} as sanctioned`}
-              >
-                Mark Sanctioned
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              onClick={() => {
-                console.log("[v0] Notify button clicked")
-                openFor(app.id)
-              }}
-              aria-label={`Notify users of ${app.name}`}
-            >
-              Notify Users
-            </Button>
+          <div className="sticky bottom-0 z-10 bg-[#0B0F12]/95 backdrop-blur-md border-t border-[#47D7FF]/20 shadow-[0_-2px_16px_rgba(0,0,0,0.35)] px-6 py-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="text-xs text-[#A7B0B8]">Actions</div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {app.status !== "Revoked" ? (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setConfirmOpen(true)}
+                    className="bg-[#FF4D4D] hover:bg-[#FF4D4D]/90 shadow-[0_0_8px_rgba(255,77,77,0.3)]"
+                    aria-label={`Revoke access to ${app.name}`}
+                  >
+                    <Ban className="h-4 w-4 mr-1" />
+                    Revoke
+                  </Button>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Button variant="destructive" size="sm" disabled className="cursor-not-allowed opacity-50">
+                            <Ban className="h-4 w-4 mr-1" />
+                            Revoke
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">App is already revoked</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
 
-            {app.status === "Revoked" ? (
-              <Link href={`/audit?appId=${app.id}`}>
-                <Button aria-label={`View audit log for ${app.name}`}>View Audit</Button>
-              </Link>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  console.log("[v0] Prepare Plan button clicked")
-                  const url = new URL(window.location.href)
-                  url.searchParams.set("plan", app.id)
-                  router.push(url.pathname + url.search + url.hash)
-                }}
-                aria-label={`Prepare remediation plan for ${app.name}`}
-              >
-                Prepare Plan
-              </Button>
-            )}
+                {app.status !== "Sanctioned" && app.status !== "Revoked" ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      sanctionApp(app.id)
+                      toast({
+                        title: "App Sanctioned",
+                        description: `${app.name} has been marked as sanctioned`,
+                      })
+                    }}
+                    className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50"
+                    aria-label={`Mark ${app.name} as sanctioned`}
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-1" />
+                    Mark Sanctioned
+                  </Button>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Button variant="secondary" size="sm" disabled className="cursor-not-allowed opacity-50">
+                            <CheckCircle2 className="h-4 w-4 mr-1" />
+                            Mark Sanctioned
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">
+                          {app.status === "Sanctioned" ? "App is already sanctioned" : "Cannot sanction a revoked app"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => openFor(app.id)}
+                  className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50"
+                  aria-label={`Notify users of ${app.name}`}
+                >
+                  <Mail className="h-4 w-4 mr-1" />
+                  Notify Users
+                </Button>
+
+                {app.status === "Revoked" ? (
+                  <Link href={`/audit?appId=${app.id}`}>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="bg-[#47D7FF] hover:bg-[#47D7FF]/90 text-[#0B0F12] shadow-[0_0_12px_rgba(71,215,255,0.3)]"
+                      aria-label={`View audit log for ${app.name}`}
+                    >
+                      View Audit
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      const url = new URL(window.location.href)
+                      url.searchParams.set("plan", app.id)
+                      router.push(url.pathname + url.search + url.hash)
+                    }}
+                    className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50"
+                    aria-label={`Prepare remediation plan for ${app.name}`}
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    Prepare Plan
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
         {isCISO && (
-          <div className="sticky bottom-0 z-10 bg-white/90 backdrop-blur border-t shadow-lg px-6 py-3 flex items-center justify-between gap-2">
-            <span className="text-xs text-muted-foreground">Actions disabled for CISO role</span>
-            <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-block">
-                      <Button
-                        variant="outline"
-                        disabled
-                        aria-disabled="true"
-                        aria-label="Revoke access (disabled for CISO)"
-                        className="cursor-not-allowed opacity-60 bg-transparent"
-                      >
-                        Revoke
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs">Only SecOps can perform this action</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+          <div className="sticky bottom-0 z-10 bg-[#0B0F12]/95 backdrop-blur-md border-t border-[#47D7FF]/20 shadow-[0_-2px_16px_rgba(0,0,0,0.35)] px-6 py-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <span className="text-xs text-[#A7B0B8]">Actions disabled for CISO role</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button variant="destructive" size="sm" disabled className="cursor-not-allowed opacity-50">
+                          <Ban className="h-4 w-4 mr-1" />
+                          Revoke
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs font-medium">Only SecOps can perform this action</p>
+                      <p className="text-xs text-muted-foreground mt-1">Required: SecOps role</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-block">
-                      <Button
-                        variant="outline"
-                        disabled
-                        aria-disabled="true"
-                        aria-label="Notify users (disabled for CISO)"
-                        className="cursor-not-allowed opacity-60 bg-transparent"
-                      >
-                        Notify Users
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs">Only SecOps can perform this action</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button variant="secondary" size="sm" disabled className="cursor-not-allowed opacity-50">
+                          <Mail className="h-4 w-4 mr-1" />
+                          Notify Users
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs font-medium">Only SecOps can perform this action</p>
+                      <p className="text-xs text-muted-foreground mt-1">Required: SecOps role</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-block">
-                      <Button
-                        variant="outline"
-                        disabled
-                        aria-disabled="true"
-                        aria-label="Prepare plan (disabled for CISO)"
-                        className="cursor-not-allowed opacity-60 bg-transparent"
-                      >
-                        Prepare Plan
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs">Only SecOps can perform this action</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button variant="secondary" size="sm" disabled className="cursor-not-allowed opacity-50">
+                          <FileText className="h-4 w-4 mr-1" />
+                          Prepare Plan
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs font-medium">Only SecOps can perform this action</p>
+                      <p className="text-xs text-muted-foreground mt-1">Required: SecOps role</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-              <Link href={`/audit?appId=${app.id}`}>
-                <Button aria-label={`View audit log for ${app.name}`}>View Audit</Button>
-              </Link>
+                <Link href={`/audit?appId=${app.id}`}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="bg-[#47D7FF] hover:bg-[#47D7FF]/90 text-[#0B0F12] shadow-[0_0_12px_rgba(71,215,255,0.3)]"
+                    aria-label={`View audit log for ${app.name}`}
+                  >
+                    View Audit
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         )}
 
         <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-          <DialogContent className="bg-white border-2 border-gray-300">
+          <DialogContent className="bg-[#12171C] border-2 border-[#FF4D4D]/30">
             <DialogHeader>
-              <DialogTitle className="text-gray-900">Revoke access to {app.name}?</DialogTitle>
+              <DialogTitle className="text-[#E9EEF2] flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-[#FF4D4D]" />
+                Revoke access to {app.name}?
+              </DialogTitle>
             </DialogHeader>
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-[#A7B0B8] leading-relaxed">
               This will remove the app's OAuth permissions for all affected users. You can notify users afterward.
             </p>
             <DialogFooter className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              <Button
+                variant="secondary"
+                onClick={() => setConfirmOpen(false)}
+                className="bg-[#0B0F12] hover:bg-[#0B0F12]/80 border border-border/50"
+              >
                 Cancel
               </Button>
               <Button
@@ -601,6 +750,7 @@ export default function AppDrawer() {
                     description: `Successfully revoked ${app.name} for all ${app.users.length} users`,
                   })
                 }}
+                className="bg-[#FF4D4D] hover:bg-[#FF4D4D]/90 shadow-[0_0_8px_rgba(255,77,77,0.3)]"
               >
                 Confirm Revoke
               </Button>

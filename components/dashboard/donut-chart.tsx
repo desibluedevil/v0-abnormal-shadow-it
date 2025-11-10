@@ -1,9 +1,25 @@
 "use client"
 
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
+import { PieChart } from "lucide-react"
+
 export default function DonutChart({ high, med, low }: { high: number; med: number; low: number }) {
   const total = high + med + low
+
   if (total === 0) {
-    return <div className="h-64 flex items-center justify-center text-sm text-text-muted">No data available</div>
+    return (
+      <div className="h-64">
+        <Empty className="border-0 bg-transparent">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <PieChart className="w-6 h-6" />
+            </EmptyMedia>
+            <EmptyTitle>No data available</EmptyTitle>
+            <EmptyDescription>Risk distribution will display once apps are detected</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </div>
+    )
   }
 
   // Calculate percentages
@@ -42,9 +58,9 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
 
   let currentAngle = 0
   const segments = [
-    { name: "High", value: high, pct: highPct, color: "rgb(var(--risk-high))", angle: highAngle },
-    { name: "Medium", value: med, pct: medPct, color: "rgb(var(--risk-medium))", angle: medAngle },
-    { name: "Low", value: low, pct: lowPct, color: "rgb(var(--risk-low))", angle: lowAngle },
+    { name: "High", value: high, pct: highPct, color: "#FF4D4D", angle: highAngle },
+    { name: "Medium", value: med, pct: medPct, color: "#FFB02E", angle: medAngle },
+    { name: "Low", value: low, pct: lowPct, color: "#39D98A", angle: lowAngle },
   ].filter((s) => s.value > 0)
 
   return (
@@ -60,33 +76,32 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
               key={segment.name}
               d={createArc(startAngle, endAngle)}
               fill={segment.color}
-              stroke="rgb(var(--surface-1))"
+              stroke="#0B0F12"
               strokeWidth="2"
             />
           )
         })}
-        {/* Center text */}
-        <text x="120" y="115" textAnchor="middle" className="text-2xl font-semibold fill-text-primary">
+        <text x="120" y="110" textAnchor="middle" className="text-3xl font-bold fill-foreground">
           {total}
         </text>
-        <text x="120" y="135" textAnchor="middle" className="text-xs fill-text-muted">
+        <text x="120" y="135" textAnchor="middle" className="text-sm fill-muted-foreground font-medium">
           Total Apps
         </text>
       </svg>
 
-      {/* Legend */}
-      <div className="flex gap-4 text-xs text-text-primary">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-risk-high" />
-          <span>High ({high})</span>
+      {/* Legend with risk colors */}
+      <div className="flex gap-4 text-sm text-foreground">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#FF4D4D" }} />
+          <span className="font-medium">High ({high})</span>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-risk-medium" />
-          <span>Med ({med})</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#FFB02E" }} />
+          <span className="font-medium">Med ({med})</span>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-sm bg-risk-low" />
-          <span>Low ({low})</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#39D98A" }} />
+          <span className="font-medium">Low ({low})</span>
         </div>
       </div>
     </div>

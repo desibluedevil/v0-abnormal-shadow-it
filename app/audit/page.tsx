@@ -9,52 +9,27 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
 import { Separator } from "@/components/ui/separator"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { ErrorBoundary } from "@/components/errors/error-boundary"
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
+import {
+  CalendarIcon,
+  FileDown,
+  ChevronRight,
+  Copy,
+  ExternalLink,
+  CheckCircle2,
+  AlertCircle,
+  ClipboardList,
+} from "lucide-react"
+import { format } from "date-fns"
 
 type ActionFilter = "all" | "graph.revokeGrant" | "end.sessions" | "notify.email" | "ticket.create"
 type StatusFilter = "all" | "ok" | "error"
-
-const DownloadIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-    />
-  </svg>
-)
-
-const CopyIcon = () => (
-  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M8 16H6a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-    />
-  </svg>
-)
-
-const ClipboardIcon = () => (
-  <svg className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={1.5}
-      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-    />
-  </svg>
-)
-
-const ChevronDownIcon = () => (
-  <svg className="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-  </svg>
-)
 
 function AuditPageContent() {
   const [isBooting, setIsBooting] = useState(true)
@@ -74,8 +49,8 @@ function AuditPageContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [actionFilter, setActionFilter] = useState<ActionFilter>("all")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-  const [dateFrom, setDateFrom] = useState("")
-  const [dateTo, setDateTo] = useState("")
+  const [dateFrom, setDateFrom] = useState<Date | undefined>()
+  const [dateTo, setDateTo] = useState<Date | undefined>()
 
   const filteredReceipts = useMemo(() => {
     return receipts.filter((receipt) => {
@@ -94,8 +69,15 @@ function AuditPageContent() {
 
       if (actionFilter !== "all" && receipt.tool !== actionFilter) return false
       if (statusFilter !== "all" && receipt.status !== statusFilter) return false
-      if (dateFrom && receipt.ts < dateFrom) return false
-      if (dateTo && receipt.ts > dateTo + "T23:59:59") return false
+
+      if (dateFrom) {
+        const fromStr = format(dateFrom, "yyyy-MM-dd")
+        if (receipt.ts < fromStr) return false
+      }
+      if (dateTo) {
+        const toStr = format(dateTo, "yyyy-MM-dd") + "T23:59:59"
+        if (receipt.ts > toStr) return false
+      }
 
       return true
     })
@@ -146,16 +128,22 @@ function AuditPageContent() {
     })
   }
 
-  const copyReceiptId = async (receiptId: string) => {
+  const copyToClipboard = async (text: string, label: string) => {
     try {
-      await navigator.clipboard.writeText(receiptId)
+      await navigator.clipboard.writeText(text)
       toast({
-        title: "Copied",
-        description: `Receipt ID ${receiptId} copied to clipboard`,
+        title: "Copied to clipboard",
+        description: `${label} copied successfully`,
         duration: 2000,
       })
     } catch (err) {
       console.error("Failed to copy:", err)
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy to clipboard",
+        variant: "destructive",
+        duration: 2000,
+      })
     }
   }
 
@@ -189,14 +177,14 @@ function AuditPageContent() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-3xl font-semibold text-foreground">Audit Trail</h1>
-          <p className="text-sm text-muted-foreground mt-1.5">
-            Complete record of all remediation actions and system events
-          </p>
-        </div>
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Audit Trail</h1>
+        <p className="text-sm text-muted-foreground">
+          Prove remediation outcomes with exportable, time-stamped receipts for compliance and reporting
+        </p>
+      </div>
 
+      <div className="space-y-4">
         {filteredReceipts.length > 0 && (
           <div className="flex items-center gap-6 text-sm">
             <div className="flex items-center gap-2">
@@ -232,13 +220,13 @@ function AuditPageContent() {
             </div>
             <Button
               onClick={exportToCSV}
-              variant="default"
+              variant="primary"
               size="sm"
               disabled={filteredReceipts.length === 0}
               aria-label={`Export ${filteredReceipts.length} receipts to CSV file`}
               className="gap-2"
             >
-              <DownloadIcon />
+              <FileDown className="h-4 w-4" />
               Export CSV
             </Button>
           </div>
@@ -260,42 +248,84 @@ function AuditPageContent() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Action Type</label>
-              <Tabs value={actionFilter} onValueChange={(v) => setActionFilter(v as ActionFilter)}>
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="all" className="text-xs">
-                    All
-                  </TabsTrigger>
-                  <TabsTrigger value="graph.revokeGrant" className="text-xs">
-                    Revoke
-                  </TabsTrigger>
-                  <TabsTrigger value="end.sessions" className="text-xs">
-                    Sessions
-                  </TabsTrigger>
-                  <TabsTrigger value="notify.email" className="text-xs">
-                    Notify
-                  </TabsTrigger>
-                  <TabsTrigger value="ticket.create" className="text-xs">
-                    Ticket
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <ToggleGroup
+                type="single"
+                value={actionFilter}
+                onValueChange={(value) => {
+                  if (value) setActionFilter(value as ActionFilter)
+                }}
+                className="justify-start flex-wrap"
+              >
+                <ToggleGroupItem
+                  value="all"
+                  aria-label="Show all actions"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
+                >
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="graph.revokeGrant"
+                  aria-label="Show revoke grant actions"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
+                >
+                  Revoke
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="end.sessions"
+                  aria-label="Show end sessions actions"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
+                >
+                  Sessions
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="notify.email"
+                  aria-label="Show notify email actions"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
+                >
+                  Notify
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="ticket.create"
+                  aria-label="Show ticket creation actions"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
+                >
+                  Ticket
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Status</label>
-              <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="all" className="text-xs">
-                    All
-                  </TabsTrigger>
-                  <TabsTrigger value="ok" className="text-xs">
-                    Success
-                  </TabsTrigger>
-                  <TabsTrigger value="error" className="text-xs">
-                    Error
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <ToggleGroup
+                type="single"
+                value={statusFilter}
+                onValueChange={(value) => {
+                  if (value) setStatusFilter(value as StatusFilter)
+                }}
+                className="justify-start"
+              >
+                <ToggleGroupItem
+                  value="all"
+                  aria-label="Show all statuses"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
+                >
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="ok"
+                  aria-label="Show successful actions"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
+                >
+                  Success
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="error"
+                  aria-label="Show failed actions"
+                  className="data-[state=on]:bg-[#47D7FF]/10 data-[state=on]:text-[#47D7FF] data-[state=on]:border-b-2 data-[state=on]:border-[#47D7FF] data-[state=on]:shadow-[0_0_8px_rgba(71,215,255,0.3)] transition-all duration-200"
+                >
+                  Error
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
           </div>
 
@@ -304,11 +334,46 @@ function AuditPageContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">From Date</label>
-              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal bg-transparent"
+                    aria-label="Select from date"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 text-[#47D7FF]" />
+                    {dateFrom ? format(dateFrom, "PPP") : <span className="text-muted-foreground">Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus />
+                </PopoverContent>
+              </Popover>
             </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">To Date</label>
-              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal bg-transparent"
+                    aria-label="Select to date"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 text-[#47D7FF]" />
+                    {dateTo ? format(dateTo, "PPP") : <span className="text-muted-foreground">Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dateTo}
+                    onSelect={setDateTo}
+                    initialFocus
+                    disabled={(date) => (dateFrom ? date < dateFrom : false)}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </CardContent>
@@ -330,39 +395,37 @@ function AuditPageContent() {
         </CardHeader>
         <CardContent className="p-0">
           {filteredReceipts.length === 0 ? (
-            <div className="text-center py-16 space-y-4 px-4">
-              <div className="flex justify-center">
-                <div className="rounded-full bg-blue-50 p-4 text-blue-400">
-                  <ClipboardIcon />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-foreground">No audit receipts yet</h3>
-                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <ClipboardList className="w-6 h-6" />
+                </EmptyMedia>
+                <EmptyTitle>No audit receipts yet</EmptyTitle>
+                <EmptyDescription>
                   Receipts are automatically created when you perform remediation actions on apps in your inventory
-                </p>
-              </div>
-              <div className="flex items-center justify-center gap-3">
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
                 <Button onClick={() => seedReceiptsIfEmpty()} variant="outline">
                   Generate Demo Receipts
                 </Button>
                 <Link href="/inventory?focus=app_calendarsync">
-                  <Button variant="default">Review Apps</Button>
+                  <Button variant="primary">Review Apps</Button>
                 </Link>
-              </div>
-            </div>
+              </EmptyContent>
+            </Empty>
           ) : (
             <div className="border-t overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-[40px]"></TableHead>
-                    <TableHead className="font-semibold">Timestamp</TableHead>
-                    <TableHead className="font-semibold">Actor</TableHead>
-                    <TableHead className="font-semibold">App</TableHead>
-                    <TableHead className="font-semibold">Action</TableHead>
-                    <TableHead className="font-semibold">Receipt ID</TableHead>
-                    <TableHead className="font-semibold">Status</TableHead>
+                  <TableRow className="hover:bg-transparent border-b-2">
+                    <TableHead className="w-[48px]"></TableHead>
+                    <TableHead className="font-semibold text-foreground">Timestamp</TableHead>
+                    <TableHead className="font-semibold text-foreground">Actor</TableHead>
+                    <TableHead className="font-semibold text-foreground">Application</TableHead>
+                    <TableHead className="font-semibold text-foreground">Action</TableHead>
+                    <TableHead className="font-semibold text-foreground">Receipt ID</TableHead>
+                    <TableHead className="font-semibold text-foreground">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -373,113 +436,202 @@ function AuditPageContent() {
                       <>
                         <TableRow
                           key={receipt.id}
-                          className="cursor-pointer hover:bg-muted/50 transition-colors"
+                          className="cursor-pointer hover:bg-muted/70 hover:shadow-[0_2px_8px_rgba(71,215,255,0.08)] transition-all duration-200 border-b"
                           onClick={() => toggleRowExpansion(receipt.id)}
                         >
-                          <TableCell>
-                            <div className={`transition-transform ${isExpanded ? "rotate-0" : "-rotate-90"}`}>
-                              <ChevronDownIcon />
+                          <TableCell className="py-4">
+                            <div
+                              className={`flex items-center justify-center w-8 h-8 rounded hover:bg-[#47D7FF]/10 transition-all duration-200 ${
+                                isExpanded ? "rotate-90" : ""
+                              }`}
+                            >
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm text-muted-foreground whitespace-nowrap font-mono">
+                          <TableCell className="text-sm text-foreground whitespace-nowrap font-mono py-4">
                             {formatTime(receipt.ts)}
                           </TableCell>
-                          <TableCell className="font-medium text-foreground">{receipt.actor}</TableCell>
-                          <TableCell>
+                          <TableCell className="font-medium text-foreground py-4">{receipt.actor}</TableCell>
+                          <TableCell className="py-4">
                             {app ? (
                               <Link
                                 href={`/inventory?focus=${receipt.appId}`}
-                                className="text-primary hover:underline font-medium"
+                                className="text-[#47D7FF] hover:underline font-medium inline-flex items-center gap-1"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 {app.name}
+                                <ExternalLink className="h-3 w-3" />
                               </Link>
                             ) : (
                               <span className="text-muted-foreground">{receipt.appId}</span>
                             )}
                           </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="font-normal text-xs">
+                          <TableCell className="py-4">
+                            <Badge variant="outline" className="font-normal text-xs border-border/50">
                               {getActionLabel(receipt.tool)}
                             </Badge>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="py-4">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
-                                copyReceiptId(receipt.id)
+                                copyToClipboard(receipt.id, "Receipt ID")
                               }}
-                              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer font-mono group"
+                              className="flex items-center gap-2 px-2 py-1 rounded hover:bg-muted transition-colors group"
                               aria-label={`Copy receipt ID ${receipt.id}`}
                             >
-                              <span className="group-hover:underline">{receipt.id}</span>
-                              <CopyIcon />
+                              <code className="text-xs font-mono text-foreground group-hover:text-[#47D7FF] transition-colors">
+                                {receipt.id}
+                              </code>
+                              <Copy className="h-3.5 w-3.5 text-muted-foreground group-hover:text-[#47D7FF] transition-colors" />
                             </button>
                           </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={receipt.status === "ok" ? "default" : "destructive"}
-                              className="font-normal"
-                            >
-                              {receipt.status === "ok" ? "Success" : "Error"}
-                            </Badge>
+                          <TableCell className="py-4">
+                            {receipt.status === "ok" ? (
+                              <Badge
+                                variant="outline"
+                                className="font-normal border-[#39D98A]/30 bg-[#39D98A]/10 text-[#39D98A] gap-1"
+                              >
+                                <CheckCircle2 className="h-3 w-3" />
+                                Success
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="font-normal border-[#FF4D4D]/30 bg-[#FF4D4D]/10 text-[#FF4D4D] gap-1"
+                              >
+                                <AlertCircle className="h-3 w-3" />
+                                Error
+                              </Badge>
+                            )}
                           </TableCell>
                         </TableRow>
                         {isExpanded && (
-                          <TableRow key={`${receipt.id}-expanded`} className="hover:bg-transparent">
-                            <TableCell colSpan={7} className="bg-muted/30 p-0">
+                          <TableRow key={`${receipt.id}-expanded`} className="hover:bg-transparent border-b">
+                            <TableCell colSpan={7} className="bg-[#0B0F12] p-0">
                               <div className="p-6 space-y-6">
-                                {/* Details section */}
                                 <div className="space-y-3">
-                                  <h4 className="text-sm font-semibold text-foreground">Action Details</h4>
-                                  <p className="text-sm text-muted-foreground leading-relaxed">
+                                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                                    Action Details
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground leading-relaxed bg-background/50 p-4 rounded-lg border border-border/50">
                                     {receipt.details || "No additional details available"}
                                   </p>
                                 </div>
 
-                                <Separator />
+                                <Separator className="bg-border/50" />
 
-                                {/* Metadata grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                   <div className="space-y-4">
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-2">
                                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                         Receipt ID
                                       </div>
-                                      <code className="text-sm bg-background px-3 py-1.5 rounded border font-mono block">
-                                        {receipt.id}
-                                      </code>
+                                      <div className="flex items-center gap-2">
+                                        <code className="text-sm bg-background px-3 py-2 rounded-lg border border-border/50 font-mono flex-1 text-foreground">
+                                          {receipt.id}
+                                        </code>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => copyToClipboard(receipt.id, "Receipt ID")}
+                                          className="shrink-0"
+                                        >
+                                          <Copy className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </div>
                                     </div>
 
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-2">
                                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                         Timestamp
                                       </div>
-                                      <div className="text-sm text-foreground font-mono">{receipt.ts}</div>
+                                      <div className="flex items-center gap-2">
+                                        <code className="text-sm bg-background px-3 py-2 rounded-lg border border-border/50 font-mono flex-1 text-foreground">
+                                          {receipt.ts}
+                                        </code>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => copyToClipboard(receipt.ts, "Timestamp")}
+                                          className="shrink-0"
+                                        >
+                                          <Copy className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                        Actor
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <div className="text-sm bg-background px-3 py-2 rounded-lg border border-border/50 flex-1 text-foreground">
+                                          {receipt.actor}
+                                        </div>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => copyToClipboard(receipt.actor, "Actor")}
+                                          className="shrink-0"
+                                        >
+                                          <Copy className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
 
                                   <div className="space-y-4">
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-2">
                                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                         Action Type
                                       </div>
-                                      <Badge variant="secondary" className="font-normal">
+                                      <Badge variant="outline" className="font-normal border-border/50">
                                         {getActionLabel(receipt.tool)}
                                       </Badge>
                                     </div>
 
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-2">
                                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                         Status
                                       </div>
-                                      <Badge
-                                        variant={receipt.status === "ok" ? "default" : "destructive"}
-                                        className="font-normal"
-                                      >
-                                        {receipt.status === "ok" ? "Success" : "Error"}
-                                      </Badge>
+                                      {receipt.status === "ok" ? (
+                                        <Badge
+                                          variant="outline"
+                                          className="font-normal border-[#39D98A]/30 bg-[#39D98A]/10 text-[#39D98A] gap-1"
+                                        >
+                                          <CheckCircle2 className="h-3 w-3" />
+                                          Success
+                                        </Badge>
+                                      ) : (
+                                        <Badge
+                                          variant="outline"
+                                          className="font-normal border-[#FF4D4D]/30 bg-[#FF4D4D]/10 text-[#FF4D4D] gap-1"
+                                        >
+                                          <AlertCircle className="h-3 w-3" />
+                                          Error
+                                        </Badge>
+                                      )}
                                     </div>
+
+                                    {receipt.details && (
+                                      <div className="space-y-2">
+                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                          Source Event
+                                        </div>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-[#47D7FF] hover:text-[#47D7FF] hover:bg-[#47D7FF]/10 gap-2"
+                                          asChild
+                                        >
+                                          <a href="#" onClick={(e) => e.preventDefault()}>
+                                            <ExternalLink className="h-3.5 w-3.5" />
+                                            Open source event
+                                          </a>
+                                        </Button>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>

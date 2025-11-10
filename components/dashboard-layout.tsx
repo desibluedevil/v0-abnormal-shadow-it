@@ -1,6 +1,7 @@
 "use client"
 
-import type React from "react"
+import React from "react"
+
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -9,76 +10,23 @@ import { cn } from "@/lib/utils"
 import { useShadowStore } from "@/store/shadowStore"
 import NotifyModal from "@/components/notify/notify-modal"
 import { KeyboardHelpModal } from "@/components/keyboard/help-modal"
-
-const DashboardIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-    />
-  </svg>
-)
-
-const PackageIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-    />
-  </svg>
-)
-
-const FileSearchIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-    />
-  </svg>
-)
-
-const ShieldIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-    />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-)
-
-const SettingsIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-    />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-)
-
-const ChevronDownIcon = () => (
-  <svg className="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-  </svg>
-)
+import {
+  LayoutDashboard,
+  Package,
+  FileSearch,
+  ShieldCheck,
+  Settings,
+  ChevronDown,
+  Clock,
+  RotateCcw,
+} from "lucide-react"
 
 const navItems = [
-  { name: "Dashboard", href: "/dashboard", icon: DashboardIcon },
-  { name: "Inventory", href: "/inventory", icon: PackageIcon },
-  { name: "Review", href: "/review", icon: FileSearchIcon },
-  { name: "Audit", href: "/audit", icon: ShieldIcon },
-  { name: "Settings", href: "/settings", icon: SettingsIcon },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Inventory", href: "/inventory", icon: Package },
+  { name: "Review", href: "/review", icon: FileSearch },
+  { name: "Audit", href: "/audit", icon: ShieldCheck },
+  { name: "Settings", href: "/settings", icon: Settings },
 ]
 
 const personas = [
@@ -93,6 +41,14 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const { persona, setPersona } = useShadowStore()
+  const [lastUpdated, setLastUpdated] = React.useState(new Date())
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setLastUpdated(new Date())
+    }, 60000) // Update every minute
+    return () => clearInterval(interval)
+  }, [])
 
   const getPageTitle = () => {
     switch (pathname) {
@@ -116,19 +72,28 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     setPersona(newPersona)
   }
 
+  const handleDemoRefresh = () => {
+    console.log("[v0] Demo data refresh initiated")
+    // Clear localStorage and reload
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("shadow-it-store")
+      window.location.reload()
+    }
+  }
+
   console.log("[v0] DashboardLayout rendered with persona:", persona)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-0">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-sidebar-border bg-surface-1 flex flex-col">
+      <aside className="w-64 border-r border-border bg-card flex flex-col" aria-label="Main navigation">
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-sidebar-border">
-          <h1 className="text-xl font-semibold text-sidebar-foreground">Shadow IT</h1>
+        <div className="p-6 border-b border-border">
+          <h1 className="text-xl font-semibold text-foreground">Shadow IT</h1>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1" role="navigation" aria-label="Primary navigation">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
@@ -137,14 +102,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Link
                 key={item.name}
                 href={item.href}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                    ? "bg-accent-cyan/10 text-accent-cyan"
+                    : "text-foreground hover:text-foreground hover:bg-muted/50",
                 )}
               >
-                <Icon />
+                {isActive && (
+                  <div
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-accent-cyan rounded-r-full shadow-[0_0_12px_rgba(71,215,255,0.5)]"
+                    aria-hidden="true"
+                  />
+                )}
+                <Icon
+                  className={cn(
+                    "h-5 w-5 transition-all duration-200",
+                    isActive
+                      ? "text-accent-cyan drop-shadow-[0_0_8px_rgba(71,215,255,0.3)]"
+                      : "group-hover:drop-shadow-[0_0_6px_rgba(71,215,255,0.2)]",
+                  )}
+                  aria-hidden="true"
+                />
                 {item.name}
               </Link>
             )
@@ -155,42 +135,65 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="h-16 border-b border-border bg-surface-1 text-[var(--text-primary)] flex items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            <h2 className="text-lg font-semibold text-card-foreground">{getPageTitle()}</h2>
+        <header
+          className="h-16 border-b border-border bg-card text-foreground flex items-center justify-between px-6"
+          role="banner"
+        >
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-semibold text-foreground">{getPageTitle()}</h2>
+            <div className="flex items-center gap-2 text-xs text-foreground" aria-live="polite" aria-atomic="true">
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              <span>Last updated: {lastUpdated.toLocaleTimeString()}</span>
+            </div>
           </div>
 
-          {/* Persona Switcher */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="gap-2 bg-transparent"
-                onClick={() => console.log("[v0] Dropdown trigger clicked")}
-              >
-                {persona}
-                <ChevronDownIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              {personas.map((p) => (
-                <DropdownMenuItem
-                  key={p.id}
-                  onClick={() => {
-                    console.log("[v0] MenuItem clicked:", p.id)
-                    handlePersonaChange(p.id)
-                  }}
-                  className={cn(persona === p.id && "bg-accent")}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDemoRefresh}
+              className="gap-2 text-muted-foreground hover:text-[#47D7FF] hover:bg-[#47D7FF]/10 transition-all duration-200"
+              aria-label="Reset demo data to initial state"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Demo Reset
+            </Button>
+
+            {/* Persona Switcher */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="secondary"
+                  className="gap-2 rounded-full px-4 py-2 hover:shadow-[0_0_12px_rgba(71,215,255,0.2)] transition-all duration-200"
+                  onClick={() => console.log("[v0] Dropdown trigger clicked")}
+                  aria-label={`Current persona: ${persona}. Click to change persona`}
                 >
-                  {p.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  {persona}
+                  <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                {personas.map((p) => (
+                  <DropdownMenuItem
+                    key={p.id}
+                    onClick={() => {
+                      console.log("[v0] MenuItem clicked:", p.id)
+                      handlePersonaChange(p.id)
+                    }}
+                    className={cn(persona === p.id && "bg-accent text-accent-foreground")}
+                  >
+                    {p.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main id="main-content" className="flex-1 overflow-auto p-6" role="main">
+          {children}
+        </main>
       </div>
 
       {/* NotifyModal */}
