@@ -56,10 +56,10 @@ function RiskBadge({ level }: { level: "High" | "Medium" | "Low" }) {
 
 function StatusBadge({ status }: { status: ShadowApp["status"] }) {
   const colors = {
-    Unsanctioned: "bg-muted text-muted-foreground border-border",
-    Sanctioned: "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800",
-    Revoked: "bg-red-100 text-red-700 border-red-300 dark:bg-red-950 dark:text-red-300 dark:border-red-800",
-    Dismissed: "bg-muted text-muted-foreground/60 border-border",
+    Unsanctioned: "bg-neutral-100 text-neutral-700 border-neutral-300",
+    Sanctioned: "bg-blue-100 text-blue-700 border-blue-300",
+    Revoked: "bg-red-100 text-red-700 border-red-300",
+    Dismissed: "bg-neutral-100 text-neutral-500 border-neutral-200",
   }
   return (
     <Badge variant="outline" className={`${colors[status]} text-xs`}>
@@ -269,10 +269,10 @@ export const columns = [
     cell: (app: ShadowApp) => {
       return (
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-xs font-semibold text-neutral-600">
             {app.name.charAt(0)}
           </div>
-          <span className="font-semibold text-foreground">{app.name}</span>
+          <span className="font-semibold text-neutral-900">{app.name}</span>
         </div>
       )
     },
@@ -283,7 +283,7 @@ export const columns = [
     accessor: "publisher" as keyof ShadowApp,
     size: 150,
     className: "hidden lg:table-cell",
-    cell: (app: ShadowApp) => <span className="text-sm text-muted-foreground">{app.publisher}</span>,
+    cell: (app: ShadowApp) => <span className="text-sm text-neutral-600">{app.publisher}</span>,
   },
   {
     id: "riskLevel",
@@ -312,7 +312,7 @@ export const columns = [
     size: 120,
     className: "hidden lg:table-cell",
     cell: (app: ShadowApp) => (
-      <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">{formatDate(app.firstSeen)}</span>
+      <span className="whitespace-nowrap font-mono text-xs text-neutral-600">{formatDate(app.firstSeen)}</span>
     ),
   },
   {
@@ -322,7 +322,7 @@ export const columns = [
     size: 120,
     className: "hidden xl:table-cell",
     cell: (app: ShadowApp) => (
-      <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">{formatDate(app.lastSeen)}</span>
+      <span className="whitespace-nowrap font-mono text-xs text-neutral-600">{formatDate(app.lastSeen)}</span>
     ),
   },
   {
@@ -342,12 +342,12 @@ export const columns = [
     cell: (app: ShadowApp) => (
       <div className="flex flex-wrap gap-1">
         {app.tags.slice(0, 2).map((tag) => (
-          <Badge key={tag} variant="secondary" className="text-xs">
+          <Badge key={tag} variant="secondary" className="text-xs bg-neutral-100 text-neutral-700">
             {tag}
           </Badge>
         ))}
         {app.tags.length > 2 && (
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs bg-neutral-100">
             +{app.tags.length - 2}
           </Badge>
         )}

@@ -4,59 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Dark theme as default - Abnormal AI inspired with cyan accents */
-  --background: 0 0% 7%;
-  --foreground: 0 0% 95%;
-
-  --card: 0 0% 10%;
-  --card-foreground: 0 0% 95%;
-
-  --popover: 0 0% 10%;
-  --popover-foreground: 0 0% 95%;
-
-  /* Cyan/turquoise primary - Abnormal AI brand color */
-  --primary: 175 100% 42%;
-  --primary-foreground: 0 0% 10%;
-
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 95%;
-
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 60%;
-
-  --accent: 175 100% 42%;
-  --accent-foreground: 0 0% 10%;
-
-  /* Yellow accent for warnings and highlights */
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 175 100% 42%;
-
-  --radius: 0.5rem;
-
-  /* Chart colors - cyan focused palette */
-  --chart-1: 175 100% 42%;
-  --chart-2: 47 91% 58%;
-  --chart-3: 142 76% 36%;
-  --chart-4: 217 91% 60%;
-  --chart-5: 27 87% 67%;
-
-  /* Sidebar colors - dark with cyan accents */
-  --sidebar-background: 0 0% 5%;
-  --sidebar-foreground: 0 0% 90%;
-  --sidebar-primary: 175 100% 42%;
-  --sidebar-primary-foreground: 0 0% 10%;
-  --sidebar-accent: 0 0% 15%;
-  --sidebar-accent-foreground: 0 0% 95%;
-  --sidebar-border: 0 0% 18%;
-  --sidebar-ring: 175 100% 42%;
-}
-
-.dark {
-  /* Light theme moved to .dark class (inverted from before) */
+  /* Light theme optimized for admin dashboard */
   --background: 0 0% 100%;
   --foreground: 240 10% 15%;
 
@@ -66,7 +14,8 @@
   --popover: 0 0% 100%;
   --popover-foreground: 240 10% 15%;
 
-  --primary: 175 100% 42%;
+  /* Professional blue for primary actions */
+  --primary: 217 91% 60%;
   --primary-foreground: 0 0% 100%;
 
   --secondary: 240 5% 96%;
@@ -75,7 +24,7 @@
   --muted: 240 5% 96%;
   --muted-foreground: 240 4% 46%;
 
-  --accent: 175 100% 42%;
+  --accent: 217 91% 60%;
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84% 60%;
@@ -83,22 +32,71 @@
 
   --border: 240 6% 90%;
   --input: 240 6% 90%;
-  --ring: 175 100% 42%;
+  --ring: 217 91% 60%;
 
-  --chart-1: 175 100% 42%;
-  --chart-2: 47 91% 58%;
+  --radius: 0.5rem;
+
+  /* Chart colors */
+  --chart-1: 217 91% 60%;
+  --chart-2: 173 58% 39%;
   --chart-3: 142 76% 36%;
-  --chart-4: 217 91% 60%;
+  --chart-4: 47 91% 58%;
   --chart-5: 27 87% 67%;
 
+  /* Sidebar colors for light theme */
   --sidebar-background: 0 0% 98%;
   --sidebar-foreground: 240 10% 20%;
-  --sidebar-primary: 175 100% 42%;
+  --sidebar-primary: 217 91% 60%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 240 5% 94%;
   --sidebar-accent-foreground: 240 10% 15%;
   --sidebar-border: 240 6% 92%;
-  --sidebar-ring: 175 100% 42%;
+  --sidebar-ring: 217 91% 60%;
+}
+
+.dark {
+  --background: 240 10% 10%;
+  --foreground: 0 0% 95%;
+
+  --card: 240 10% 13%;
+  --card-foreground: 0 0% 95%;
+
+  --popover: 240 10% 13%;
+  --popover-foreground: 0 0% 95%;
+
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 240 4% 16%;
+  --secondary-foreground: 0 0% 95%;
+
+  --muted: 240 4% 16%;
+  --muted-foreground: 240 5% 65%;
+
+  --accent: 217 91% 60%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 240 4% 20%;
+  --input: 240 4% 20%;
+  --ring: 217 91% 60%;
+
+  --chart-1: 217 91% 60%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 142 76% 36%;
+  --chart-4: 47 91% 58%;
+  --chart-5: 27 87% 67%;
+
+  --sidebar-background: 240 10% 10%;
+  --sidebar-foreground: 0 0% 90%;
+  --sidebar-primary: 217 91% 60%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 4% 16%;
+  --sidebar-accent-foreground: 0 0% 95%;
+  --sidebar-border: 240 4% 20%;
+  --sidebar-ring: 217 91% 60%;
 }
 
 @theme inline {

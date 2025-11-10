@@ -100,10 +100,10 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-border bg-card">
+      <div className="rounded-lg border border-neutral-200 bg-white">
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader className="sticky top-0 z-10 bg-card border-b border-border">
+            <TableHeader className="sticky top-0 z-10 bg-white border-b border-neutral-200">
               <TableRow className="hover:bg-transparent">
                 {columns.map((column) => (
                   <TableHead
@@ -112,12 +112,12 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
                       width: column.size ? `${column.size}px` : undefined,
                       minWidth: column.size ? `${column.size}px` : undefined,
                     }}
-                    className={`h-11 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap ${column.className || ""}`}
+                    className={`h-11 px-3 text-xs font-semibold text-neutral-700 uppercase tracking-wide whitespace-nowrap ${column.className || ""}`}
                   >
                     <div
                       className={
                         column.sortable !== false
-                          ? "cursor-pointer select-none flex items-center gap-2 hover:text-foreground"
+                          ? "cursor-pointer select-none flex items-center gap-2 hover:text-neutral-900"
                           : ""
                       }
                       onClick={() => column.sortable !== false && handleSort(column.id)}
@@ -140,9 +140,9 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
                       key={row.id}
                       ref={isFocused ? focusRowRef : null}
                       onClick={(e) => handleRowClick(row.id, e)}
-                      className={`h-12 hover:bg-muted/50 transition-colors cursor-pointer ${
-                        isFocused ? "ring-2 ring-primary ring-inset bg-primary/10" : ""
-                      } ${isRevoked ? "text-muted-foreground" : ""} ${isChanged ? "animate-pulse bg-green-100/10" : ""}`}
+                      className={`h-12 hover:bg-neutral-50 transition-colors cursor-pointer ${
+                        isFocused ? "ring-2 ring-indigo-400 ring-inset bg-indigo-50" : ""
+                      } ${isRevoked ? "text-neutral-400" : ""} ${isChanged ? "animate-pulse bg-green-50" : ""}`}
                     >
                       {columns.map((column) => (
                         <TableCell
@@ -162,7 +162,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-48 text-center">
-                    <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                    <div className="flex flex-col items-center justify-center gap-2 text-neutral-500">
                       <div className="text-4xl">📭</div>
                       <p className="text-sm font-medium">No apps found</p>
                       <p className="text-xs">Try adjusting your filters or search query</p>
@@ -177,7 +177,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
 
       <div className="flex items-center justify-between px-2">
         <div className="flex items-center gap-2">
-          <p className="text-sm text-foreground">Rows per page:</p>
+          <p className="text-sm text-neutral-700">Rows per page:</p>
           <Select value={`${pageSize}`} onValueChange={(value) => setPageSize(Number(value))}>
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue placeholder={pageSize} />
@@ -193,7 +193,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="text-sm text-foreground">
+          <div className="text-sm text-neutral-700">
             Page {pageIndex + 1} of {pageCount || 1}
           </div>
           <div className="flex items-center gap-2">
@@ -202,7 +202,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
               size="sm"
               onClick={() => setPageIndex((prev) => prev - 1)}
               disabled={pageIndex === 0}
-              className="focus:ring-2 focus:ring-primary"
+              className="focus:ring-2 focus:ring-indigo-400"
             >
               Previous
             </Button>
@@ -211,7 +211,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
               size="sm"
               onClick={() => setPageIndex((prev) => prev + 1)}
               disabled={pageIndex >= pageCount - 1}
-              className="focus:ring-2 focus:ring-primary"
+              className="focus:ring-2 focus:ring-indigo-400"
             >
               Next
             </Button>

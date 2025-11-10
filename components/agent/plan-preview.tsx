@@ -220,7 +220,7 @@ export default function PlanPreview() {
         if (!v) handleClose()
       }}
     >
-      <DialogContent className="bg-card max-w-2xl">
+      <DialogContent className="bg-white max-w-2xl">
         <DialogHeader data-testid="plan-dialog-header">
           {busy && steps.filter((s) => s.status === "done").length === 0 ? (
             <div className="space-y-2 animate-pulse">
@@ -229,8 +229,8 @@ export default function PlanPreview() {
             </div>
           ) : (
             <>
-              <DialogTitle className="text-xl font-semibold text-foreground">Remediation Plan: {app.name}</DialogTitle>
-              <p className="text-sm text-muted-foreground mt-2">
+              <DialogTitle className="text-xl font-semibold text-gray-900">Remediation Plan: {app.name}</DialogTitle>
+              <p className="text-sm text-neutral-600 mt-2">
                 This automated agent will execute the following steps to revoke access and notify stakeholders.
               </p>
             </>
@@ -246,7 +246,7 @@ export default function PlanPreview() {
                   ? "bg-green-50 border-green-300"
                   : busy && index === steps.filter((s) => s.status === "done").length
                     ? "bg-blue-50 border-blue-300"
-                    : "bg-muted border-border"
+                    : "bg-gray-50 border-gray-200"
               }`}
               role="listitem"
               aria-label={`Step ${step.id}: ${step.title} - ${step.status === "done" ? "completed" : "pending"}`}
@@ -257,7 +257,7 @@ export default function PlanPreview() {
                     ? "bg-green-600 text-white"
                     : busy && index === steps.filter((s) => s.status === "done").length
                       ? "bg-blue-600 text-white animate-pulse"
-                      : "bg-muted-foreground/20 text-muted-foreground"
+                      : "bg-gray-300 text-gray-600"
                 }`}
                 aria-hidden="true"
               >
@@ -265,17 +265,15 @@ export default function PlanPreview() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-foreground">{step.title}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">{step.title}</h3>
                   {step.status === "done" && (
                     <Badge variant="secondary" className="text-xs">
                       Done
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{step.description}</p>
-                {step.receiptId && (
-                  <p className="text-xs text-muted-foreground mt-1 font-mono">Receipt: {step.receiptId}</p>
-                )}
+                <p className="text-xs text-neutral-600 mt-1">{step.description}</p>
+                {step.receiptId && <p className="text-xs text-neutral-500 mt-1 font-mono">Receipt: {step.receiptId}</p>}
               </div>
             </div>
           ))}
