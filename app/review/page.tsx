@@ -184,7 +184,7 @@ function ReviewPageContent() {
 
         {enrichedCases.length > 0 && (
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-neutral-600">Sort by:</span>
+            <span className="text-sm font-medium text-muted-foreground">Sort by:</span>
             <Tabs value={sortBy} onValueChange={(v) => handleSort(v as SortOption)}>
               <TabsList>
                 <TabsTrigger value="priority" className="text-xs">
@@ -352,10 +352,10 @@ function ReviewPageContent() {
                         {reviewCase.timeline.length} event{reviewCase.timeline.length !== 1 ? "s" : ""}
                       </Badge>
                     </h3>
-                    <div className="space-y-2.5 pl-4 border-l-2 border-neutral-200">
+                    <div className="space-y-2.5 pl-4 border-l-2 border-border">
                       {reviewCase.timeline.map((event, idx) => (
                         <div key={idx} className="flex gap-4 text-sm relative">
-                          <div className="absolute -left-[21px] top-2 w-3 h-3 rounded-full bg-white border-2 border-neutral-300" />
+                          <div className="absolute -left-[21px] top-2 w-3 h-3 rounded-full bg-card border-2 border-border" />
                           <span className="text-muted-foreground min-w-[180px] font-mono text-xs pt-1">
                             {new Date(event.ts).toLocaleString()}
                           </span>

@@ -189,7 +189,7 @@ function InventoryPageContent() {
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="text-sm font-medium text-neutral-600">Risk:</div>
+              <div className="text-sm font-medium text-muted-foreground">Risk:</div>
               <Tabs
                 value={filters.risk || "All"}
                 onValueChange={(v) => updateFilters({ risk: v as RiskLevel | "All" })}
@@ -212,7 +212,7 @@ function InventoryPageContent() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="text-sm font-medium text-neutral-600">Status:</div>
+              <div className="text-sm font-medium text-muted-foreground">Status:</div>
               <Tabs
                 value={filters.status || "All"}
                 onValueChange={(v) => updateFilters({ status: v as AppStatus | "All" })}

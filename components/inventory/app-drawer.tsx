@@ -240,29 +240,32 @@ export default function AppDrawer() {
 
   return (
     <Drawer open={localOpen} onOpenChange={handleOpenChange}>
-      <DrawerContent className="h-full p-0 bg-white max-w-xl">
+      <DrawerContent className="h-full p-0 max-w-xl">
         {isCISO && (
           <div className="px-6 pt-4">
-            <Alert className="border-blue-300 bg-blue-50" data-testid="ciso-banner-drawer">
-              <AlertDescription className="text-blue-900 font-medium text-sm">
+            <Alert
+              className="border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950"
+              data-testid="ciso-banner-drawer"
+            >
+              <AlertDescription className="text-blue-900 dark:text-blue-300 font-medium text-sm">
                 📋 Read-only view (CISO). Only SecOps can perform actions.
               </AlertDescription>
             </Alert>
           </div>
         )}
 
-        <DrawerHeader className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b shadow-sm px-6 py-4">
+        <DrawerHeader className="sticky top-0 z-10 bg-card/90 backdrop-blur border-b border-border shadow-sm px-6 py-4">
           <div className="flex items-start justify-between gap-4 w-full">
             <div className="flex-1 min-w-0">
               <DrawerTitle
                 ref={titleRef}
                 tabIndex={-1}
                 data-testid="drawer-title"
-                className="text-xl font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+                className="text-xl font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
               >
                 {app.name}
               </DrawerTitle>
-              <div className="mt-1 text-xs text-neutral-500">
+              <div className="mt-1 text-xs text-muted-foreground">
                 {app.publisher} • {app.category}
               </div>
               <div className="mt-2 flex items-center gap-2 flex-wrap">
@@ -274,7 +277,7 @@ export default function AppDrawer() {
             </div>
             <div className="flex-shrink-0 flex items-start gap-2">
               <div
-                className="w-10 h-10 bg-gray-200 rounded border border-gray-300 flex items-center justify-center text-gray-500 text-xs"
+                className="w-10 h-10 bg-muted rounded border border-border flex items-center justify-center text-muted-foreground text-xs"
                 role="img"
                 aria-label={`${app.name} logo`}
               >
@@ -284,7 +287,7 @@ export default function AppDrawer() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 rounded-full hover:bg-gray-100"
+                  className="h-8 w-8 rounded-full"
                   aria-label="Close drawer"
                   type="button"
                 >
@@ -298,7 +301,7 @@ export default function AppDrawer() {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="text-gray-700 pointer-events-none"
+                    className="pointer-events-none"
                     aria-hidden="true"
                   >
                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -313,42 +316,48 @@ export default function AppDrawer() {
         {isDrawerLoading ? (
           <DrawerSkeleton />
         ) : (
-          <div className="p-6 space-y-4 overflow-y-auto bg-white pb-24">
+          <div className="p-6 space-y-4 overflow-y-auto pb-24">
             {showSuccessBanner && bannerData && (
-              <Alert className="border-green-300 bg-green-50 text-green-800" role="status" aria-live="polite">
-                <AlertDescription className="flex items-center justify-between">
+              <Alert
+                className="border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950"
+                role="status"
+                aria-live="polite"
+              >
+                <AlertDescription className="flex items-center justify-between text-green-800 dark:text-green-300">
                   <span className="font-medium">
                     ✓ {bannerData.action} on {bannerData.ts} by {bannerData.actor}
                   </span>
-                  <Link href={`/audit?appId=${app.id}`} className="underline hover:text-green-900 font-medium ml-4">
+                  <Link href={`/audit?appId=${app.id}`} className="underline hover:opacity-80 font-medium ml-4">
                     View Audit →
                   </Link>
                 </AlertDescription>
               </Alert>
             )}
 
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader className="bg-white pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900">About</CardTitle>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">About</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-700 space-y-2 bg-white">
+              <CardContent className="text-sm space-y-2">
                 <div>{app.description || "No description available."}</div>
-                <div className="text-xs text-neutral-500">
+                <div className="text-xs text-muted-foreground">
                   First seen {new Date(app.firstSeen).toLocaleDateString()} • Last seen{" "}
                   {new Date(app.lastSeen).toLocaleDateString()}
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader className="bg-white pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900">Permissions</CardTitle>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Permissions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 bg-white">
+              <CardContent className="space-y-3">
                 {Object.entries(scopeGroups).map(([group, scopes]) => (
                   <div key={group}>
-                    <div className="text-xs font-semibold text-neutral-600 mb-1 uppercase tracking-wide">{group}</div>
-                    <ul className="pl-4 list-disc text-sm text-neutral-700 space-y-1">
+                    <div className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wide">
+                      {group}
+                    </div>
+                    <ul className="pl-4 list-disc text-sm space-y-1">
                       {scopes.map((s, i) => (
                         <li key={i}>
                           <span className="font-medium">{s.name}</span> — {s.description}
@@ -358,17 +367,17 @@ export default function AppDrawer() {
                   </div>
                 ))}
                 {app.scopes.length === 0 && (
-                  <div className="text-sm text-neutral-500">No special permissions found.</div>
+                  <div className="text-sm text-muted-foreground">No special permissions found.</div>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader className="bg-white pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900">Top Users</CardTitle>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Top Users</CardTitle>
               </CardHeader>
-              <CardContent className="bg-white">
-                <ul className="text-sm text-neutral-700 space-y-1">
+              <CardContent>
+                <ul className="text-sm space-y-1">
                   {app.users.slice(0, 8).map((u) => (
                     <li key={u.id}>
                       <span className="font-medium">{u.name}</span> — {u.email} • {u.dept}
@@ -376,18 +385,18 @@ export default function AppDrawer() {
                     </li>
                   ))}
                   {app.users.length > 8 && (
-                    <li className="text-xs text-neutral-500">{`+${app.users.length - 8} more`}</li>
+                    <li className="text-xs text-muted-foreground">{`+${app.users.length - 8} more`}</li>
                   )}
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader className="bg-white pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900">Risk Factors</CardTitle>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Risk Factors</CardTitle>
               </CardHeader>
-              <CardContent className="bg-white">
-                <ul className="list-disc pl-5 text-sm text-neutral-700 space-y-1">
+              <CardContent>
+                <ul className="list-disc pl-5 text-sm space-y-1">
                   {uniqueRiskFactors.map((factor, i) => (
                     <li key={i}>{factor}</li>
                   ))}
@@ -395,22 +404,22 @@ export default function AppDrawer() {
               </CardContent>
             </Card>
 
-            <Card id="ai-explain" className="bg-white border border-gray-200 shadow-sm">
-              <CardHeader className="bg-white pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900">AI Explanation</CardTitle>
+            <Card id="ai-explain">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">AI Explanation</CardTitle>
               </CardHeader>
-              <CardContent className="bg-white space-y-3">
-                {app.rationale?.summary && (
-                  <div className="text-sm text-gray-700 font-medium">{app.rationale.summary}</div>
-                )}
+              <CardContent className="space-y-3">
+                {app.rationale?.summary && <div className="text-sm font-medium">{app.rationale.summary}</div>}
                 {app.rationale?.reasons && app.rationale.reasons.length > 0 && (
                   <div>
-                    <div className="text-xs font-semibold text-neutral-600 mb-2 uppercase tracking-wide">Reasons</div>
-                    <ol className="list-decimal pl-5 text-sm text-neutral-700 space-y-1">
+                    <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+                      Reasons
+                    </div>
+                    <ol className="list-decimal pl-5 text-sm space-y-1">
                       {app.rationale.reasons.map((r, i) => (
                         <li key={i}>
                           {r.text}
-                          {r.citation !== undefined && <sup className="text-blue-600 ml-1">[{r.citation}]</sup>}
+                          {r.citation !== undefined && <sup className="text-primary ml-1">[{r.citation}]</sup>}
                         </li>
                       ))}
                     </ol>
@@ -418,15 +427,17 @@ export default function AppDrawer() {
                 )}
                 {app.rationale?.sources && app.rationale.sources.length > 0 && (
                   <div>
-                    <div className="text-xs font-semibold text-neutral-600 mb-2 uppercase tracking-wide">Sources</div>
-                    <ul className="text-sm text-neutral-700 space-y-1">
+                    <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+                      Sources
+                    </div>
+                    <ul className="text-sm space-y-1">
                       {app.rationale.sources.map((s, i) => (
                         <li key={i}>
                           <a
                             href={s.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                            className="text-primary hover:underline"
                           >
                             [{i}] {s.title}
                           </a>
@@ -436,7 +447,7 @@ export default function AppDrawer() {
                   </div>
                 )}
                 {!app.rationale?.summary && !app.rationale?.reasons?.length && (
-                  <div className="text-sm text-neutral-500">No AI explanation available.</div>
+                  <div className="text-sm text-muted-foreground">No AI explanation available.</div>
                 )}
               </CardContent>
             </Card>
@@ -444,7 +455,7 @@ export default function AppDrawer() {
         )}
 
         {persona === "SecOps" && (
-          <div className="sticky bottom-0 z-10 bg-white/90 backdrop-blur border-t shadow-lg px-6 py-3 flex items-center justify-end gap-2">
+          <div className="sticky bottom-0 z-10 bg-card/90 backdrop-blur border-t border-border shadow-lg px-6 py-3 flex items-center justify-end gap-2">
             {app.status !== "Revoked" && (
               <Button
                 variant="destructive"
@@ -506,7 +517,7 @@ export default function AppDrawer() {
         )}
 
         {isCISO && (
-          <div className="sticky bottom-0 z-10 bg-white/90 backdrop-blur border-t shadow-lg px-6 py-3 flex items-center justify-between gap-2">
+          <div className="sticky bottom-0 z-10 bg-card/90 backdrop-blur border-t border-border shadow-lg px-6 py-3 flex items-center justify-between gap-2">
             <span className="text-xs text-muted-foreground">Actions disabled for CISO role</span>
             <div className="flex items-center gap-2">
               <TooltipProvider>
@@ -580,11 +591,11 @@ export default function AppDrawer() {
         )}
 
         <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-          <DialogContent className="bg-white border-2 border-gray-300">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-gray-900">Revoke access to {app.name}?</DialogTitle>
+              <DialogTitle>Revoke access to {app.name}?</DialogTitle>
             </DialogHeader>
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-muted-foreground">
               This will remove the app's OAuth permissions for all affected users. You can notify users afterward.
             </p>
             <DialogFooter className="flex gap-2 justify-end">

@@ -26,6 +26,16 @@ function DashboardPageContent() {
     return () => clearTimeout(timer)
   }, [])
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const rootStyles = getComputedStyle(document.documentElement)
+      console.log("[v0] CSS Variables Check:")
+      console.log("[v0] --background:", rootStyles.getPropertyValue("--background"))
+      console.log("[v0] --primary:", rootStyles.getPropertyValue("--primary"))
+      console.log("[v0] --card:", rootStyles.getPropertyValue("--card"))
+    }
+  }, [])
+
   const { kpis, riskDistribution, weeklyNewApps, ttrSeries, receipts, apps } = useShadowStore()
   const { totalUnsanctioned, highRisk, usersInvolved, remediated } = kpis()
   const risk = riskDistribution()
@@ -113,11 +123,11 @@ function DashboardPageContent() {
 }
 
 function KpiCard({ title, value, tone }: { title: string; value: number | string; tone?: "destructive" | "success" }) {
-  const toneCls = tone === "destructive" ? "text-red-600" : tone === "success" ? "text-green-600" : "text-neutral-900"
+  const toneCls = tone === "destructive" ? "text-red-500" : tone === "success" ? "text-green-500" : "text-foreground"
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm text-neutral-500">{title}</CardTitle>
+        <CardTitle className="text-sm text-muted-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className={`text-3xl font-semibold ${toneCls}`}>{value}</div>
@@ -146,10 +156,10 @@ function CriticalAlerts() {
       </CardHeader>
       <CardContent className="space-y-3">
         {critical.map((app) => (
-          <div key={app.id} className="flex items-center justify-between border rounded p-3">
+          <div key={app.id} className="flex items-center justify-between border border-border rounded p-3">
             <div>
-              <div className="font-medium">{app.name}</div>
-              <div className="text-xs text-neutral-500">
+              <div className="font-medium text-foreground">{app.name}</div>
+              <div className="text-xs text-muted-foreground">
                 {app.publisher} • {app.users.length} user{app.users.length !== 1 ? "s" : ""} • First seen{" "}
                 {new Date(app.firstSeen).toLocaleDateString()}
               </div>
@@ -174,10 +184,11 @@ function GeneratedSummary() {
       <CardHeader>
         <CardTitle>Generated Summary (beta)</CardTitle>
       </CardHeader>
-      <CardContent className="text-sm text-neutral-700">
-        In the last reporting period, we're tracking <b>{totalUnsanctioned}</b> unsanctioned apps, including{" "}
-        <b>{highRisk}</b> high-risk. Remediation actions completed: <b>{remediated}</b>. Focus this week: drive down
-        high-risk OAuth grants and notify affected users.
+      <CardContent className="text-sm text-muted-foreground">
+        In the last reporting period, we're tracking <b className="text-foreground">{totalUnsanctioned}</b> unsanctioned
+        apps, including <b className="text-foreground">{highRisk}</b> high-risk. Remediation actions completed:{" "}
+        <b className="text-foreground">{remediated}</b>. Focus this week: drive down high-risk OAuth grants and notify
+        affected users.
       </CardContent>
     </Card>
   )

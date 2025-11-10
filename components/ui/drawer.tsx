@@ -39,8 +39,8 @@ function DrawerContent({ className, children, ...props }: React.ComponentProps<t
       <DialogPrimitive.Content
         role="dialog"
         className={cn(
-          "fixed z-50 flex h-full w-full max-w-xl flex-col bg-white shadow-2xl",
-          "right-0 inset-y-0 border-l-2",
+          "fixed z-50 flex h-full w-full max-w-xl flex-col bg-card text-card-foreground shadow-2xl",
+          "right-0 inset-y-0 border-l-2 border-border",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
           "duration-300",
