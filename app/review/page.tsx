@@ -27,16 +27,18 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {
-  Clock,
   CheckCircle2,
   AlertTriangle,
-  TrendingUp,
   ExternalLink,
   Calendar,
   Shield,
   CheckCheck,
   XCircle,
   Building2,
+  FileText,
+  Users,
+  Lock,
+  Sparkles,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -46,7 +48,7 @@ function ReviewPageContent() {
   const [isBooting, setIsBooting] = useState(true)
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { cases, apps, sanctionApp, dismissApp, kpis, persona } = useShadowStore()
+  const { cases, apps, sanctionApp, unsanctionApp, dismissApp, kpis, persona } = useShadowStore()
   const { toast } = useToast()
 
   const [actionInProgress, setActionInProgress] = useState<string | null>(null)
@@ -77,7 +79,13 @@ function ReviewPageContent() {
 
     setActionInProgress(appId)
     const before = kpis()
-    sanctionApp(appId)
+
+    // Toggle between sanction and unsanction based on current status
+    if (app.status === "Sanctioned") {
+      unsanctionApp(appId)
+    } else {
+      sanctionApp(appId)
+    }
 
     await new Promise((r) => setTimeout(r, 100))
 
@@ -85,13 +93,13 @@ function ReviewPageContent() {
     setActionInProgress(null)
 
     toast({
-      title: "App Sanctioned",
-      description: `${app.name} has been approved and marked as sanctioned`,
+      title: app.status === "Sanctioned" ? "App Unsanctioned" : "App Sanctioned",
+      description: `${app.name} has been ${app.status === "Sanctioned" ? "changed to unsanctioned status" : "approved and marked as sanctioned"}`,
     })
 
     window.dispatchEvent(
       new CustomEvent("review:action", {
-        detail: { type: "sanction", appId, before, after },
+        detail: { type: app.status === "Sanctioned" ? "unsanction" : "sanction", appId, before, after },
       }),
     )
   }
@@ -450,6 +458,7 @@ function ReviewPageContent() {
             const lastEventRelative = getRelativeTime(lastEventDate)
             const isProcessing = actionInProgress === app.id
             const isSelected = selectedCases.has(reviewCase.id)
+            const isSanctioned = app.status === "Sanctioned"
 
             const getTagColor = (tag: string) => {
               const tagLower = tag.toLowerCase()
@@ -511,26 +520,6 @@ function ReviewPageContent() {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div className="space-y-1.5">
                             <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
-                              <TrendingUp className="h-3.5 w-3.5" />
-                              Confidence
-                            </div>
-                            <div className="font-bold text-xl text-[#47D7FF]">
-                              {Math.round(reviewCase.confidence * 100)}%
-                            </div>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
-                              <AlertTriangle className="h-3.5 w-3.5" />
-                              Impact
-                            </div>
-                            <div className="font-bold text-xl text-[#FFB02E]">
-                              {Math.round(reviewCase.impact * 100)}%
-                            </div>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
                               <Building2 className="h-3.5 w-3.5" />
                               Publisher
                             </div>
@@ -539,10 +528,26 @@ function ReviewPageContent() {
 
                           <div className="space-y-1.5">
                             <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
-                              <Clock className="h-3.5 w-3.5" />
-                              Last Event
+                              <Users className="h-3.5 w-3.5" />
+                              Users
                             </div>
-                            <div className="font-semibold text-sm text-foreground">{lastEventRelative}</div>
+                            <div className="font-bold text-xl text-[#47D7FF]">{app.users.length}</div>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                              <Lock className="h-3.5 w-3.5" />
+                              Permissions
+                            </div>
+                            <div className="font-bold text-xl text-[#FFB02E]">{app.scopes.length}</div>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                              <AlertTriangle className="h-3.5 w-3.5" />
+                              Risk Factors
+                            </div>
+                            <div className="font-bold text-xl text-[#FF4D4D]">{reviewCase.tags.length}</div>
                           </div>
                         </div>
                       </div>
@@ -560,11 +565,17 @@ function ReviewPageContent() {
                               className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 shadow-[0_0_12px_rgba(71,215,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed font-semibold min-w-[100px]"
                             >
                               <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                              {isProcessing ? "Processing..." : "Approve"}
+                              {isProcessing ? "Processing..." : isSanctioned ? "Unsanction" : "Sanction"}
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p className="text-xs">{isCISO ? restrictedTooltip : "Mark as sanctioned"}</p>
+                            <p className="text-xs">
+                              {isCISO
+                                ? restrictedTooltip
+                                : isSanctioned
+                                  ? "Remove sanction status"
+                                  : "Mark as sanctioned"}
+                            </p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -588,11 +599,57 @@ function ReviewPageContent() {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                const url = new URL(window.location.href)
+                                url.pathname = "/inventory"
+                                url.searchParams.set("focus", app.id)
+                                url.searchParams.set("plan", app.id)
+                                router.push(url.pathname + url.search)
+                              }}
+                              disabled={isCISO || isProcessing}
+                              className="bg-[#12171C] hover:bg-[#1A2128] border border-border/50 disabled:opacity-50 disabled:cursor-not-allowed font-medium min-w-[100px]"
+                            >
+                              <FileText className="h-4 w-4 mr-1.5" />
+                              Prepare Plan
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">{isCISO ? restrictedTooltip : "Prepare remediation plan"}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 </CardHeader>
 
                 <CardContent className="pt-6 space-y-6">
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-[#47D7FF]" />
+                      AI Summary
+                    </h4>
+                    <div className="bg-gradient-to-br from-[#47D7FF]/5 to-[#47D7FF]/10 border border-[#47D7FF]/20 rounded-lg p-4">
+                      {app.aiExplanation ? (
+                        <p className="text-sm text-foreground leading-relaxed text-balance">{app.aiExplanation}</p>
+                      ) : app.rationale?.summary ? (
+                        <p className="text-sm text-foreground leading-relaxed text-balance">{app.rationale.summary}</p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">
+                          No AI summary available for this application.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <Separator className="bg-border/50" />
+
                   <div className="space-y-3">
                     <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-[#47D7FF]" />
