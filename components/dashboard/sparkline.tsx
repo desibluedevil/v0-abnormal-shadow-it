@@ -44,13 +44,22 @@ export function Sparkline({ data }: SparklineProps) {
     .join(" ")
 
   return (
-    <svg width="100%" height="56" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+    <svg
+      width="100%"
+      height="56"
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+      role="img"
+      aria-label="Time to remediate trend sparkline"
+    >
       <path
         d={linePath}
         fill="none"
-        stroke="#47D7FF"
+        stroke="var(--accent-cyan)"
         strokeWidth="2"
-        filter="drop-shadow(0 0 2px rgba(71, 215, 255, 0.3))"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ filter: "drop-shadow(0 0 2px rgba(71, 215, 255, 0.3))" }}
       />
     </svg>
   )

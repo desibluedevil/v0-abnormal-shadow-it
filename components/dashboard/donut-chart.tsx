@@ -2,8 +2,11 @@
 
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
 import { PieChart } from "lucide-react"
+import { useState } from "react"
 
 export default function DonutChart({ high, med, low }: { high: number; med: number; low: number }) {
+  const [hoveredSegment, setHoveredSegment] = useState<string | null>(null)
+
   const total = high + med + low
 
   if (total === 0) {
@@ -22,17 +25,14 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
     )
   }
 
-  // Calculate percentages
   const highPct = (high / total) * 100
   const medPct = (med / total) * 100
   const lowPct = (low / total) * 100
 
-  // Calculate angles (starting from top, going clockwise)
   const highAngle = (highPct / 100) * 360
   const medAngle = (medPct / 100) * 360
   const lowAngle = (lowPct / 100) * 360
 
-  // Helper to create SVG arc path
   const createArc = (startAngle: number, endAngle: number) => {
     const radius = 90
     const innerRadius = 60
@@ -56,10 +56,9 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
     return `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4} Z`
   }
 
-  // Helper to get label position
   const getLabelPosition = (startAngle: number, endAngle: number) => {
     const midAngle = ((startAngle + endAngle) / 2 - 90) * (Math.PI / 180)
-    const radius = 75 // Between inner and outer radius
+    const radius = 75
     const cx = 120
     const cy = 120
     return {
@@ -76,13 +75,18 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
   ].filter((s) => s.value > 0)
 
   return (
-    <div className="h-64 flex flex-col items-center justify-center">
-      <svg width="240" height="240" viewBox="0 0 240 240" className="mb-4">
+    <div
+      className="h-64 flex flex-col items-center justify-center"
+      role="img"
+      aria-label={`Risk distribution: ${high} high risk, ${med} medium risk, ${low} low risk apps`}
+    >
+      <svg width="240" height="240" viewBox="0 0 240 240" className="mb-4" preserveAspectRatio="xMidYMid meet">
         {segments.map((segment) => {
           const startAngle = currentAngle
           const endAngle = currentAngle + segment.angle
           const labelPos = getLabelPosition(startAngle, endAngle)
           currentAngle = endAngle
+          const isHovered = hoveredSegment === segment.name
 
           return (
             <g key={segment.name}>
@@ -91,14 +95,23 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
                 fill={segment.color}
                 stroke="hsl(var(--background))"
                 strokeWidth="2"
-                className="transition-opacity hover:opacity-90 cursor-pointer"
+                className="transition-all duration-200 cursor-pointer"
+                style={{
+                  opacity: isHovered ? 1 : hoveredSegment ? 0.5 : 0.9,
+                  filter: isHovered ? "drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4))" : undefined,
+                  transform: isHovered ? "scale(1.02)" : "scale(1)",
+                  transformOrigin: "120px 120px",
+                }}
+                onMouseEnter={() => setHoveredSegment(segment.name)}
+                onMouseLeave={() => setHoveredSegment(null)}
               />
               {segment.pct >= 10 && (
                 <text
                   x={labelPos.x}
                   y={labelPos.y}
                   textAnchor="middle"
-                  className="text-sm font-bold fill-background pointer-events-none"
+                  className="text-sm font-bold pointer-events-none"
+                  fill="hsl(var(--background))"
                 >
                   {Math.round(segment.pct)}%
                 </text>
@@ -106,27 +119,44 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
             </g>
           )
         })}
-        <text x="120" y="110" textAnchor="middle" className="text-4xl font-bold fill-foreground font-mono">
+        <text
+          x="120"
+          y="110"
+          textAnchor="middle"
+          className="text-4xl font-bold font-mono"
+          fill="hsl(var(--foreground))"
+        >
           {total}
         </text>
-        <text x="120" y="135" textAnchor="middle" className="text-sm fill-muted-foreground font-medium">
+        <text x="120" y="135" textAnchor="middle" className="text-sm font-medium" fill="hsl(var(--muted-foreground))">
           Total Apps
         </text>
       </svg>
 
-      <div className="flex gap-4 text-sm text-foreground">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "var(--risk-high)" }} />
-          <span className="font-medium">High ({high})</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "var(--risk-med)" }} />
-          <span className="font-medium">Med ({med})</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "var(--risk-low)" }} />
-          <span className="font-medium">Low ({low})</span>
-        </div>
+      <div className="flex gap-4 text-sm">
+        {segments.map((segment) => {
+          const isHovered = hoveredSegment === segment.name
+          return (
+            <div
+              key={segment.name}
+              className="flex items-center gap-1.5 cursor-pointer transition-all duration-200"
+              style={{ opacity: isHovered ? 1 : hoveredSegment ? 0.5 : 1 }}
+              onMouseEnter={() => setHoveredSegment(segment.name)}
+              onMouseLeave={() => setHoveredSegment(null)}
+            >
+              <div
+                className="w-3 h-3 rounded-sm border border-border/40 transition-transform duration-200"
+                style={{
+                  backgroundColor: segment.color,
+                  transform: isHovered ? "scale(1.2)" : "scale(1)",
+                }}
+              />
+              <span className="font-medium text-foreground">
+                {segment.name} ({segment.value})
+              </span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -33,7 +33,7 @@ function InventoryPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const { filteredApps, filters, setFilters, persona } = useShadowStore()
+  const { filteredApps, filters, setFilters, persona, appendReceipt } = useShadowStore()
   const { toast } = useToast()
 
   const isInitialMount = useRef(true)
@@ -121,6 +121,16 @@ function InventoryPageContent() {
     a.download = "shadow_apps.csv"
     a.click()
     URL.revokeObjectURL(url)
+
+    appendReceipt({
+      id: `export_${Date.now()}`,
+      ts: new Date().toISOString(),
+      tool: "notify.email",
+      status: "ok",
+      details: `Exported ${apps.length} app${apps.length === 1 ? "" : "s"} to CSV (shadow_apps.csv)`,
+      appId: "system",
+      actor: persona === "CISO" ? "CISO" : "Sam (SecOps)",
+    })
 
     toast({
       title: "CSV exported",

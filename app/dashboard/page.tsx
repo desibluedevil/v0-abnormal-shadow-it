@@ -204,7 +204,7 @@ function DashboardPageContent() {
             <AnimatedCard delay={0}>
               <Card className="lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>New Apps per Week (12w)</CardTitle>
+                  <CardTitle className="text-balance">New Apps per Week (12w)</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <LineChart data={weekly} />
@@ -215,7 +215,7 @@ function DashboardPageContent() {
             <AnimatedCard delay={0.1}>
               <Card>
                 <CardHeader>
-                  <CardTitle>Risk Distribution</CardTitle>
+                  <CardTitle className="text-balance">Risk Distribution</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <DonutChart high={risk.high} med={risk.med} low={risk.low} />

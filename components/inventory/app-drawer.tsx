@@ -26,7 +26,14 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { DrawerSkeleton } from "@/components/skeletons/drawer-skeleton"
 
@@ -187,7 +194,6 @@ export default function AppDrawer() {
     }
   }, [localOpen])
 
-  // Added keyboard event handler for Esc key
   useEffect(() => {
     if (!localOpen) return
 
@@ -269,9 +275,14 @@ export default function AppDrawer() {
     navigator.clipboard.writeText(emails)
     toast({
       title: "Emails copied",
-      description: `Copied ${app.users.length} email addresses to clipboard`,
+      description: `Copied ${app.users.length} email address${app.users.length === 1 ? "" : "es"} to clipboard`,
     })
   }
+
+  const canRevoke = persona === "SecOps" && app.status !== "Revoked"
+  const canSanction = persona === "SecOps" && app.status !== "Sanctioned" && app.status !== "Revoked"
+  const canNotify = persona === "SecOps"
+  const canPreparePlan = persona === "SecOps" && app.status !== "Revoked"
 
   return (
     <Drawer open={localOpen} onOpenChange={handleOpenChange}>
@@ -291,7 +302,7 @@ export default function AppDrawer() {
           <div className="flex items-start justify-between gap-4 w-full">
             <div className="flex items-start gap-4 flex-1 min-w-0">
               <div
-                className="w-12 h-12 bg-[#12171C] rounded-lg border border-[#47D7FF]/30 flex items-center justify-center text-[#47D7FF] text-lg font-bold flex-shrink-0 shadow-[0_0_12px_rgba(71,215,255,0.15)]"
+                className="w-14 h-14 bg-gradient-to-br from-[#12171C] to-[#1A2028] rounded-xl border border-[#47D7FF]/30 flex items-center justify-center text-[#47D7FF] text-lg font-bold flex-shrink-0 shadow-[0_0_16px_rgba(71,215,255,0.2)] transition-transform hover:scale-105"
                 role="img"
                 aria-label={`${app.name} logo`}
               >
@@ -303,14 +314,14 @@ export default function AppDrawer() {
                   ref={titleRef}
                   tabIndex={-1}
                   data-testid="drawer-title"
-                  className="text-xl font-bold text-[#E9EEF2] focus:outline-none focus:ring-2 focus:ring-[#47D7FF] focus:ring-offset-2 focus:ring-offset-[#0B0F12] rounded mb-1"
+                  className="text-xl font-bold text-[#E9EEF2] focus:outline-none focus:ring-2 focus:ring-[#47D7FF] focus:ring-offset-2 focus:ring-offset-[#0B0F12] rounded mb-2 leading-tight"
                 >
                   {app.name}
                 </DrawerTitle>
-                <div className="text-sm text-[#A7B0B8] mb-3">
+                <div className="text-sm text-[#A7B0B8] mb-3 leading-relaxed">
                   {app.publisher} • {app.category}
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2.5 flex-wrap">
                   <RiskPill level={app.riskLevel} />
                   <StatusPill status={app.status} />
                 </div>
@@ -321,7 +332,7 @@ export default function AppDrawer() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-lg hover:bg-[#12171C] hover:text-[#47D7FF] text-[#A7B0B8] transition-colors flex-shrink-0"
+                className="h-9 w-9 rounded-lg hover:bg-[#12171C] hover:text-[#47D7FF] text-[#A7B0B8] transition-all hover:shadow-[0_0_8px_rgba(71,215,255,0.15)] flex-shrink-0"
                 aria-label="Close drawer"
                 type="button"
               >
@@ -334,7 +345,7 @@ export default function AppDrawer() {
         {isDrawerLoading ? (
           <DrawerSkeleton />
         ) : (
-          <div className="p-6 space-y-4 overflow-y-auto bg-[#0B0F12] pb-24">
+          <div className="p-6 space-y-5 overflow-y-auto bg-[#0B0F12] pb-24">
             {showSuccessBanner && bannerData && (
               <Alert className="border-[#39D98A]/30 bg-[#39D98A]/10" role="status" aria-live="polite">
                 <AlertDescription className="flex items-center justify-between text-[#39D98A]">
@@ -342,14 +353,17 @@ export default function AppDrawer() {
                     <CheckCircle2 className="h-4 w-4" />
                     {bannerData.action} on {bannerData.ts} by {bannerData.actor}
                   </span>
-                  <Link href={`/audit?appId=${app.id}`} className="underline hover:text-[#39D98A]/80 font-medium ml-4">
+                  <Link
+                    href={`/audit?appId=${app.id}`}
+                    className="underline hover:text-[#39D98A]/80 font-medium ml-4 transition-colors"
+                  >
                     View Audit →
                   </Link>
                 </AlertDescription>
               </Alert>
             )}
 
-            <Card className="bg-[#12171C] border border-border/50 shadow-sm">
+            <Card className="bg-[#12171C] border border-border/50 shadow-sm hover:border-[#47D7FF]/20 transition-colors">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold text-[#E9EEF2] flex items-center gap-2">
                   <FileText className="h-4 w-4 text-[#47D7FF]" />
@@ -357,77 +371,100 @@ export default function AppDrawer() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-[#A7B0B8] space-y-3">
-                <p className="leading-relaxed">{app.about || app.description || "No description available."}</p>
+                <p className="leading-relaxed text-balance">
+                  {app.about || app.description || "No description available."}
+                </p>
                 <div className="flex items-center gap-4 text-xs text-[#A7B0B8] pt-2 border-t border-border/50">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
                     First seen {new Date(app.firstSeen).toLocaleDateString()}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
                     Last seen {new Date(app.lastSeen).toLocaleDateString()}
                   </span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#12171C] border border-border/50 shadow-sm">
+            <Card className="bg-[#12171C] border border-border/50 shadow-sm hover:border-[#47D7FF]/20 transition-colors">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold text-[#E9EEF2] flex items-center gap-2">
                   <Lock className="h-4 w-4 text-[#47D7FF]" />
                   Permissions
+                  <Badge variant="secondary" className="ml-auto bg-[#0B0F12] border-border/50 text-xs">
+                    {app.scopes.length} scope{app.scopes.length === 1 ? "" : "s"}
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {app.scopes.length > 0 ? (
-                  <>
-                    <div className="flex flex-wrap gap-2">
-                      {app.scopes.map((s, i) => (
-                        <TooltipProvider key={i}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Badge
-                                variant="secondary"
-                                className="bg-[#0B0F12] border border-border/50 text-[#E9EEF2] hover:border-[#47D7FF]/30 cursor-help transition-colors"
-                              >
-                                {s.name}
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-xs">
-                              <p className="text-xs">{s.description}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      ))}
-                    </div>
-                  </>
+                  <div className="flex flex-wrap gap-2">
+                    {app.scopes.map((s, i) => (
+                      <TooltipProvider key={i}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge
+                              variant="secondary"
+                              className="bg-[#0B0F12] border border-border/50 text-[#E9EEF2] hover:border-[#47D7FF]/50 hover:bg-[#47D7FF]/5 cursor-help transition-all text-xs px-2.5 py-1"
+                            >
+                              {s.riskTag && (
+                                <span
+                                  className="inline-block w-2 h-2 rounded-full bg-[#FF4D4D] mr-1.5"
+                                  aria-label={`${s.riskTag} risk`}
+                                />
+                              )}
+                              {s.name}
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p className="text-xs font-medium mb-1">{s.name}</p>
+                            <p className="text-xs text-muted-foreground">{s.description}</p>
+                            {s.riskTag && <p className="text-xs text-[#FF4D4D] mt-1 font-medium">Risk: {s.riskTag}</p>}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ))}
+                  </div>
                 ) : (
                   <div className="text-sm text-[#A7B0B8]">(none special)</div>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="bg-[#12171C] border border-border/50 shadow-sm">
+            <Card className="bg-[#12171C] border border-border/50 shadow-sm hover:border-[#47D7FF]/20 transition-colors">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-semibold text-[#E9EEF2] flex items-center gap-2">
                     <Users className="h-4 w-4 text-[#47D7FF]" />
                     Top Users
+                    <Badge variant="secondary" className="bg-[#0B0F12] border-border/50 text-xs">
+                      {app.users.length} user{app.users.length === 1 ? "" : "s"}
+                    </Badge>
                   </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={copyEmails}
-                    className="h-8 text-xs text-[#47D7FF] hover:text-[#47D7FF] hover:bg-[#47D7FF]/10"
-                  >
-                    <Copy className="h-3 w-3 mr-1" />
-                    Copy Emails
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={copyEmails}
+                          className="h-8 text-xs text-[#47D7FF] hover:text-[#47D7FF] hover:bg-[#47D7FF]/10 transition-colors"
+                        >
+                          <Copy className="h-3.5 w-3.5 mr-1.5" />
+                          Copy
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">Copy all user emails</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </CardHeader>
               <CardContent>
                 {app.topUsers ? (
-                  <p className="text-sm text-[#E9EEF2] leading-relaxed">{app.topUsers}</p>
+                  <p className="text-sm text-[#E9EEF2] leading-relaxed text-balance">{app.topUsers}</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {app.users.slice(0, 8).map((u) => (
@@ -436,7 +473,7 @@ export default function AppDrawer() {
                           <TooltipTrigger asChild>
                             <Badge
                               variant="outline"
-                              className="bg-[#0B0F12] border-border/50 text-[#E9EEF2] hover:border-[#47D7FF]/30 cursor-help transition-colors"
+                              className="bg-[#0B0F12] border-border/50 text-[#E9EEF2] hover:border-[#47D7FF]/50 hover:bg-[#47D7FF]/5 cursor-help transition-all text-xs px-2.5 py-1"
                             >
                               {u.name}
                             </Badge>
@@ -452,7 +489,10 @@ export default function AppDrawer() {
                       </TooltipProvider>
                     ))}
                     {app.users.length > 8 && (
-                      <Badge variant="secondary" className="bg-[#0B0F12] border border-border/50 text-[#A7B0B8]">
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#0B0F12] border border-border/50 text-[#A7B0B8] text-xs"
+                      >
                         +{app.users.length - 8} more
                       </Badge>
                     )}
@@ -461,20 +501,26 @@ export default function AppDrawer() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#12171C] border border-border/50 shadow-sm">
+            <Card className="bg-[#12171C] border border-border/50 shadow-sm hover:border-[#47D7FF]/20 transition-colors">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold text-[#E9EEF2] flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-[#FFB02E]" />
                   Risk Factors
+                  <Badge
+                    variant="secondary"
+                    className="ml-auto bg-[#FFB02E]/10 border-[#FFB02E]/30 text-[#FFB02E] text-xs"
+                  >
+                    {uniqueRiskFactors.length} factor{uniqueRiskFactors.length === 1 ? "" : "s"}
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {app.riskFactors ? (
-                  <p className="text-sm text-[#A7B0B8] leading-relaxed">{app.riskFactors}</p>
+                  <p className="text-sm text-[#A7B0B8] leading-relaxed text-balance">{app.riskFactors}</p>
                 ) : (
-                  <ul className="space-y-2">
+                  <ul className="space-y-2.5">
                     {uniqueRiskFactors.map((factor, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-[#A7B0B8]">
+                      <li key={i} className="flex items-start gap-2.5 text-sm text-[#A7B0B8] leading-relaxed">
                         <Shield className="h-4 w-4 text-[#FF4D4D] mt-0.5 flex-shrink-0" />
                         <span>{factor}</span>
                       </li>
@@ -486,7 +532,7 @@ export default function AppDrawer() {
 
             <Card
               id="ai-explain"
-              className="bg-[#12171C] border border-[#47D7FF]/30 shadow-[0_0_12px_rgba(71,215,255,0.1)]"
+              className="bg-gradient-to-br from-[#12171C] to-[#0F1519] border border-[#47D7FF]/40 shadow-[0_0_16px_rgba(71,215,255,0.15)] hover:shadow-[0_0_24px_rgba(71,215,255,0.2)] transition-all"
             >
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold text-[#E9EEF2] flex items-center gap-2">
@@ -496,11 +542,11 @@ export default function AppDrawer() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {app.aiExplanation ? (
-                  <p className="text-sm text-[#E9EEF2] leading-relaxed font-medium bg-[#47D7FF]/5 p-3 rounded-lg border border-[#47D7FF]/20">
+                  <p className="text-sm text-[#E9EEF2] leading-relaxed font-medium bg-[#47D7FF]/5 p-4 rounded-lg border border-[#47D7FF]/20 text-balance">
                     {app.aiExplanation}
                   </p>
                 ) : app.rationale?.summary ? (
-                  <p className="text-sm text-[#E9EEF2] leading-relaxed font-medium bg-[#47D7FF]/5 p-3 rounded-lg border border-[#47D7FF]/20">
+                  <p className="text-sm text-[#E9EEF2] leading-relaxed font-medium bg-[#47D7FF]/5 p-4 rounded-lg border border-[#47D7FF]/20 text-balance">
                     {app.rationale.summary}
                   </p>
                 ) : (
@@ -514,82 +560,78 @@ export default function AppDrawer() {
         {persona === "SecOps" && (
           <div className="sticky bottom-0 z-10 bg-[#0B0F12]/95 backdrop-blur-md border-t border-[#47D7FF]/20 shadow-[0_-2px_16px_rgba(0,0,0,0.35)] px-6 py-4">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="text-xs text-[#A7B0B8]">Actions</div>
+              <div className="text-xs text-[#A7B0B8] font-medium">SecOps Actions</div>
               <div className="flex items-center gap-2 flex-wrap">
-                {app.status !== "Revoked" ? (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setConfirmOpen(true)}
-                    className="bg-[#FF4D4D] hover:bg-[#FF4D4D]/90 shadow-[0_0_8px_rgba(255,77,77,0.3)]"
-                    aria-label={`Revoke access to ${app.name}`}
-                  >
-                    <Ban className="h-4 w-4 mr-1" />
-                    Revoke
-                  </Button>
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span>
-                          <Button variant="destructive" size="sm" disabled className="cursor-not-allowed opacity-50">
-                            <Ban className="h-4 w-4 mr-1" />
-                            Revoke
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setConfirmOpen(true)}
+                          disabled={!canRevoke}
+                          className="bg-[#FF4D4D] hover:bg-[#FF4D4D]/90 shadow-[0_0_8px_rgba(255,77,77,0.3)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                          aria-label={`Revoke access to ${app.name}`}
+                        >
+                          <Ban className="h-4 w-4 mr-1.5" />
+                          Revoke
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {!canRevoke && (
                       <TooltipContent>
-                        <p className="text-xs">App is already revoked</p>
+                        <p className="text-xs font-medium">App is already revoked</p>
+                        <p className="text-xs text-muted-foreground mt-1">Prerequisite: Status must not be "Revoked"</p>
                       </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
 
-                {app.status !== "Sanctioned" && app.status !== "Revoked" ? (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      sanctionApp(app.id)
-                      toast({
-                        title: "App Sanctioned",
-                        description: `${app.name} has been marked as sanctioned`,
-                      })
-                    }}
-                    className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50"
-                    aria-label={`Mark ${app.name} as sanctioned`}
-                  >
-                    <CheckCircle2 className="h-4 w-4 mr-1" />
-                    Mark Sanctioned
-                  </Button>
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span>
-                          <Button variant="secondary" size="sm" disabled className="cursor-not-allowed opacity-50">
-                            <CheckCircle2 className="h-4 w-4 mr-1" />
-                            Mark Sanctioned
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            sanctionApp(app.id)
+                            toast({
+                              title: "App Sanctioned",
+                              description: `${app.name} has been marked as sanctioned`,
+                            })
+                          }}
+                          disabled={!canSanction}
+                          className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50 hover:border-[#47D7FF]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                          aria-label={`Mark ${app.name} as sanctioned`}
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                          Mark Sanctioned
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {!canSanction && (
                       <TooltipContent>
-                        <p className="text-xs">
+                        <p className="text-xs font-medium">
                           {app.status === "Sanctioned" ? "App is already sanctioned" : "Cannot sanction a revoked app"}
                         </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Prerequisite: Status must be "Unsanctioned" or "Dismissed"
+                        </p>
                       </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
 
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => openFor(app.id)}
-                  className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50"
+                  className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50 hover:border-[#47D7FF]/30 transition-all"
                   aria-label={`Notify users of ${app.name}`}
                 >
-                  <Mail className="h-4 w-4 mr-1" />
+                  <Mail className="h-4 w-4 mr-1.5" />
                   Notify Users
                 </Button>
 
@@ -598,27 +640,48 @@ export default function AppDrawer() {
                     <Button
                       variant="primary"
                       size="sm"
-                      className="bg-[#47D7FF] hover:bg-[#47D7FF]/90 text-[#0B0F12] shadow-[0_0_12px_rgba(71,215,255,0.3)]"
+                      className="bg-[#47D7FF] hover:bg-[#47D7FF]/90 text-[#0B0F12] shadow-[0_0_12px_rgba(71,215,255,0.3)] hover:shadow-[0_0_16px_rgba(71,215,255,0.4)] transition-all"
                       aria-label={`View audit log for ${app.name}`}
                     >
                       View Audit
                     </Button>
                   </Link>
                 ) : (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      const url = new URL(window.location.href)
-                      url.searchParams.set("plan", app.id)
-                      router.push(url.pathname + url.search + url.hash)
-                    }}
-                    className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50"
-                    aria-label={`Prepare remediation plan for ${app.name}`}
-                  >
-                    <FileText className="h-4 w-4 mr-1" />
-                    Prepare Plan
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              const url = new URL(window.location.href)
+                              url.searchParams.set("plan", app.id)
+                              router.push(url.pathname + url.search + url.hash)
+                            }}
+                            disabled={!canPreparePlan}
+                            className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50 hover:border-[#47D7FF]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            aria-label={`Prepare remediation plan for ${app.name}`}
+                          >
+                            <FileText className="h-4 w-4 mr-1.5" />
+                            Prepare Plan
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {!canPreparePlan && (
+                        <TooltipContent>
+                          <p className="text-xs font-medium">Cannot prepare plan for revoked apps</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Prerequisite:{" "}
+                            <Link href="/audit" className="underline">
+                              View Audit
+                            </Link>{" "}
+                            for revoked apps
+                          </p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
             </div>
@@ -628,21 +691,29 @@ export default function AppDrawer() {
         {isCISO && (
           <div className="sticky bottom-0 z-10 bg-[#0B0F12]/95 backdrop-blur-md border-t border-[#47D7FF]/20 shadow-[0_-2px_16px_rgba(0,0,0,0.35)] px-6 py-4">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <span className="text-xs text-[#A7B0B8]">Actions disabled for CISO role</span>
+              <span className="text-xs text-[#A7B0B8] font-medium flex items-center gap-2">
+                <Lock className="h-3.5 w-3.5" />
+                Actions disabled for CISO role
+              </span>
               <div className="flex items-center gap-2 flex-wrap">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span>
                         <Button variant="destructive" size="sm" disabled className="cursor-not-allowed opacity-50">
-                          <Ban className="h-4 w-4 mr-1" />
+                          <Ban className="h-4 w-4 mr-1.5" />
                           Revoke
                         </Button>
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-xs font-medium">Only SecOps can perform this action</p>
-                      <p className="text-xs text-muted-foreground mt-1">Required: SecOps role</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Prerequisite:{" "}
+                        <Link href="/settings" className="underline">
+                          Switch to SecOps role
+                        </Link>
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -652,14 +723,19 @@ export default function AppDrawer() {
                     <TooltipTrigger asChild>
                       <span>
                         <Button variant="secondary" size="sm" disabled className="cursor-not-allowed opacity-50">
-                          <Mail className="h-4 w-4 mr-1" />
+                          <Mail className="h-4 w-4 mr-1.5" />
                           Notify Users
                         </Button>
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-xs font-medium">Only SecOps can perform this action</p>
-                      <p className="text-xs text-muted-foreground mt-1">Required: SecOps role</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Prerequisite:{" "}
+                        <Link href="/settings" className="underline">
+                          Switch to SecOps role
+                        </Link>
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -669,14 +745,19 @@ export default function AppDrawer() {
                     <TooltipTrigger asChild>
                       <span>
                         <Button variant="secondary" size="sm" disabled className="cursor-not-allowed opacity-50">
-                          <FileText className="h-4 w-4 mr-1" />
+                          <FileText className="h-4 w-4 mr-1.5" />
                           Prepare Plan
                         </Button>
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-xs font-medium">Only SecOps can perform this action</p>
-                      <p className="text-xs text-muted-foreground mt-1">Required: SecOps role</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Prerequisite:{" "}
+                        <Link href="/settings" className="underline">
+                          Switch to SecOps role
+                        </Link>
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -685,7 +766,7 @@ export default function AppDrawer() {
                   <Button
                     variant="primary"
                     size="sm"
-                    className="bg-[#47D7FF] hover:bg-[#47D7FF]/90 text-[#0B0F12] shadow-[0_0_12px_rgba(71,215,255,0.3)]"
+                    className="bg-[#47D7FF] hover:bg-[#47D7FF]/90 text-[#0B0F12] shadow-[0_0_12px_rgba(71,215,255,0.3)] hover:shadow-[0_0_16px_rgba(71,215,255,0.4)] transition-all"
                     aria-label={`View audit log for ${app.name}`}
                   >
                     View Audit
@@ -699,15 +780,16 @@ export default function AppDrawer() {
         <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <DialogContent className="bg-[#12171C] border-2 border-[#FF4D4D]/30">
             <DialogHeader>
-              <DialogTitle className="text-[#E9EEF2] flex items-center gap-2">
+              <DialogTitle className="text-[#E9EEF2] flex items-center gap-2 text-lg">
                 <AlertTriangle className="h-5 w-5 text-[#FF4D4D]" />
                 Revoke access to {app.name}?
               </DialogTitle>
+              <DialogDescription className="text-sm text-[#A7B0B8] leading-relaxed mt-2">
+                This will immediately remove the app's OAuth permissions for all {app.users.length} affected user
+                {app.users.length === 1 ? "" : "s"}. This action cannot be undone, but you can notify users afterward.
+              </DialogDescription>
             </DialogHeader>
-            <p className="text-sm text-[#A7B0B8] leading-relaxed">
-              This will remove the app's OAuth permissions for all affected users. You can notify users afterward.
-            </p>
-            <DialogFooter className="flex gap-2 justify-end">
+            <DialogFooter className="flex gap-2 justify-end mt-4">
               <Button
                 variant="secondary"
                 onClick={() => setConfirmOpen(false)}
@@ -722,7 +804,7 @@ export default function AppDrawer() {
                   setConfirmOpen(false)
                   toast({
                     title: "App Revoked",
-                    description: `Successfully revoked ${app.name} for all ${app.users.length} users`,
+                    description: `Successfully revoked ${app.name} for all ${app.users.length} user${app.users.length === 1 ? "" : "s"}`,
                   })
                 }}
                 className="bg-[#FF4D4D] hover:bg-[#FF4D4D]/90 shadow-[0_0_8px_rgba(255,77,77,0.3)]"

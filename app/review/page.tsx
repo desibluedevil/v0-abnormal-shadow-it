@@ -17,6 +17,16 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Checkbox } from "@/components/ui/checkbox"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   Clock,
   CheckCircle2,
   AlertTriangle,
@@ -26,6 +36,7 @@ import {
   Shield,
   CheckCheck,
   XCircle,
+  Building2,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -40,6 +51,8 @@ function ReviewPageContent() {
 
   const [actionInProgress, setActionInProgress] = useState<string | null>(null)
   const [selectedCases, setSelectedCases] = useState<Set<string>>(new Set())
+  const [showApproveDialog, setShowApproveDialog] = useState(false)
+  const [showDismissDialog, setShowDismissDialog] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => setIsBooting(false), 450)
@@ -110,6 +123,7 @@ function ReviewPageContent() {
 
   const handleBatchApprove = async () => {
     if (selectedCases.size === 0) return
+    setShowApproveDialog(false)
 
     setActionInProgress("batch")
     const before = kpis()
@@ -141,6 +155,7 @@ function ReviewPageContent() {
 
   const handleBatchDismiss = async () => {
     if (selectedCases.size === 0) return
+    setShowDismissDialog(false)
 
     setActionInProgress("batch")
     const before = kpis()
@@ -244,7 +259,7 @@ function ReviewPageContent() {
 
       <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-semibold text-foreground">Review Queue</h1>
+          <h1 className="text-3xl font-semibold text-foreground text-balance">Review Queue</h1>
           <p className="text-sm text-muted-foreground mt-1.5">
             {enrichedCases.length} case{enrichedCases.length !== 1 ? "s" : ""} pending review
           </p>
@@ -273,7 +288,7 @@ function ReviewPageContent() {
                             <Button
                               variant="primary"
                               size="sm"
-                              onClick={handleBatchApprove}
+                              onClick={() => setShowApproveDialog(true)}
                               disabled={isCISO || isBatchProcessing}
                               className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 shadow-[0_0_8px_rgba(71,215,255,0.3)] gap-2"
                             >
@@ -295,7 +310,7 @@ function ReviewPageContent() {
                             <Button
                               variant="secondary"
                               size="sm"
-                              onClick={handleBatchDismiss}
+                              onClick={() => setShowDismissDialog(true)}
                               disabled={isCISO || isBatchProcessing}
                               className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50 gap-2"
                             >
@@ -358,6 +373,56 @@ function ReviewPageContent() {
         )}
       </div>
 
+      <AlertDialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
+        <AlertDialogContent className="bg-[#12171C] border-[#47D7FF]/30">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground flex items-center gap-2">
+              <CheckCheck className="h-5 w-5 text-[#47D7FF]" />
+              Approve {selectedCases.size} Case{selectedCases.size !== 1 ? "s" : ""}?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This will mark {selectedCases.size} case{selectedCases.size !== 1 ? "s" : ""} as sanctioned and approve
+              the associated app{selectedCases.size !== 1 ? "s" : ""} for organizational use. This action can be
+              reversed later if needed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-[#0B0F12] border-border/50 hover:bg-[#12171C]">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBatchApprove}
+              className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 shadow-[0_0_8px_rgba(71,215,255,0.3)]"
+            >
+              Approve All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDismissDialog} onOpenChange={setShowDismissDialog}>
+        <AlertDialogContent className="bg-[#12171C] border-[#FFB02E]/30">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-[#FFB02E]" />
+              Dismiss {selectedCases.size} Case{selectedCases.size !== 1 ? "s" : ""}?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This will mark {selectedCases.size} case{selectedCases.size !== 1 ? "s" : ""} as false positive
+              {selectedCases.size !== 1 ? "s" : ""} and remove them from the review queue. You can undo this action
+              later from the inventory page if needed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-[#0B0F12] border-border/50 hover:bg-[#12171C]">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBatchDismiss}
+              className="bg-[#FFB02E] text-[#0B0F12] hover:bg-[#FFB02E]/90 shadow-[0_0_8px_rgba(255,176,46,0.3)]"
+            >
+              Dismiss All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="space-y-4">
         {enrichedCases.length === 0 ? (
           <Empty>
@@ -387,16 +452,21 @@ function ReviewPageContent() {
             const isSelected = selectedCases.has(reviewCase.id)
 
             const getTagColor = (tag: string) => {
-              if (tag.includes("Exec")) return "bg-[#FF3EB5]/10 text-[#FF3EB5] border-[#FF3EB5]/30"
-              if (tag.includes("Broad")) return "bg-[#FFB02E]/10 text-[#FFB02E] border-[#FFB02E]/30"
-              if (tag.includes("New")) return "bg-[#47D7FF]/10 text-[#47D7FF] border-[#47D7FF]/30"
+              const tagLower = tag.toLowerCase()
+              if (tagLower.includes("exec")) return "bg-[#FF3EB5]/10 text-[#FF3EB5] border-[#FF3EB5]/30"
+              if (tagLower.includes("broad") || tagLower.includes("scope") || tagLower.includes("write"))
+                return "bg-[#FFB02E]/10 text-[#FFB02E] border-[#FFB02E]/30"
+              if (tagLower.includes("new") || tagLower.includes("recent"))
+                return "bg-[#47D7FF]/10 text-[#47D7FF] border-[#47D7FF]/30"
               return "bg-muted/50 text-muted-foreground border-border/50"
             }
 
             const getPriorityColor = (priority: string) => {
-              if (priority === "P0") return "bg-[#FF4D4D] text-white border-[#FF4D4D]"
-              if (priority === "P1") return "bg-[#FFB02E] text-white border-[#FFB02E]"
-              return "bg-[#47D7FF] text-white border-[#47D7FF]"
+              if (priority === "P0")
+                return "bg-[#FF4D4D] text-white border-[#FF4D4D] shadow-[0_0_8px_rgba(255,77,77,0.3)]"
+              if (priority === "P1")
+                return "bg-[#FFB02E] text-white border-[#FFB02E] shadow-[0_0_8px_rgba(255,176,46,0.3)]"
+              return "bg-[#47D7FF] text-white border-[#47D7FF] shadow-[0_0_8px_rgba(71,215,255,0.3)]"
             }
 
             return (
@@ -404,78 +474,81 @@ function ReviewPageContent() {
                 key={reviewCase.id}
                 className={`overflow-hidden bg-[#12171C] border transition-all duration-200 ${
                   isSelected
-                    ? "border-[#47D7FF] shadow-[0_0_12px_rgba(71,215,255,0.3)]"
-                    : "border-border/50 hover:border-[#47D7FF]/30"
+                    ? "border-[#47D7FF] shadow-[0_0_16px_rgba(71,215,255,0.4)]"
+                    : "border-border/50 hover:border-[#47D7FF]/40 hover:shadow-[0_0_8px_rgba(71,215,255,0.15)]"
                 }`}
               >
                 <CardHeader className="bg-[#0B0F12] border-b border-border/50 pb-4">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start justify-between gap-6">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
                       <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => handleToggleSelect(reviewCase.id)}
-                        className="mt-1 data-[state=checked]:bg-[#47D7FF] data-[state=checked]:border-[#47D7FF]"
+                        className="mt-1.5 data-[state=checked]:bg-[#47D7FF] data-[state=checked]:border-[#47D7FF]"
                         disabled={isCISO}
                       />
 
-                      <div className="space-y-3 flex-1 min-w-0">
+                      <div className="space-y-4 flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-xl font-bold text-foreground">{app.name}</h3>
+                          <h3 className="text-xl font-bold text-foreground text-balance">{app.name}</h3>
                           <Badge
-                            className={`font-semibold text-xs px-2 py-1 border ${getPriorityColor(reviewCase.priority)}`}
+                            className={`font-semibold text-xs px-2.5 py-1 border ${getPriorityColor(reviewCase.priority)}`}
                           >
                             {reviewCase.priority}
                           </Badge>
                           {reviewCase.tags.slice(0, 3).map((tag) => (
-                            <Badge key={tag} className={`text-xs px-2 py-1 border ${getTagColor(tag)}`}>
+                            <Badge key={tag} className={`text-xs px-2.5 py-1 border font-medium ${getTagColor(tag)}`}>
                               {tag}
                             </Badge>
                           ))}
                           {reviewCase.tags.length > 3 && (
-                            <Badge className="text-xs px-2 py-1 bg-muted/50 text-muted-foreground border border-border/50">
+                            <Badge className="text-xs px-2.5 py-1 bg-muted/50 text-muted-foreground border border-border/50 font-medium">
                               +{reviewCase.tags.length - 3}
                             </Badge>
                           )}
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-                          <div className="space-y-1">
-                            <div className="text-xs text-muted-foreground flex items-center gap-1">
-                              <TrendingUp className="h-3 w-3" />
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="space-y-1.5">
+                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                              <TrendingUp className="h-3.5 w-3.5" />
                               Confidence
                             </div>
-                            <div className="font-semibold text-lg text-[#47D7FF]">
+                            <div className="font-bold text-xl text-[#47D7FF]">
                               {Math.round(reviewCase.confidence * 100)}%
                             </div>
                           </div>
-                          <div className="space-y-1">
-                            <div className="text-xs text-muted-foreground flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3" />
+
+                          <div className="space-y-1.5">
+                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                              <AlertTriangle className="h-3.5 w-3.5" />
                               Impact
                             </div>
-                            <div className="font-semibold text-lg text-[#FFB02E]">
+                            <div className="font-bold text-xl text-[#FFB02E]">
                               {Math.round(reviewCase.impact * 100)}%
                             </div>
                           </div>
-                          <div className="space-y-1">
-                            <div className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Shield className="h-3 w-3" />
+
+                          <div className="space-y-1.5">
+                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                              <Building2 className="h-3.5 w-3.5" />
                               Publisher
                             </div>
-                            <div className="font-medium text-sm text-foreground truncate">{app.publisher}</div>
+                            <div className="font-semibold text-sm text-foreground truncate">{app.publisher}</div>
                           </div>
-                          <div className="space-y-1">
-                            <div className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
+
+                          <div className="space-y-1.5">
+                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                              <Clock className="h-3.5 w-3.5" />
                               Last Event
                             </div>
-                            <div className="font-medium text-sm text-foreground">{lastEventRelative}</div>
+                            <div className="font-semibold text-sm text-foreground">{lastEventRelative}</div>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex gap-2 flex-shrink-0">
+                    <div className="flex flex-col gap-2 flex-shrink-0">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -484,8 +557,9 @@ function ReviewPageContent() {
                               size="sm"
                               onClick={() => handleApprove(app.id)}
                               disabled={isCISO || isProcessing}
-                              className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 shadow-[0_0_8px_rgba(71,215,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 shadow-[0_0_12px_rgba(71,215,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed font-semibold min-w-[100px]"
                             >
+                              <CheckCircle2 className="h-4 w-4 mr-1.5" />
                               {isProcessing ? "Processing..." : "Approve"}
                             </Button>
                           </TooltipTrigger>
@@ -503,8 +577,9 @@ function ReviewPageContent() {
                               size="sm"
                               onClick={() => handleDismiss(app.id)}
                               disabled={isCISO || isProcessing}
-                              className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="bg-[#12171C] hover:bg-[#1A2128] border border-border/50 disabled:opacity-50 disabled:cursor-not-allowed font-medium min-w-[100px]"
                             >
+                              <XCircle className="h-4 w-4 mr-1.5" />
                               Dismiss
                             </Button>
                           </TooltipTrigger>
@@ -522,18 +597,19 @@ function ReviewPageContent() {
                     <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-[#47D7FF]" />
                       Timeline
-                      <Badge variant="secondary" className="text-xs bg-muted/50">
+                      <Badge variant="secondary" className="text-xs bg-muted/50 font-medium">
                         {reviewCase.timeline.length} event{reviewCase.timeline.length !== 1 ? "s" : ""}
                       </Badge>
                     </h4>
-                    <div className="space-y-3 pl-6 border-l-2 border-[#47D7FF]/30 relative">
+                    <div className="space-y-4 pl-6 border-l-2 border-[#47D7FF]/30 relative">
                       {reviewCase.timeline.map((event, idx) => (
-                        <div key={idx} className="flex flex-col gap-1.5 relative">
-                          <div className="absolute -left-[29px] top-1.5 w-4 h-4 rounded-full bg-[#47D7FF] border-2 border-[#0B0F12] shadow-[0_0_8px_rgba(71,215,255,0.5)]" />
-                          <div className="text-xs text-muted-foreground font-mono">
+                        <div key={idx} className="flex flex-col gap-1.5 relative group">
+                          <div className="absolute -left-[29px] top-1.5 w-4 h-4 rounded-full bg-[#47D7FF] border-2 border-[#0B0F12] shadow-[0_0_10px_rgba(71,215,255,0.6)] group-hover:shadow-[0_0_14px_rgba(71,215,255,0.8)] transition-shadow" />
+                          <div className="text-xs text-muted-foreground font-mono font-medium">
                             {new Date(event.ts).toLocaleString("en-US", {
                               month: "short",
                               day: "numeric",
+                              year: "numeric",
                               hour: "2-digit",
                               minute: "2-digit",
                             })}
@@ -550,7 +626,7 @@ function ReviewPageContent() {
                     <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <Shield className="h-4 w-4 text-[#47D7FF]" />
                       Recommendations
-                      <Badge variant="secondary" className="text-xs bg-muted/50">
+                      <Badge variant="secondary" className="text-xs bg-muted/50 font-medium">
                         {reviewCase.recommendations.length}
                       </Badge>
                     </h4>
@@ -559,30 +635,31 @@ function ReviewPageContent() {
                         <AccordionItem
                           key={idx}
                           value={`rec-${idx}`}
-                          className="border border-border/50 rounded-lg bg-[#0B0F12] overflow-hidden"
+                          className="border border-border/50 rounded-lg bg-[#0B0F12] overflow-hidden transition-all duration-200 hover:border-[#47D7FF]/30"
                         >
-                          <AccordionTrigger className="px-4 py-3 hover:bg-[#12171C] transition-colors text-sm font-medium text-foreground hover:no-underline">
-                            {rec}
+                          <AccordionTrigger className="px-4 py-3 hover:bg-[#12171C] transition-colors text-sm font-medium text-foreground hover:no-underline [&[data-state=open]]:bg-[#12171C]">
+                            <span className="text-left text-balance">{rec}</span>
                           </AccordionTrigger>
-                          <AccordionContent className="px-4 pb-3 text-sm text-muted-foreground">
-                            <div className="space-y-2 pt-2">
+                          <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground">
+                            <div className="space-y-3 pt-2">
                               <p className="leading-relaxed">
                                 This recommendation helps mitigate the risk associated with {app.name}. Review the
-                                details and take appropriate action.
+                                details and take appropriate action based on your organization's security policies.
                               </p>
-                              <div className="flex gap-2 pt-2">
+                              <div className="flex gap-2 pt-1">
                                 <Button
                                   variant="primary"
                                   size="sm"
-                                  className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 text-xs"
+                                  className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 text-xs font-semibold shadow-[0_0_8px_rgba(71,215,255,0.3)]"
                                   onClick={() => handleEscalate(app.id)}
                                 >
+                                  <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
                                   Take Action
                                 </Button>
                                 <Button
                                   variant="secondary"
                                   size="sm"
-                                  className="bg-[#12171C] border border-border/50 text-xs"
+                                  className="bg-[#12171C] border border-border/50 hover:bg-[#1A2128] text-xs font-medium"
                                   onClick={() => {
                                     toast({
                                       title: "Recommendation Dismissed",
@@ -605,9 +682,9 @@ function ReviewPageContent() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEscalate(app.id)}
-                      className="text-[#47D7FF] hover:text-[#47D7FF] hover:bg-[#47D7FF]/10 text-sm"
+                      className="text-[#47D7FF] hover:text-[#47D7FF] hover:bg-[#47D7FF]/10 text-sm font-medium"
                     >
-                      <ExternalLink className="h-3 w-3 mr-1" />
+                      <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                       View details in Inventory
                     </Button>
                   </div>

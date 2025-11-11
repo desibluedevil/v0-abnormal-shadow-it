@@ -46,8 +46,14 @@ export default function LineChart({ data }: { data: DataPoint[] }) {
     .join(" ")
 
   return (
-    <div className="h-64 relative">
-      <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+    <div className="h-64 relative" role="img" aria-label="Line chart showing new apps per week">
+      <svg
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${width} ${height}`}
+        className="overflow-visible"
+        preserveAspectRatio="xMidYMid meet"
+      >
         {[0, 1, 2, 3, 4].map((i) => {
           const y = padding + (i * (height - padding * 2)) / 4
           return (
@@ -58,7 +64,7 @@ export default function LineChart({ data }: { data: DataPoint[] }) {
               x2={width - padding}
               y2={y}
               stroke="hsl(var(--border))"
-              strokeOpacity="0.3"
+              strokeOpacity="0.4"
               strokeDasharray="4 4"
             />
           )
@@ -71,7 +77,7 @@ export default function LineChart({ data }: { data: DataPoint[] }) {
           strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
-          filter="drop-shadow(0 0 4px rgba(71, 215, 255, 0.4))"
+          style={{ filter: "drop-shadow(0 0 4px rgba(71, 215, 255, 0.4))" }}
         />
 
         {data.map((d, i) => {
@@ -91,7 +97,7 @@ export default function LineChart({ data }: { data: DataPoint[] }) {
                 className="cursor-pointer transition-all duration-150"
                 onMouseEnter={() => setHoveredPoint(i)}
                 onMouseLeave={() => setHoveredPoint(null)}
-                filter={isHovered ? "drop-shadow(0 0 6px rgba(71, 215, 255, 0.6))" : undefined}
+                style={{ filter: isHovered ? "drop-shadow(0 0 6px rgba(71, 215, 255, 0.6))" : undefined }}
               />
               {isHovered && (
                 <g>
@@ -104,12 +110,18 @@ export default function LineChart({ data }: { data: DataPoint[] }) {
                     fill="hsl(var(--card))"
                     stroke="hsl(var(--border))"
                     strokeWidth="1"
-                    filter="drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))"
+                    style={{ filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))" }}
                   />
-                  <text x={x} y={y - 35} textAnchor="middle" className="text-xs font-semibold fill-foreground">
+                  <text
+                    x={x}
+                    y={y - 35}
+                    textAnchor="middle"
+                    className="text-xs font-semibold"
+                    fill="hsl(var(--foreground))"
+                  >
                     {d.week}
                   </text>
-                  <text x={x} y={y - 22} textAnchor="middle" className="text-sm font-bold fill-accent-cyan">
+                  <text x={x} y={y - 22} textAnchor="middle" className="text-sm font-bold" fill="var(--accent-cyan)">
                     {d.count} apps
                   </text>
                 </g>
@@ -127,7 +139,8 @@ export default function LineChart({ data }: { data: DataPoint[] }) {
                 x={x}
                 y={height - 10}
                 textAnchor="middle"
-                className="text-xs fill-muted-foreground font-medium"
+                className="text-xs font-medium"
+                fill="hsl(var(--muted-foreground))"
               >
                 {d.week}
               </text>
@@ -145,7 +158,8 @@ export default function LineChart({ data }: { data: DataPoint[] }) {
               x={padding - 15}
               y={y + 4}
               textAnchor="end"
-              className="text-xs fill-muted-foreground font-medium"
+              className="text-xs font-medium"
+              fill="hsl(var(--muted-foreground))"
             >
               {value}
             </text>
@@ -153,5 +167,35 @@ export default function LineChart({ data }: { data: DataPoint[] }) {
         })}
       </svg>
     </div>
+  )
+}
+
+function MiniSparkline({ data }: { data: number[] }) {
+  if (data.length === 0) return null
+  const max = Math.max(...data)
+  const min = Math.min(...data)
+  const range = max - min || 1
+  const width = 120
+  const height = 32
+
+  const points = data
+    .map((val, i) => {
+      const x = (i / (data.length - 1)) * width
+      const y = height - ((val - min) / range) * height
+      return `${x},${y}`
+    })
+    .join(" ")
+
+  return (
+    <svg width={width} height={height} className="opacity-70">
+      <polyline
+        points={points}
+        fill="none"
+        stroke="var(--accent-cyan)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
