@@ -56,11 +56,23 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
     return `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4} Z`
   }
 
+  // Helper to get label position
+  const getLabelPosition = (startAngle: number, endAngle: number) => {
+    const midAngle = ((startAngle + endAngle) / 2 - 90) * (Math.PI / 180)
+    const radius = 75 // Between inner and outer radius
+    const cx = 120
+    const cy = 120
+    return {
+      x: cx + radius * Math.cos(midAngle),
+      y: cy + radius * Math.sin(midAngle),
+    }
+  }
+
   let currentAngle = 0
   const segments = [
-    { name: "High", value: high, pct: highPct, color: "#FF4D4D", angle: highAngle },
-    { name: "Medium", value: med, pct: medPct, color: "#FFB02E", angle: medAngle },
-    { name: "Low", value: low, pct: lowPct, color: "#39D98A", angle: lowAngle },
+    { name: "High", value: high, pct: highPct, color: "var(--risk-high)", angle: highAngle },
+    { name: "Med", value: med, pct: medPct, color: "var(--risk-med)", angle: medAngle },
+    { name: "Low", value: low, pct: lowPct, color: "var(--risk-low)", angle: lowAngle },
   ].filter((s) => s.value > 0)
 
   return (
@@ -69,19 +81,32 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
         {segments.map((segment) => {
           const startAngle = currentAngle
           const endAngle = currentAngle + segment.angle
+          const labelPos = getLabelPosition(startAngle, endAngle)
           currentAngle = endAngle
 
           return (
-            <path
-              key={segment.name}
-              d={createArc(startAngle, endAngle)}
-              fill={segment.color}
-              stroke="#0B0F12"
-              strokeWidth="2"
-            />
+            <g key={segment.name}>
+              <path
+                d={createArc(startAngle, endAngle)}
+                fill={segment.color}
+                stroke="hsl(var(--background))"
+                strokeWidth="2"
+                className="transition-opacity hover:opacity-90 cursor-pointer"
+              />
+              {segment.pct >= 10 && (
+                <text
+                  x={labelPos.x}
+                  y={labelPos.y}
+                  textAnchor="middle"
+                  className="text-sm font-bold fill-background pointer-events-none"
+                >
+                  {Math.round(segment.pct)}%
+                </text>
+              )}
+            </g>
           )
         })}
-        <text x="120" y="110" textAnchor="middle" className="text-3xl font-bold fill-foreground">
+        <text x="120" y="110" textAnchor="middle" className="text-4xl font-bold fill-foreground font-mono">
           {total}
         </text>
         <text x="120" y="135" textAnchor="middle" className="text-sm fill-muted-foreground font-medium">
@@ -89,18 +114,17 @@ export default function DonutChart({ high, med, low }: { high: number; med: numb
         </text>
       </svg>
 
-      {/* Legend with risk colors */}
       <div className="flex gap-4 text-sm text-foreground">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "#FF4D4D" }} />
+          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "var(--risk-high)" }} />
           <span className="font-medium">High ({high})</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "#FFB02E" }} />
+          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "var(--risk-med)" }} />
           <span className="font-medium">Med ({med})</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "#39D98A" }} />
+          <div className="w-3 h-3 rounded-sm border border-white/20" style={{ backgroundColor: "var(--risk-low)" }} />
           <span className="font-medium">Low ({low})</span>
         </div>
       </div>

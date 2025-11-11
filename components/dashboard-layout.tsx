@@ -67,6 +67,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--bg-elev-0)]">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-accent focus:text-accent-foreground focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2"
+      >
+        Skip to main content
+      </a>
+
       <aside
         className="w-64 border-r border-[var(--bg-elev-1)] bg-[var(--bg-elev-0)] flex flex-col shadow-[0_2px_16px_rgba(0,0,0,0.35)]"
         aria-label="Main navigation"
@@ -204,7 +211,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Main Content */}
-        <main id="main-content" className="flex-1 overflow-auto p-6 bg-[var(--bg-elev-0)]" role="main">
+        <main id="main-content" className="flex-1 overflow-auto p-6 bg-[var(--bg-elev-0)]" role="main" tabIndex={-1}>
           {children}
         </main>
       </div>

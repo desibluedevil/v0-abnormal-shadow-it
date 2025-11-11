@@ -16,16 +16,7 @@ import { Separator } from "@/components/ui/separator"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { ErrorBoundary } from "@/components/errors/error-boundary"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
-import {
-  CalendarIcon,
-  FileDown,
-  ChevronRight,
-  Copy,
-  ExternalLink,
-  CheckCircle2,
-  AlertCircle,
-  ClipboardList,
-} from "lucide-react"
+import { Search, X, ChevronRight, Copy, ExternalLink, CheckCircle2, AlertCircle, ClipboardList } from "lucide-react"
 import { format } from "date-fns"
 
 type ActionFilter = "all" | "graph.revokeGrant" | "end.sessions" | "notify.email" | "ticket.create"
@@ -226,21 +217,35 @@ function AuditPageContent() {
               aria-label={`Export ${filteredReceipts.length} receipts to CSV file`}
               className="gap-2"
             >
-              <FileDown className="h-4 w-4" />
+              <X className="h-4 w-4" />
               Export CSV
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Search</label>
-            <Input
-              type="text"
-              placeholder="Search by actor, app, action, receipt ID, or details..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-2xl"
-            />
+            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Search className="h-4 w-4 text-[#47D7FF]" />
+              Search
+            </label>
+            <div className="relative max-w-2xl">
+              <Input
+                type="text"
+                placeholder="Search by app, publisher, action, receipt ID, or details…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pr-10"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-[#47D7FF]/10 transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                </button>
+              )}
+            </div>
           </div>
 
           <Separator />
@@ -341,7 +346,7 @@ function AuditPageContent() {
                     className="w-full justify-start text-left font-normal bg-transparent"
                     aria-label="Select from date"
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4 text-[#47D7FF]" />
+                    <X className="mr-2 h-4 w-4 text-[#47D7FF]" />
                     {dateFrom ? format(dateFrom, "PPP") : <span className="text-muted-foreground">Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
@@ -360,7 +365,7 @@ function AuditPageContent() {
                     className="w-full justify-start text-left font-normal bg-transparent"
                     aria-label="Select to date"
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4 text-[#47D7FF]" />
+                    <X className="mr-2 h-4 w-4 text-[#47D7FF]" />
                     {dateTo ? format(dateTo, "PPP") : <span className="text-muted-foreground">Pick a date</span>}
                   </Button>
                 </PopoverTrigger>

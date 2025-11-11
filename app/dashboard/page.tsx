@@ -7,6 +7,7 @@ import { useShadowStore } from "@/store/shadowStore"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
 import Link from "next/link"
 import dynamic from "next/dynamic"
@@ -17,6 +18,7 @@ import { ErrorBoundary } from "@/components/errors/error-boundary"
 import DonutChart from "@/components/dashboard/donut-chart"
 import { TrendingUp, TrendingDown, AlertCircle, Play } from "lucide-react"
 import { motion, useInView } from "framer-motion"
+import { cn } from "@/lib/utils"
 
 const LineChart = dynamic(() => import("@/components/dashboard/line-chart"), { ssr: false })
 const Sparkline = dynamic(() => import("@/components/dashboard/sparkline").then((m) => ({ default: m.Sparkline })), {
@@ -24,12 +26,34 @@ const Sparkline = dynamic(() => import("@/components/dashboard/sparkline").then(
 })
 
 function StickyHeader({ children, id }: { children: React.ReactNode; id?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect()
+        setIsScrolled(rect.top <= 0)
+      }
+    }
+
+    const scrollContainer = document.getElementById("main-content")
+    scrollContainer?.addEventListener("scroll", handleScroll)
+    return () => scrollContainer?.removeEventListener("scroll", handleScroll)
+  }, [])
+
   return (
     <div
+      ref={ref}
       id={id}
-      className="sticky top-0 z-10 -mx-6 px-6 py-3 mb-4 backdrop-blur-md bg-background/80 border-b border-border/50"
+      className={cn(
+        "sticky top-0 z-10 -mx-6 px-6 py-3 mb-4 transition-all duration-200",
+        isScrolled
+          ? "backdrop-blur-md bg-[var(--bg-elev-0)]/90 border-b border-[var(--bg-elev-1)] shadow-[0_2px_12px_rgba(0,0,0,0.25)]"
+          : "bg-transparent",
+      )}
     >
-      <h2 className="text-lg font-semibold text-foreground">{children}</h2>
+      <h2 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">{children}</h2>
     </div>
   )
 }
@@ -108,116 +132,168 @@ function DashboardPageContent() {
   }
 
   return (
-    <div className="space-y-8">
-      <section>
-        <StickyHeader id="overview-section">Overview</StickyHeader>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <AnimatedCard delay={0}>
-            <KpiCard title="Total Unsanctioned" value={totalUnsanctioned} trend={0} sparkData={[12, 15, 14, 18, 20]} />
-          </AnimatedCard>
-          <AnimatedCard delay={0.1}>
-            <KpiCard title="High Risk" value={highRisk} trend={0} sparkData={[8, 10, 9, 7, 6]} />
-          </AnimatedCard>
-          <AnimatedCard delay={0.2}>
-            <KpiCard title="Users Involved" value={usersInvolved} trend={4} sparkData={[45, 48, 52, 58, 63]} />
-          </AnimatedCard>
-          <AnimatedCard delay={0.3}>
-            <KpiCard title="Remediated" value={remediated} tone="success" trend={12} sparkData={[5, 8, 10, 12, 15]} />
-          </AnimatedCard>
+    <>
+      <nav
+        aria-label="Section navigation"
+        className="mb-6 p-4 rounded-lg border border-[var(--bg-elev-1)] bg-[var(--bg-elev-0)]/50 backdrop-blur-sm"
+      >
+        <div className="text-xs font-semibold text-[var(--text-secondary)] mb-2 uppercase tracking-wider">
+          Jump to section:
         </div>
-      </section>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href="#overview-section"
+            className="px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-elev-1)] text-[var(--text-primary)] hover:bg-[var(--accent-cyan)]/10 hover:text-[var(--accent-cyan)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2 transition-colors"
+          >
+            Overview
+          </a>
+          <a
+            href="#trends-section"
+            className="px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-elev-1)] text-[var(--text-primary)] hover:bg-[var(--accent-cyan)]/10 hover:text-[var(--accent-cyan)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2 transition-colors"
+          >
+            Trends
+          </a>
+          <a
+            href="#remediation-section"
+            className="px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-elev-1)] text-[var(--text-primary)] hover:bg-[var(--accent-cyan)]/10 hover:text-[var(--accent-cyan)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2 transition-colors"
+          >
+            Remediation
+          </a>
+          <a
+            href="#high-risk-section"
+            className="px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-elev-1)] text-[var(--text-primary)] hover:bg-[var(--accent-cyan)]/10 hover:text-[var(--accent-cyan)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2 transition-colors"
+          >
+            High-Risk Apps
+          </a>
+          <a
+            href="#summary-section"
+            className="px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-elev-1)] text-[var(--text-primary)] hover:bg-[var(--accent-cyan)]/10 hover:text-[var(--accent-cyan)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2 transition-colors"
+          >
+            Summary
+          </a>
+        </div>
+      </nav>
 
-      <section>
-        <StickyHeader id="trends-section">Trends</StickyHeader>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <AnimatedCard delay={0}>
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>New Apps per Week (12w)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <LineChart data={weekly} />
-                <p className="text-xs text-muted-foreground mt-3 italic">Q4 vendor pilots drove weeks 9–12.</p>
-              </CardContent>
-            </Card>
-          </AnimatedCard>
-          <AnimatedCard delay={0.1}>
+      <div className="space-y-8">
+        <section>
+          <StickyHeader id="overview-section">Overview</StickyHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <AnimatedCard delay={0}>
+              <KpiCard
+                title="Total Unsanctioned"
+                value={totalUnsanctioned}
+                trend={0}
+                sparkData={[12, 15, 14, 18, 20]}
+              />
+            </AnimatedCard>
+            <AnimatedCard delay={0.1}>
+              <KpiCard title="High Risk" value={highRisk} trend={0} sparkData={[8, 10, 9, 7, 6]} />
+            </AnimatedCard>
+            <AnimatedCard delay={0.2}>
+              <KpiCard title="Users Involved" value={usersInvolved} trend={4} sparkData={[45, 48, 52, 58, 63]} />
+            </AnimatedCard>
+            <AnimatedCard delay={0.3}>
+              <KpiCard title="Remediated" value={remediated} tone="success" trend={12} sparkData={[5, 8, 10, 12, 15]} />
+            </AnimatedCard>
+          </div>
+        </section>
+
+        <section>
+          <StickyHeader id="trends-section">Trends</StickyHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <AnimatedCard delay={0}>
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>New Apps per Week (12w)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <LineChart data={weekly} />
+                  <p className="text-xs text-muted-foreground mt-3 italic">Q4 vendor pilots drove weeks 9–12.</p>
+                </CardContent>
+              </Card>
+            </AnimatedCard>
+            <AnimatedCard delay={0.1}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Risk Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DonutChart high={risk.high} med={risk.med} low={risk.low} />
+                </CardContent>
+              </Card>
+            </AnimatedCard>
+          </div>
+        </section>
+
+        <section>
+          <StickyHeader id="remediation-section">Remediation</StickyHeader>
+          <AnimatedCard>
             <Card>
               <CardHeader>
-                <CardTitle>Risk Distribution</CardTitle>
+                <CardTitle className="text-base">Time to Remediate (hrs)</CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">Last 14 days</p>
               </CardHeader>
               <CardContent>
-                <DonutChart high={risk.high} med={risk.med} low={risk.low} />
+                {ttrData.length === 0 ? (
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <Play className="w-6 h-6" />
+                      </EmptyMedia>
+                      <EmptyTitle>No remediation data</EmptyTitle>
+                      <EmptyDescription>Run a remediation plan to populate time-to-remediate metrics</EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Link href="/review">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="bg-accent-cyan text-background hover:bg-accent-cyan/90"
+                        >
+                          Start Remediation
+                        </Button>
+                      </Link>
+                    </EmptyContent>
+                  </Empty>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-muted-foreground">Avg</div>
+                        <div className="text-3xl font-bold text-foreground font-mono">9.6h</div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-muted-foreground">P90</div>
+                        <div className="text-3xl font-bold text-foreground font-mono">12.4h</div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-muted-foreground">Best</div>
+                        <div className="text-3xl font-bold text-risk-low font-mono">7.6h</div>
+                      </div>
+                    </div>
+                    <Sparkline data={ttrData} />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </AnimatedCard>
-        </div>
-      </section>
+        </section>
 
-      <section>
-        <StickyHeader id="remediation-section">Remediation</StickyHeader>
-        <AnimatedCard>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Time to Remediate (hrs)</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">Last 14 days</p>
-            </CardHeader>
-            <CardContent>
-              {ttrData.length === 0 ? (
-                <Empty>
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <Play className="w-6 h-6" />
-                    </EmptyMedia>
-                    <EmptyTitle>No remediation data</EmptyTitle>
-                    <EmptyDescription>Run a remediation plan to populate time-to-remediate metrics</EmptyDescription>
-                  </EmptyHeader>
-                  <EmptyContent>
-                    <Link href="/review">
-                      <Button variant="primary" size="sm">
-                        Start Remediation
-                      </Button>
-                    </Link>
-                  </EmptyContent>
-                </Empty>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="text-xs text-muted-foreground">Avg</div>
-                      <div className="text-2xl font-bold text-foreground">9.6h</div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-xs text-muted-foreground">P90</div>
-                      <div className="text-2xl font-bold text-foreground">12.4h</div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-xs text-muted-foreground">Best</div>
-                      <div className="text-2xl font-bold text-risk-low">7.6h</div>
-                    </div>
-                  </div>
-                  <Sparkline data={ttrData} />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </AnimatedCard>
-      </section>
+        <section>
+          <StickyHeader id="high-risk-section">High-Risk Apps</StickyHeader>
+          <AnimatedCard>
+            <HighRiskApps />
+          </AnimatedCard>
+        </section>
 
-      <section>
-        <StickyHeader id="high-risk-section">High-Risk Apps</StickyHeader>
-        <AnimatedCard>
-          <HighRiskApps />
-        </AnimatedCard>
-      </section>
-
-      <section>
-        <StickyHeader id="summary-section">Summary</StickyHeader>
-        <AnimatedCard>
-          <GeneratedSummary />
-        </AnimatedCard>
-      </section>
-    </div>
+        <section>
+          <StickyHeader id="summary-section">Summary</StickyHeader>
+          <AnimatedCard>
+            <GeneratedSummary />
+          </AnimatedCard>
+        </section>
+      </div>
+    </>
   )
 }
 
@@ -237,20 +313,20 @@ function KpiCard({
   const toneCls = tone === "destructive" ? "text-risk-high" : tone === "success" ? "text-risk-low" : "text-foreground"
   const trendPositive = trend && trend > 0
   const trendNeutral = trend === 0
-  const trendCls = trendNeutral ? "text-muted-foreground" : trendPositive ? "text-risk-low" : "text-risk-high"
+  const trendCls = trendNeutral ? "text-muted-foreground" : trendPositive ? "text-accent-lime" : "text-accent-magenta"
 
   return (
-    <Card className="shadow-abnormal">
-      <CardHeader className="pb-2">
+    <Card className="shadow-abnormal hover:shadow-abnormal-lg transition-shadow duration-200">
+      <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-3">
         <div className="flex items-baseline gap-2">
-          <div className={`text-4xl font-bold leading-none ${toneCls}`}>{value}</div>
+          <div className={`text-5xl font-bold leading-none font-mono ${toneCls}`}>{value}</div>
           {trend !== undefined && (
-            <div className={`flex items-center gap-1 text-xs font-semibold ${trendCls}`}>
+            <div className={`flex items-center gap-1 text-sm font-semibold ${trendCls}`}>
               {!trendNeutral &&
-                (trendPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />)}
+                (trendPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />)}
               {Math.abs(trend)}%
             </div>
           )}
@@ -267,7 +343,7 @@ function MiniSparkline({ data }: { data: number[] }) {
   const min = Math.min(...data)
   const range = max - min || 1
   const width = 120
-  const height = 24
+  const height = 32
 
   const points = data
     .map((val, i) => {
@@ -278,8 +354,15 @@ function MiniSparkline({ data }: { data: number[] }) {
     .join(" ")
 
   return (
-    <svg width={width} height={height} className="opacity-50">
-      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="1.5" />
+    <svg width={width} height={height} className="opacity-70">
+      <polyline
+        points={points}
+        fill="none"
+        stroke="var(--accent-cyan)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -293,7 +376,7 @@ function HighRiskApps() {
   return (
     <Card className="shadow-abnormal">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-lg">
           <AlertCircle className="w-5 h-5 text-risk-high" />
           High-Risk Apps Detected
         </CardTitle>
@@ -303,42 +386,52 @@ function HighRiskApps() {
           </Button>
         </Link>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-3">
         {highRiskApps.map((app, index) => (
           <AnimatedCard key={app.id} delay={index * 0.05}>
-            <div className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-card/50 hover:bg-card transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-sm font-semibold text-foreground">
-                {app.name.substring(0, 2).toUpperCase()}
-              </div>
+            <div className="flex items-center gap-4 p-4 rounded-lg border border-border/50 bg-card/50 hover:bg-card/80 transition-all duration-200">
+              <Avatar className="w-12 h-12 border-2 border-border">
+                <AvatarFallback className="bg-muted text-foreground font-bold text-base">
+                  {app.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-foreground truncate">{app.name}</div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{app.publisher}</span>
-                  <span>•</span>
+                <div className="font-semibold text-base text-foreground truncate">{app.name}</div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                  <span className="font-medium">{app.publisher}</span>
+                  <span className="opacity-50">•</span>
                   <span>
                     {app.users.length} user{app.users.length !== 1 ? "s" : ""}
                   </span>
-                  <span>•</span>
+                  <span className="opacity-50">•</span>
                   <span>First seen {new Date(app.firstSeen).toLocaleDateString()}</span>
                 </div>
-                <div className="flex gap-1 mt-1">
+                <div className="flex gap-1.5 mt-2">
                   {app.scopes.slice(0, 3).map((scope, i) => (
-                    <Badge key={i} variant="secondary" className="text-[10px] px-1 py-0">
+                    <Badge
+                      key={i}
+                      variant="secondary"
+                      className="text-xs px-2 py-0.5 bg-muted/50 hover:bg-muted/80 transition-colors"
+                    >
                       {typeof scope === "string" ? scope : scope.name}
                     </Badge>
                   ))}
                   {app.scopes.length > 3 && (
-                    <Badge variant="secondary" className="text-[10px] px-1 py-0">
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-muted/50">
                       +{app.scopes.length - 3}
                     </Badge>
                   )}
                 </div>
                 {(app as any).subtext && (
-                  <div className="text-xs text-muted-foreground italic mt-1.5">{(app as any).subtext}</div>
+                  <div className="text-xs text-muted-foreground italic mt-2">{(app as any).subtext}</div>
                 )}
               </div>
               <Link href={`/inventory?focus=${app.id}`}>
-                <Button variant="primary" size="sm">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="bg-accent-cyan text-background hover:bg-accent-cyan/90 font-semibold"
+                >
                   Review
                 </Button>
               </Link>

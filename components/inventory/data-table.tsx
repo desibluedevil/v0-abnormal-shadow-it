@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronDown, ChevronRight, FolderSearch } from "lucide-react"
 import type { ShadowApp } from "@/types/shadow-it"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
+import { Badge } from "@/components/ui/badge"
 
 interface Column {
   id: string
@@ -19,6 +20,7 @@ interface Column {
   sortable?: boolean
   sortingFn?: (a: ShadowApp, b: ShadowApp) => number
   className?: string
+  hideOnMobile?: boolean
 }
 
 interface DataTableProps {
@@ -62,14 +64,23 @@ const MemoizedDataTableRow = memo(function DataTableRow({
       <TableRow
         ref={isFocused ? focusRowRef : null}
         onClick={(e) => onRowClick(row.id, e)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault()
+            onToggleExpansion(row.id)
+          }
+        }}
         tabIndex={0}
-        className={`h-12 hover:bg-muted/50 hover:shadow-[0_2px_8px_rgba(71,215,255,0.15)] transition-all duration-200 cursor-pointer ${
+        className={`h-14 hover:bg-muted/50 hover:shadow-[0_4px_12px_rgba(71,215,255,0.15)] hover:translate-y-[-2px] transition-all duration-200 cursor-pointer ${
           isFocused ? "ring-2 ring-[#47D7FF] ring-inset bg-[#47D7FF]/10" : ""
         } ${isKeyboardFocused ? "ring-2 ring-[#47D7FF] ring-inset" : ""} ${
-          isRevoked ? "text-muted-foreground" : ""
+          isRevoked ? "text-muted-foreground opacity-60" : ""
         } ${isChanged ? "animate-pulse bg-[#39D98A]/10" : ""}`}
+        role="button"
+        aria-label={`${row.name} - ${row.riskLevel} risk. Press Enter to expand details`}
+        aria-expanded={isExpanded}
       >
-        <TableCell className="md:hidden">
+        <TableCell className="w-12">
           <Button
             variant="ghost"
             size="sm"
@@ -79,6 +90,7 @@ const MemoizedDataTableRow = memo(function DataTableRow({
             }}
             aria-label={isExpanded ? "Collapse row" : "Expand row"}
             aria-expanded={isExpanded}
+            className="h-8 w-8 p-0"
           >
             {isExpanded ? <ChevronDown className="h-4 w-4 text-[#47D7FF]" /> : <ChevronRight className="h-4 w-4" />}
           </Button>
@@ -86,7 +98,7 @@ const MemoizedDataTableRow = memo(function DataTableRow({
         {columns.map((column) => (
           <TableCell
             key={column.id}
-            className={`px-3 py-2 text-sm whitespace-nowrap ${column.className || ""}`}
+            className={`px-3 py-2 text-sm ${column.className || ""}`}
             style={{
               width: column.size ? `${column.size}px` : undefined,
               minWidth: column.size ? `${column.size}px` : undefined,
@@ -97,15 +109,78 @@ const MemoizedDataTableRow = memo(function DataTableRow({
         ))}
       </TableRow>
       {isExpanded && (
-        <TableRow className="md:hidden bg-muted/30">
-          <TableCell colSpan={columns.length + 1} className="p-4">
-            <div className="space-y-2">
-              {getRowDetails(row).map((detail, idx) => (
-                <div key={idx} className="flex justify-between text-sm">
-                  <span className="font-medium text-muted-foreground">{detail.label}:</span>
-                  <span className="text-foreground">{detail.value}</span>
+        <TableRow className="bg-[#12171C] border-t border-[#47D7FF]/20">
+          <TableCell colSpan={columns.length + 1} className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="lg:hidden space-y-3">
+                <div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                    Publisher
+                  </div>
+                  <div className="text-sm text-foreground">{row.publisher}</div>
                 </div>
-              ))}
+              </div>
+
+              <div className="md:hidden space-y-3">
+                <div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Users</div>
+                  <div className="text-sm font-mono text-foreground">{row.users.length}</div>
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Status</div>
+                  <div className="text-sm">
+                    <Badge variant="outline" className={getStatusBadgeClass(row.status)}>
+                      {row.status}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              <div className="lg:hidden space-y-3">
+                <div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                    First Seen
+                  </div>
+                  <div className="text-sm font-mono text-foreground">{formatDate(row.firstSeen)}</div>
+                </div>
+              </div>
+              <div className="xl:hidden space-y-3">
+                <div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                    Last Seen
+                  </div>
+                  <div className="text-sm font-mono text-foreground">{formatDate(row.lastSeen)}</div>
+                </div>
+              </div>
+              <div className="xl:hidden space-y-3">
+                <div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Tags</div>
+                  <div className="flex flex-wrap gap-1">
+                    {row.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="text-xs bg-muted text-muted-foreground">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="md:col-span-2 space-y-3 border-t border-border pt-3 mt-2">
+                <div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    Scopes ({row.scopes.length})
+                  </div>
+                  <div className="space-y-1">
+                    {row.scopes.slice(0, 5).map((scope) => (
+                      <div key={scope.name} className="text-xs">
+                        <span className="font-mono text-[#47D7FF]">{scope.name}</span>
+                        <span className="text-muted-foreground ml-2">- {scope.description}</span>
+                      </div>
+                    ))}
+                    {row.scopes.length > 5 && (
+                      <div className="text-xs text-muted-foreground">+ {row.scopes.length - 5} more scopes</div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </TableCell>
         </TableRow>
@@ -114,15 +189,19 @@ const MemoizedDataTableRow = memo(function DataTableRow({
   )
 })
 
-function getRowDetails(row: ShadowApp) {
-  return [
-    { label: "Publisher", value: row.publisher },
-    { label: "Users", value: row.users.length.toString() },
-    { label: "First Seen", value: new Date(row.firstSeen).toLocaleDateString() },
-    { label: "Last Seen", value: new Date(row.lastSeen).toLocaleDateString() },
-    { label: "Status", value: row.status },
-    { label: "Tags", value: row.tags.slice(0, 3).join(", ") + (row.tags.length > 3 ? "..." : "") },
-  ]
+function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+}
+
+function getStatusBadgeClass(status: ShadowApp["status"]) {
+  const colors = {
+    Unsanctioned: "bg-muted text-muted-foreground border-border",
+    Sanctioned: "bg-blue-500/10 text-blue-500 border-blue-500/30",
+    Revoked: "bg-[#FF4D4D]/10 text-[#FF4D4D] border-[#FF4D4D]/30",
+    Dismissed: "bg-muted/50 text-muted-foreground/70 border-border/50",
+  }
+  return colors[status]
 }
 
 export function DataTable({ columns, data, focusId, changedRowIds = new Set() }: DataTableProps) {
@@ -194,7 +273,6 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
   }
 
   const handleRowClick = (appId: string, e: React.MouseEvent) => {
-    // Don't trigger if clicking on buttons or interactive elements
     const target = e.target as HTMLElement
     if (target.closest("button") || target.closest("a") || target.closest('[role="button"]')) {
       return
@@ -205,19 +283,39 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only handle keyboard navigation when table is focused
-      if (!tableBodyRef.current?.contains(document.activeElement)) return
+      const target = e.target as HTMLElement
+      const isInTable = tableBodyRef.current?.contains(target)
+
+      if (!isInTable) return
 
       const maxIndex = paginatedData.length - 1
 
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault()
-          setFocusedRowIndex((prev) => Math.min(prev + 1, maxIndex))
+          setFocusedRowIndex((prev) => {
+            const next = Math.min(prev + 1, maxIndex)
+            setTimeout(() => {
+              const rows = tableBodyRef.current?.querySelectorAll('tr[role="button"]')
+              if (rows?.[next]) {
+                ;(rows[next] as HTMLElement).focus()
+              }
+            }, 0)
+            return next
+          })
           break
         case "ArrowUp":
           e.preventDefault()
-          setFocusedRowIndex((prev) => Math.max(prev - 1, 0))
+          setFocusedRowIndex((prev) => {
+            const next = Math.max(prev - 1, 0)
+            setTimeout(() => {
+              const rows = tableBodyRef.current?.querySelectorAll('tr[role="button"]')
+              if (rows?.[next]) {
+                ;(rows[next] as HTMLElement).focus()
+              }
+            }, 0)
+            return next
+          })
           break
         case "Enter":
           e.preventDefault()
@@ -229,6 +327,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
         case "Escape":
           e.preventDefault()
           setFocusedRowIndex(-1)
+          setExpandedRows(new Set())
           break
       }
     }
@@ -256,7 +355,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-card border-b border-border">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-12 md:hidden">
+                <TableHead className="w-12">
                   <span className="sr-only">Expand</span>
                 </TableHead>
                 {columns.map((column) => (
@@ -341,7 +440,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground font-mono">
             Page {pageIndex + 1} of {pageCount || 1}
           </div>
           <div className="flex items-center gap-2">
@@ -365,6 +464,18 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
             </Button>
           </div>
         </div>
+      </div>
+
+      <div className="text-xs text-muted-foreground text-center">
+        <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">↑</kbd>
+        <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono ml-1">↓</kbd>
+        <span className="ml-2">Navigate rows</span>
+        <span className="mx-2">•</span>
+        <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">Enter</kbd>
+        <span className="ml-2">Expand row</span>
+        <span className="mx-2">•</span>
+        <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">Esc</kbd>
+        <span className="ml-2">Clear focus</span>
       </div>
     </div>
   )

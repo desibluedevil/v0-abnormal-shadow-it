@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Search, FileDown, FolderSearch } from "lucide-react"
+import { Search, FileDown, FolderSearch, X } from "lucide-react"
 import type { RiskLevel, AppStatus } from "@/types/shadow-it"
 import { columns } from "@/components/inventory/columns"
 import { DataTable } from "@/components/inventory/data-table"
@@ -191,6 +191,19 @@ function InventoryPageContent() {
                 onChange={(e) => updateFilters({ q: e.target.value })}
                 aria-label="Search apps by name, publisher, tag, or receipt id"
               />
+              {filters.q && (
+                <InputGroupAddon align="inline-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => updateFilters({ q: "" })}
+                    className="h-6 w-6 p-0 hover:bg-[#47D7FF]/10"
+                    aria-label="Clear search"
+                  >
+                    <X className="size-4 text-muted-foreground hover:text-foreground" />
+                  </Button>
+                </InputGroupAddon>
+              )}
             </InputGroup>
             <TooltipProvider>
               <Tooltip>

@@ -1,8 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./globals.css" // Import globals.css at the top of the file
-import "./styles.css"
+import "./styles.css" // Import only styles.css which contains all design tokens
+import "./globals.css" // Import globals.css file
 import { Toaster } from "@/components/ui/toaster"
 import { ShadowStoreProvider } from "@/store/shadowStore"
 
