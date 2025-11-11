@@ -64,3 +64,5 @@ export function Sparkline({ data }: SparklineProps) {
     </svg>
   )
 }
+
+export default Sparkline

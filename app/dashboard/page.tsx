@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
 import Link from "next/link"
-import dynamic from "next/dynamic"
 import { KpiSkeleton } from "@/components/skeletons/kpi-skeleton"
 import { ChartSkeleton } from "@/components/skeletons/chart-skeleton"
 import { CardSkeleton } from "@/components/skeletons/card-skeleton"
@@ -20,11 +19,9 @@ import { AlertCircle, Play } from "lucide-react"
 import { motion, useInView } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { computeOverview } from "@/lib/overview-math"
-
-const LineChart = dynamic(() => import("@/components/dashboard/line-chart"), { ssr: false })
-const Sparkline = dynamic(() => import("@/components/dashboard/sparkline").then((m) => ({ default: m.Sparkline })), {
-  ssr: false,
-})
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import LineChart from "@/components/dashboard/line-chart" // Import LineChart
+import Sparkline from "@/components/dashboard/sparkline" // Import Sparkline
 
 function StickyHeader({ children, id }: { children: React.ReactNode; id?: string }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -109,6 +106,7 @@ function AnimatedCard({ children, delay = 0 }: { children: React.ReactNode; dela
 
 function DashboardPageContent() {
   const [isBooting, setIsBooting] = useState(true)
+  const [timePeriod, setTimePeriod] = useState<"today" | "week" | "month" | "quarter">("week")
 
   useEffect(() => {
     const timer = setTimeout(() => setIsBooting(false), 400)
@@ -193,6 +191,60 @@ function DashboardPageContent() {
       <div className="space-y-8">
         <section>
           <StickyHeader id="overview-section">Overview</StickyHeader>
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-sm text-[var(--text-secondary)]">
+              Monitoring activity and risk across all connected applications
+            </p>
+            <ToggleGroup
+              type="single"
+              value={timePeriod}
+              onValueChange={(value) => {
+                if (value) setTimePeriod(value as typeof timePeriod)
+              }}
+              className="border border-[var(--bg-elev-1)] rounded-lg p-1 bg-[var(--bg-elev-0)]"
+            >
+              <ToggleGroupItem
+                value="today"
+                className={cn(
+                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                  "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                  "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                )}
+              >
+                Today
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="week"
+                className={cn(
+                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                  "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                  "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                )}
+              >
+                This Week
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="month"
+                className={cn(
+                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                  "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                  "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                )}
+              >
+                This Month
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="quarter"
+                className={cn(
+                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                  "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                  "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                )}
+              >
+                This Quarter
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <AnimatedCard delay={0}>
               <KpiCard
@@ -424,7 +476,7 @@ function HighRiskApps() {
           <AlertCircle className="w-5 h-5 text-risk-high" />
           High-Risk Apps Detected
         </CardTitle>
-        <Link href="/inventory?risk=High">
+        <Link href="/review">
           <Button variant="secondary" size="sm">
             View All
           </Button>
