@@ -1,201 +1,146 @@
 "use client"
 
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
+import { Button } from "@/components/ui/button"
 import { TrendingUp } from "lucide-react"
-import { useState } from "react"
+import Link from "next/link"
+import { useReducedMotion } from "@/lib/use-reduced-motion"
 
 interface DataPoint {
   week: string
   count: number
 }
 
-export default function LineChart({ data }: { data: DataPoint[] }) {
-  const [hoveredPoint, setHoveredPoint] = useState<number | null>(null)
+export default function NewAppsChart({ data, loading }: { data: DataPoint[]; loading?: boolean }) {
+  const reduceMotion = useReducedMotion()
 
-  if (data.length === 0) {
+  if (loading) {
     return (
-      <div className="h-64">
-        <Empty className="border-0 bg-transparent">
+      <div className="h-[280px] flex items-center justify-center bg-neutral-900/30 rounded-md border border-neutral-700 animate-pulse">
+        <div className="text-neutral-400 text-sm">Loading chart...</div>
+      </div>
+    )
+  }
+
+  if (!data?.length) {
+    return (
+      <div className="h-[280px]">
+        <Empty className="border-0 bg-transparent h-full">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <TrendingUp className="w-6 h-6" />
             </EmptyMedia>
-            <EmptyTitle>No data available</EmptyTitle>
-            <EmptyDescription>Chart will display once data is collected</EmptyDescription>
+            <EmptyTitle>No new apps in the last 12 weeks</EmptyTitle>
+            <EmptyDescription>Start monitoring to populate this chart</EmptyDescription>
           </EmptyHeader>
+          <EmptyContent>
+            <Link href="/inventory">
+              <Button variant="default" size="sm" className="bg-accent-cyan text-background hover:bg-accent-cyan/90">
+                View Inventory
+              </Button>
+            </Link>
+          </EmptyContent>
         </Empty>
       </div>
     )
   }
 
-  const maxCount = Math.max(...data.map((d) => d.count), 1)
-  const width = 600
-  const height = 200
-  const padding = 40
+  // Sort data by week and coerce nulls to 0
+  const sortedData = [...data]
+    .sort((a, b) => a.week.localeCompare(b.week))
+    .map((d) => ({
+      week: d.week,
+      count: Number.isFinite(d.count) ? d.count : 0,
+    }))
 
-  const xStep = (width - padding * 2) / (data.length - 1 || 1)
-  const yScale = (height - padding * 2) / maxCount
-
-  // Create path for line
-  const linePath = data
-    .map((d, i) => {
-      const x = padding + i * xStep
-      const y = height - padding - d.count * yScale
-      return `${i === 0 ? "M" : "L"} ${x} ${y}`
-    })
-    .join(" ")
+  // Calculate delta for tooltip
+  const getDelta = (index: number) => {
+    if (index === 0) return null
+    const diff = sortedData[index].count - sortedData[index - 1].count
+    return {
+      value: Math.abs(diff),
+      isPositive: diff > 0,
+      isNeutral: diff === 0,
+    }
+  }
 
   return (
-    <div className="h-64 relative" role="img" aria-label="Line chart showing new apps per week">
-      <svg
-        width="100%"
-        height="100%"
-        viewBox={`0 0 ${width} ${height}`}
-        className="overflow-visible"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        {[0, 1, 2, 3, 4].map((i) => {
-          const y = padding + (i * (height - padding * 2)) / 4
-          return (
-            <line
-              key={`grid-${i}`}
-              x1={padding}
-              y1={y}
-              x2={width - padding}
-              y2={y}
-              stroke="hsl(var(--border))"
-              strokeOpacity="0.4"
-              strokeDasharray="4 4"
-            />
-          )
-        })}
+    <div
+      className="h-[280px]"
+      role="img"
+      aria-label="Line chart showing new apps discovered per week over the last 12 weeks"
+      aria-describedby="new-apps-chart-desc"
+    >
+      <span id="new-apps-chart-desc" className="sr-only">
+        New apps added each week over last 12 weeks
+      </span>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={sortedData} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
+          {/* Grid lines at 12% opacity */}
+          <CartesianGrid stroke="rgba(255,255,255,0.12)" strokeDasharray="0" vertical={false} />
 
-        <path
-          d={linePath}
-          fill="none"
-          stroke="var(--accent-cyan)"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ filter: "drop-shadow(0 0 4px rgba(71, 215, 255, 0.4))" }}
-        />
+          {/* X-axis with 12px font - using text-secondary color */}
+          <XAxis
+            dataKey="week"
+            tick={{ fill: "#a7b0b8", fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+            height={32}
+          />
 
-        {data.map((d, i) => {
-          const x = padding + i * xStep
-          const y = height - padding - d.count * yScale
-          const isHovered = hoveredPoint === i
+          {/* Y-axis with 12px font, auto-format integers - using text-secondary color */}
+          <YAxis
+            tick={{ fill: "#a7b0b8", fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+            width={40}
+            allowDecimals={false}
+          />
 
-          return (
-            <g key={`point-${i}`}>
-              <circle
-                cx={x}
-                cy={y}
-                r={isHovered ? "7" : "5"}
-                fill="var(--accent-cyan)"
-                stroke="hsl(var(--background))"
-                strokeWidth="2"
-                className="cursor-pointer transition-all duration-150"
-                onMouseEnter={() => setHoveredPoint(i)}
-                onMouseLeave={() => setHoveredPoint(null)}
-                style={{ filter: isHovered ? "drop-shadow(0 0 6px rgba(71, 215, 255, 0.6))" : undefined }}
-              />
-              {isHovered && (
-                <g>
-                  <rect
-                    x={x - 35}
-                    y={y - 50}
-                    width="70"
-                    height="35"
-                    rx="4"
-                    fill="hsl(var(--card))"
-                    stroke="hsl(var(--border))"
-                    strokeWidth="1"
-                    style={{ filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))" }}
-                  />
-                  <text
-                    x={x}
-                    y={y - 35}
-                    textAnchor="middle"
-                    className="text-xs font-semibold"
-                    fill="hsl(var(--foreground))"
-                  >
-                    {d.week}
-                  </text>
-                  <text x={x} y={y - 22} textAnchor="middle" className="text-sm font-bold" fill="var(--accent-cyan)">
-                    {d.count} apps
-                  </text>
-                </g>
-              )}
-            </g>
-          )
-        })}
+          {/* Tooltip with delta */}
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "#12171c",
+              border: "1px solid #1e262d",
+              borderRadius: "6px",
+              fontSize: "12px",
+              padding: "8px 12px",
+            }}
+            labelStyle={{ color: "#e9eef2", fontWeight: 600, marginBottom: "4px" }}
+            formatter={(value: number, name: string, props: any) => {
+              const delta = getDelta(props.payload && sortedData.indexOf(props.payload))
+              return [
+                <div key="tooltip" className="flex flex-col gap-1">
+                  <span className="text-accent-cyan font-semibold">{value} new apps</span>
+                  {delta && !delta.isNeutral && (
+                    <span
+                      className="text-xs flex items-center gap-1"
+                      style={{ color: delta.isPositive ? "#39d98a" : "#ff3eb5" }}
+                    >
+                      {delta.isPositive ? "▲" : "▼"} {delta.value} vs prior week
+                    </span>
+                  )}
+                </div>,
+                "",
+              ]
+            }}
+          />
 
-        {data.map((d, i) => {
-          if (i % 2 === 0 || data.length <= 6) {
-            const x = padding + i * xStep
-            return (
-              <text
-                key={`label-${i}`}
-                x={x}
-                y={height - 10}
-                textAnchor="middle"
-                className="text-xs font-medium"
-                fill="hsl(var(--muted-foreground))"
-              >
-                {d.week}
-              </text>
-            )
-          }
-          return null
-        })}
-
-        {[0, 1, 2, 3, 4].map((i) => {
-          const y = padding + (i * (height - padding * 2)) / 4
-          const value = Math.round(maxCount - (i * maxCount) / 4)
-          return (
-            <text
-              key={`y-label-${i}`}
-              x={padding - 15}
-              y={y + 4}
-              textAnchor="end"
-              className="text-xs font-medium"
-              fill="hsl(var(--muted-foreground))"
-            >
-              {value}
-            </text>
-          )
-        })}
-      </svg>
+          {/* Line with accent cyan (#47d7ff), 2px stroke */}
+          <Line
+            type="monotone"
+            dataKey="count"
+            stroke="#47d7ff"
+            strokeWidth={2}
+            dot={{ r: 3, fill: "#47d7ff", strokeWidth: 0 }}
+            activeDot={{ r: 5, fill: "#47d7ff", strokeWidth: 2, stroke: "#0b0f12" }}
+            isAnimationActive={!reduceMotion}
+            animationDuration={600}
+            animationEasing="ease-out"
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
-  )
-}
-
-function MiniSparkline({ data }: { data: number[] }) {
-  if (data.length === 0) return null
-  const max = Math.max(...data)
-  const min = Math.min(...data)
-  const range = max - min || 1
-  const width = 120
-  const height = 32
-
-  const points = data
-    .map((val, i) => {
-      const x = (i / (data.length - 1)) * width
-      const y = height - ((val - min) / range) * height
-      return `${x},${y}`
-    })
-    .join(" ")
-
-  return (
-    <svg width={width} height={height} className="opacity-70">
-      <polyline
-        points={points}
-        fill="none"
-        stroke="var(--accent-cyan)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   )
 }

@@ -3,16 +3,16 @@
 import React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { useShadowStore } from "@/store/shadowStore"
 import NotifyModal from "@/components/notify/notify-modal"
 import { KeyboardHelpModal } from "@/components/keyboard/help-modal"
-import { LayoutDashboard, Package, FileSearch, ShieldCheck, Settings, ChevronDown, Clock } from "lucide-react"
+import { PersonaSwitcher } from "@/components/persona/persona-switcher"
+import { LayoutDashboard, Package, FileSearch, ShieldCheck, Settings, RefreshCw } from "lucide-react"
 import { motion } from "framer-motion"
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -22,18 +22,13 @@ const navItems = [
   { name: "Settings", href: "/settings", icon: Settings },
 ]
 
-const personas = [
-  { id: "SecOps", label: "SecOps", initial: "SO" },
-  { id: "CISO", label: "CISO", initial: "CI" },
-] as const
-
 interface DashboardLayoutProps {
   children: React.ReactNode
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
-  const { persona, setPersona } = useShadowStore()
+  const { persona } = useShadowStore()
   const [lastUpdated, setLastUpdated] = React.useState(new Date())
 
   React.useEffect(() => {
@@ -60,11 +55,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   }
 
-  const handlePersonaChange = (newPersona: "SecOps" | "CISO") => {
-    setPersona(newPersona)
+  const getPageDescription = () => {
+    switch (pathname) {
+      case "/dashboard":
+        return "Monitor risk trends, remediation progress, and organization-wide shadow IT metrics"
+      case "/inventory":
+        return "Discover and triage sanctioned/unsanctioned OAuth apps across your organization"
+      case "/review":
+        return "Approve or dismiss pending security cases with recommended actions"
+      case "/audit":
+        return "Complete record of all remediation actions and system events"
+      case "/settings":
+        return "Configure notification preferences and alert channels"
+      default:
+        return ""
+    }
   }
-
-  const currentPersona = personas.find((p) => p.id === persona)
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--bg-elev-0)]">
@@ -160,68 +166,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         >
           <div className="flex flex-col gap-0.5">
             <h2 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">{getPageTitle()}</h2>
-            <div
-              className="flex items-center gap-1.5 text-[10px] font-mono text-[var(--text-secondary)]"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              <Clock className="h-3 w-3" aria-hidden="true" />
-              <span>Last updated: {lastUpdated.toLocaleTimeString()}</span>
-            </div>
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{getPageDescription()}</p>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                className={cn(
-                  "gap-2 rounded-full pl-2 pr-4 h-10 border border-[var(--bg-elev-1)] shadow-sm",
-                  "hover:shadow-[0_0_12px_rgba(71,215,255,0.15)] hover:border-[var(--accent-cyan)]/30",
-                  "transition-all duration-150",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2",
-                )}
-                aria-label={`Current persona: ${persona}. Click to change persona`}
-              >
-                <Avatar className="h-7 w-7">
-                  <AvatarFallback className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] text-xs font-bold">
-                    {currentPersona?.initial || "SO"}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="font-semibold text-sm">{persona}</span>
-                <ChevronDown className="h-3.5 w-3.5 opacity-50" aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="w-48 bg-[var(--bg-elev-1)] border-[var(--text-secondary)]/20 shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
-            >
-              {personas.map((p) => (
-                <DropdownMenuItem
-                  key={p.id}
-                  onClick={() => handlePersonaChange(p.id)}
-                  className={cn(
-                    "flex items-center gap-3 cursor-pointer",
-                    "focus:bg-[var(--accent-cyan)]/10 focus:text-[var(--text-primary)]",
-                    persona === p.id && "bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)] font-semibold",
-                  )}
-                >
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback
-                      className={cn(
-                        "text-[10px] font-bold",
-                        persona === p.id
-                          ? "bg-[var(--accent-cyan)]/30 text-[var(--accent-cyan)]"
-                          : "bg-[var(--bg-elev-0)] text-[var(--text-secondary)]",
-                      )}
-                    >
-                      {p.initial}
-                    </AvatarFallback>
-                  </Avatar>
-                  {p.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-3">
+            <DemoDataRefresh />
+            <PersonaSwitcher />
+          </div>
         </header>
 
         {/* Main Content */}
@@ -233,5 +184,40 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <NotifyModal />
       <KeyboardHelpModal />
     </div>
+  )
+}
+
+function DemoDataRefresh() {
+  const { toast } = useToast()
+
+  const handleRefresh = () => {
+    // Clear all localStorage and sessionStorage
+    if (typeof window !== "undefined") {
+      localStorage.clear()
+      sessionStorage.clear()
+    }
+
+    toast({
+      title: "Demo data refreshed",
+      description: "The page will reload with fresh demo data",
+      duration: 2000,
+    })
+
+    // Reload the page after a brief delay
+    setTimeout(() => {
+      window.location.reload()
+    }, 500)
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleRefresh}
+      className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elev-1)]"
+      aria-label="Reset demo data to initial state"
+    >
+      <RefreshCw className="h-4 w-4" />
+    </Button>
   )
 }

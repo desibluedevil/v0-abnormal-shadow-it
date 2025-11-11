@@ -16,9 +16,10 @@ import { ChartSkeleton } from "@/components/skeletons/chart-skeleton"
 import { CardSkeleton } from "@/components/skeletons/card-skeleton"
 import { ErrorBoundary } from "@/components/errors/error-boundary"
 import DonutChart from "@/components/dashboard/donut-chart"
-import { TrendingUp, TrendingDown, AlertCircle, Play } from "lucide-react"
+import { AlertCircle, Play } from "lucide-react"
 import { motion, useInView } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { computeOverview } from "@/lib/overview-math"
 
 const LineChart = dynamic(() => import("@/components/dashboard/line-chart"), { ssr: false })
 const Sparkline = dynamic(() => import("@/components/dashboard/sparkline").then((m) => ({ default: m.Sparkline })), {
@@ -120,6 +121,21 @@ function DashboardPageContent() {
   const weekly = weeklyNewApps()
   const ttrData = ttrSeries()
 
+  const totalApps = apps.length
+  const overviewData = computeOverview({
+    totalApps,
+    unsanctioned: totalUnsanctioned,
+    highRisk,
+    usersInvolved,
+    remediated,
+    prev: {
+      usersInvolved: 60, // Mock previous period data
+      remediated: 13, // Mock previous period data
+    },
+  })
+
+  const [unsanctionedCard, highRiskCard, usersCard, remediatedCard] = overviewData.cards
+
   if (isBooting) {
     return (
       <div className="space-y-6">
@@ -181,26 +197,53 @@ function DashboardPageContent() {
             <AnimatedCard delay={0}>
               <KpiCard
                 title="Total Unsanctioned"
-                value={totalUnsanctioned}
-                trend={0}
+                value={unsanctionedCard.value}
+                label={unsanctionedCard.label}
+                trend={unsanctionedCard.trend}
+                good={unsanctionedCard.good}
+                explainer={unsanctionedCard.explainer}
                 sparkData={[12, 15, 14, 18, 20]}
               />
             </AnimatedCard>
             <AnimatedCard delay={0.1}>
-              <KpiCard title="High Risk" value={highRisk} trend={0} sparkData={[8, 10, 9, 7, 6]} />
+              <KpiCard
+                title="High Risk"
+                value={highRiskCard.value}
+                label={highRiskCard.label}
+                trend={highRiskCard.trend}
+                good={highRiskCard.good}
+                explainer={highRiskCard.explainer}
+                sparkData={[8, 10, 9, 7, 6]}
+              />
             </AnimatedCard>
             <AnimatedCard delay={0.2}>
-              <KpiCard title="Users Involved" value={usersInvolved} trend={4} sparkData={[45, 48, 52, 58, 63]} />
+              <KpiCard
+                title="Users Involved"
+                value={usersCard.value}
+                label={usersCard.label}
+                trend={usersCard.trend}
+                good={usersCard.good}
+                explainer={usersCard.explainer}
+                sparkData={[45, 48, 52, 58, 63]}
+              />
             </AnimatedCard>
             <AnimatedCard delay={0.3}>
-              <KpiCard title="Remediated" value={remediated} tone="success" trend={12} sparkData={[5, 8, 10, 12, 15]} />
+              <KpiCard
+                title="Remediated"
+                value={remediatedCard.value}
+                label={remediatedCard.label}
+                trend={remediatedCard.trend}
+                good={remediatedCard.good}
+                explainer={remediatedCard.explainer}
+                sparkData={[5, 8, 10, 12, 15]}
+              />
             </AnimatedCard>
           </div>
         </section>
 
         <section>
           <StickyHeader id="trends-section">Trends</StickyHeader>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <AnimatedCard delay={0}>
               <Card className="lg:col-span-2">
                 <CardHeader>
@@ -213,7 +256,7 @@ function DashboardPageContent() {
               </Card>
             </AnimatedCard>
             <AnimatedCard delay={0.1}>
-              <Card>
+              <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle className="text-balance">Risk Distribution</CardTitle>
                 </CardHeader>
@@ -300,20 +343,22 @@ function DashboardPageContent() {
 function KpiCard({
   title,
   value,
-  tone,
+  label,
   trend,
+  good,
+  explainer,
   sparkData,
 }: {
   title: string
   value: number | string
-  tone?: "destructive" | "success"
-  trend?: number
+  label: string
+  trend: "up" | "down" | "flat" | null
+  good: boolean | null
+  explainer: string
   sparkData?: number[]
 }) {
-  const toneCls = tone === "destructive" ? "text-risk-high" : tone === "success" ? "text-risk-low" : "text-foreground"
-  const trendPositive = trend && trend > 0
-  const trendNeutral = trend === 0
-  const trendCls = trendNeutral ? "text-muted-foreground" : trendPositive ? "text-accent-lime" : "text-accent-magenta"
+  const labelColor = good === null ? "text-accent-cyan" : good ? "text-risk-low" : "text-risk-high"
+  const arrow = trend === "up" ? "▲" : trend === "down" ? "▼" : trend === "flat" ? "—" : null
 
   return (
     <Card className="shadow-abnormal hover:shadow-abnormal-lg transition-shadow duration-200">
@@ -321,13 +366,12 @@ function KpiCard({
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex items-baseline gap-2">
-          <div className={`text-5xl font-bold leading-none font-mono ${toneCls}`}>{value}</div>
-          {trend !== undefined && (
-            <div className={`flex items-center gap-1 text-sm font-semibold ${trendCls}`}>
-              {!trendNeutral &&
-                (trendPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />)}
-              {Math.abs(trend)}%
+        <div className="flex items-baseline gap-2" title={explainer}>
+          <div className="text-5xl font-bold leading-none font-mono text-foreground">{value}</div>
+          {label && (
+            <div className={`flex items-center gap-1 text-sm font-semibold ${labelColor}`}>
+              {arrow && <span>{arrow}</span>}
+              <span>{label}</span>
             </div>
           )}
         </div>
