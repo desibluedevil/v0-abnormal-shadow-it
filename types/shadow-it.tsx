@@ -51,7 +51,6 @@ export interface ShadowApp {
   topUsers?: string
   riskFactors?: string
   aiExplanation?: string
-  // </CHANGE>
   rationale: Rationale
 }
 
@@ -63,7 +62,14 @@ export interface CaseEvent {
 export interface Receipt {
   id: string
   ts: string
-  tool: "graph.revokeGrant" | "end.sessions" | "notify.email" | "ticket.create"
+  tool:
+    | "graph.revokeGrant"
+    | "graph.restoreGrant"
+    | "end.sessions"
+    | "notify.email"
+    | "notify.slack"
+    | "ticket.create"
+    | "ticket.update"
   status: "ok" | "error"
   details?: string
   appId: string
@@ -131,15 +137,16 @@ export interface ShadowState {
   ) => void
 
   // mutations
-  revokeApp: (appId: string, actor?: string) => string // Returns receipt ID
+  revokeApp: (appId: string, actor?: string) => string
   unrevokeApp: (appId: string, actor?: string) => void
-  sanctionApp: (appId: string, actor?: string) => string // Returns receipt ID
+  sanctionApp: (appId: string, actor?: string) => string
   unsanctionApp: (appId: string, actor?: string) => void
-  dismissApp: (appId: string, actor?: string) => string // Returns receipt ID
+  dismissApp: (appId: string, actor?: string) => string
   undismissApp: (appId: string, actor?: string) => void
-  notifyUsers: (appId: string, message: string, actor?: string) => Promise<{ ok: boolean; id: string; ts: string }> // notifyUsers now returns Promise with result object
+  notifyUsers: (appId: string, message: string, actor?: string) => Promise<{ ok: boolean; id: string; ts: string }>
   appendReceipt: (r: Receipt) => void
+  setAudit: (receipts: Receipt[]) => void
   seedReceiptsIfEmpty: () => void
   clearReceipts: () => void
-  sendTestAlert: () => void // Add sendTestAlert method
+  sendTestAlert: () => void
 }

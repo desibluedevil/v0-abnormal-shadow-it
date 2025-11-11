@@ -659,6 +659,11 @@ export function ShadowStoreProvider({ children }: { children: ReactNode }) {
     })
   }, [alerts, apps])
 
+  const setAudit = useCallback((newReceipts: Receipt[]) => {
+    setReceipts(newReceipts)
+    saveReceipts(newReceipts)
+  }, [])
+
   const value: ShadowState = {
     persona,
     apps,
@@ -683,6 +688,7 @@ export function ShadowStoreProvider({ children }: { children: ReactNode }) {
     undismissApp,
     notifyUsers,
     appendReceipt,
+    setAudit,
     seedReceiptsIfEmpty,
     clearReceipts,
     sendTestAlert,

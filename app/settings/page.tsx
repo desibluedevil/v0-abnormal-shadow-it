@@ -15,7 +15,7 @@ import { Mail, MessageSquare, Shield, AlertTriangle, CheckCircle2, ExternalLink 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export default function SettingsPage() {
-  const { alerts, setAlerts, apps, persona, sendTestAlert, audit, setAudit } = useShadowStore()
+  const { alerts, setAlerts, apps, persona, sendTestAlert, receipts, setAudit } = useShadowStore()
   const { toast } = useToast()
 
   // Local state for unsaved changes
@@ -51,18 +51,35 @@ export default function SettingsPage() {
     if (emailEnabled) channels.push("Email")
     if (slackEnabled) channels.push("Slack")
 
-    // Create audit log entry
-    const newReceipt = {
-      id: `rcpt_test_${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      action: `Notify ${channels.join(" & ")}`,
-      app: sketchyMail?.name || "SketchyMailApp",
-      actor: persona === "SecOps" ? "secops@abnormalsecurity.com" : "admin@abnormalsecurity.com",
-      status: "Success" as const,
-      details: `Test alert sent to ${channels.join(" and ")} for ${sketchyMail?.name || "SketchyMailApp"}`,
+    const newReceipts = []
+    const ts = new Date().toISOString()
+    const testApp = sketchyMail || apps[0]
+
+    if (emailEnabled) {
+      newReceipts.push({
+        id: `rcpt_test_email_${Date.now()}`,
+        ts,
+        tool: "notify.email" as const,
+        status: "ok" as const,
+        appId: testApp.id,
+        actor: persona === "SecOps" ? "secops@abnormalsecurity.com" : "admin@abnormalsecurity.com",
+        details: `Test email alert sent for ${testApp.name}. Recipients: Security team. Message: High-risk app detected with broad permissions.`,
+      })
     }
 
-    setAudit([newReceipt, ...audit])
+    if (slackEnabled) {
+      newReceipts.push({
+        id: `rcpt_test_slack_${Date.now()}`,
+        ts,
+        tool: "notify.slack" as const,
+        status: "ok" as const,
+        appId: testApp.id,
+        actor: persona === "SecOps" ? "secops@abnormalsecurity.com" : "admin@abnormalsecurity.com",
+        details: `Test Slack alert sent to #security-alerts for ${testApp.name}. Webhook: ${slackWebhook.slice(0, 40)}...`,
+      })
+    }
+
+    setAudit([...newReceipts, ...receipts])
     sendTestAlert()
 
     toast({
