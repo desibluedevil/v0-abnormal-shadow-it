@@ -73,7 +73,7 @@ export default function AppDrawer() {
   const params = useSearchParams()
   const router = useRouter()
   const focusId = params.get("focus")
-  const { apps, persona, revokeApp, sanctionApp } = useShadowStore()
+  const { apps, persona, revokeApp, sanctionApp, unsanctionApp } = useShadowStore()
   const { openFor } = useNotify()
   const { toast } = useToast()
 
@@ -182,6 +182,7 @@ export default function AppDrawer() {
 
   useEffect(() => {
     if (!localOpen) return
+
     const hash = typeof window !== "undefined" ? window.location.hash : ""
     if (hash === "#ai-explain") {
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -280,7 +281,8 @@ export default function AppDrawer() {
   }
 
   const canRevoke = persona === "SecOps" && app.status !== "Revoked"
-  const canSanction = persona === "SecOps" && app.status !== "Sanctioned" && app.status !== "Revoked"
+  const canToggleSanction = persona === "SecOps" && app.status !== "Revoked"
+  const isSanctioned = app.status === "Sanctioned"
   const canNotify = persona === "SecOps"
   const canPreparePlan = persona === "SecOps" && app.status !== "Revoked"
 
@@ -596,29 +598,33 @@ export default function AppDrawer() {
                           variant="secondary"
                           size="sm"
                           onClick={() => {
-                            sanctionApp(app.id)
-                            toast({
-                              title: "App Sanctioned",
-                              description: `${app.name} has been marked as sanctioned`,
-                            })
+                            if (isSanctioned) {
+                              unsanctionApp(app.id)
+                              toast({
+                                title: "App Unsanctioned",
+                                description: `${app.name} has been marked as unsanctioned`,
+                              })
+                            } else {
+                              sanctionApp(app.id)
+                              toast({
+                                title: "App Sanctioned",
+                                description: `${app.name} has been marked as sanctioned`,
+                              })
+                            }
                           }}
-                          disabled={!canSanction}
+                          disabled={!canToggleSanction}
                           className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50 hover:border-[#47D7FF]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                          aria-label={`Mark ${app.name} as sanctioned`}
+                          aria-label={isSanctioned ? `Unsanction ${app.name}` : `Mark ${app.name} as sanctioned`}
                         >
                           <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                          Mark Sanctioned
+                          {isSanctioned ? "Unsanction" : "Mark Sanctioned"}
                         </Button>
                       </span>
                     </TooltipTrigger>
-                    {!canSanction && (
+                    {!canToggleSanction && (
                       <TooltipContent>
-                        <p className="text-xs font-medium">
-                          {app.status === "Sanctioned" ? "App is already sanctioned" : "Cannot sanction a revoked app"}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Prerequisite: Status must be "Unsanctioned" or "Dismissed"
-                        </p>
+                        <p className="text-xs font-medium">Cannot modify sanctioned status for revoked apps</p>
+                        <p className="text-xs text-muted-foreground mt-1">Prerequisite: Status must not be "Revoked"</p>
                       </TooltipContent>
                     )}
                   </Tooltip>

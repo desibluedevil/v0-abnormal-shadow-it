@@ -113,7 +113,6 @@ function ActionsCell({ app }: { app: ShadowApp }) {
   }
 
   const handleNotify = () => {
-    console.log("[v0] Notify button clicked for app:", app.id)
     notify.openFor(app.id)
   }
 
@@ -211,7 +210,13 @@ function ActionsCell({ app }: { app: ShadowApp }) {
           )}
 
           <DropdownMenuItem
-            onClick={handleNotify}
+            onClick={(e) => {
+              e.stopPropagation()
+              handleNotify()
+            }}
+            onSelect={(e) => {
+              e.preventDefault()
+            }}
             disabled={isCISO}
             className={isCISO ? "cursor-not-allowed opacity-60" : ""}
           >

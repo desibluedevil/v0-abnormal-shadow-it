@@ -87,41 +87,45 @@ export default function NotifyModal() {
     >
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Notify Users — {app?.name || ""}</DialogTitle>
+          <DialogTitle className="text-foreground">Notify Users — {app?.name || ""}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="subject">Subject</Label>
+            <Label htmlFor="subject" className="text-foreground">
+              Subject
+            </Label>
             <Input
               id="subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Email subject line"
-              className="font-medium"
+              className="font-medium text-foreground"
             />
           </div>
 
           <Separator />
 
           <div className="space-y-2">
-            <Label htmlFor="body">Message Body</Label>
+            <Label htmlFor="body" className="text-foreground">
+              Message Body
+            </Label>
             <textarea
               id="body"
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              className="w-full min-h-[160px] resize-y border rounded-md p-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full min-h-[160px] resize-y border border-input rounded-md p-3 text-sm font-mono bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
               placeholder="Enter message (supports markdown formatting)"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Preview</Label>
-            <div className="border rounded-md p-4 bg-muted/50 min-h-[120px]">
+            <Label className="text-foreground">Preview</Label>
+            <div className="border border-border rounded-md p-4 bg-muted min-h-[120px]">
               <div className="space-y-3">
-                <div className="font-semibold text-sm border-b pb-2">
+                <div className="font-semibold text-sm border-b border-border pb-2 text-foreground">
                   {subject || <span className="text-muted-foreground">Subject preview...</span>}
                 </div>
-                <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm">
+                <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm text-foreground">
                   {body || <span className="text-muted-foreground">Message body preview...</span>}
                 </div>
               </div>
