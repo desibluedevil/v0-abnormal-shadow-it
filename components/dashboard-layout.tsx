@@ -12,6 +12,7 @@ import NotifyModal from "@/components/notify/notify-modal"
 import { KeyboardHelpModal } from "@/components/keyboard/help-modal"
 import { LayoutDashboard, Package, FileSearch, ShieldCheck, Settings, ChevronDown, Clock } from "lucide-react"
 import { motion } from "framer-motion"
+import Image from "next/image"
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -80,10 +81,23 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         {/* Sidebar Header */}
         <div className="p-6 border-b border-[var(--bg-elev-1)]">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">
-            Shadow<span className="text-[var(--accent-cyan)]">IT</span>
-          </h1>
-          <p className="text-xs text-[var(--text-secondary)] mt-1 font-mono">ABNORMAL SECURITY</p>
+          <div className="flex items-center gap-3">
+            <div className="relative w-10 h-10 flex-shrink-0">
+              <Image
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-hMLQgBXYIJyMkH4EN2P0ETWvg46XZJ.png"
+                alt="Abnormal Security"
+                width={40}
+                height={40}
+                className="rounded-lg"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">
+                Shadow<span className="text-[var(--accent-cyan)]">IT</span>
+              </h1>
+              <p className="text-xs text-[var(--text-secondary)] mt-1 font-mono">ABNORMAL SECURITY</p>
+            </div>
+          </div>
         </div>
 
         {/* Navigation */}
