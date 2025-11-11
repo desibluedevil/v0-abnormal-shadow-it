@@ -146,8 +146,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Removed all @apply statements and base layer entirely to eliminate Tailwind CSS v4 parsing errors */
-/* Using component-level styles instead of global @apply directives */
+/* NO @apply statements - Tailwind CSS v4 doesn't support @apply in @layer base */
+/* Component styles use inline Tailwind classes instead */
 
 /* Framer Motion utility classes */
 @layer utilities {

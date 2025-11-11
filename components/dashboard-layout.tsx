@@ -1,16 +1,17 @@
 "use client"
 
 import React from "react"
-
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { useShadowStore } from "@/store/shadowStore"
 import NotifyModal from "@/components/notify/notify-modal"
 import { KeyboardHelpModal } from "@/components/keyboard/help-modal"
 import { LayoutDashboard, Package, FileSearch, ShieldCheck, Settings, ChevronDown, Clock } from "lucide-react"
+import { motion } from "framer-motion"
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -21,8 +22,8 @@ const navItems = [
 ]
 
 const personas = [
-  { id: "SecOps", label: "SecOps" },
-  { id: "CISO", label: "CISO" },
+  { id: "SecOps", label: "SecOps", initial: "SO" },
+  { id: "CISO", label: "CISO", initial: "CI" },
 ] as const
 
 interface DashboardLayoutProps {
@@ -37,7 +38,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   React.useEffect(() => {
     const interval = setInterval(() => {
       setLastUpdated(new Date())
-    }, 60000) // Update every minute
+    }, 60000)
     return () => clearInterval(interval)
   }, [])
 
@@ -59,19 +60,23 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const handlePersonaChange = (newPersona: "SecOps" | "CISO") => {
-    console.log("[v0] Persona changed from", persona, "to", newPersona)
     setPersona(newPersona)
   }
 
-  console.log("[v0] DashboardLayout rendered with persona:", persona)
+  const currentPersona = personas.find((p) => p.id === persona)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-card flex flex-col" aria-label="Main navigation">
+    <div className="flex h-screen overflow-hidden bg-[var(--bg-elev-0)]">
+      <aside
+        className="w-64 border-r border-[var(--bg-elev-1)] bg-[var(--bg-elev-0)] flex flex-col shadow-[0_2px_16px_rgba(0,0,0,0.35)]"
+        aria-label="Main navigation"
+      >
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-border">
-          <h1 className="text-xl font-semibold text-foreground">Shadow IT</h1>
+        <div className="p-6 border-b border-[var(--bg-elev-1)]">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">
+            Shadow<span className="text-[var(--accent-cyan)]">IT</span>
+          </h1>
+          <p className="text-xs text-[var(--text-secondary)] mt-1 font-mono">ABNORMAL SECURITY</p>
         </div>
 
         {/* Navigation */}
@@ -86,72 +91,111 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  "group relative flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-150",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-elev-0)]",
                   isActive
-                    ? "bg-accent-cyan/10 text-accent-cyan"
-                    : "text-foreground hover:text-foreground hover:bg-muted/50",
+                    ? "bg-[color:color-mix(in_srgb,var(--accent-cyan)_10%,transparent)] text-[var(--accent-cyan)]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elev-1)]",
                 )}
               >
                 {isActive && (
-                  <div
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-accent-cyan rounded-r-full shadow-[0_0_12px_rgba(71,215,255,0.5)]"
+                  <motion.div
+                    layoutId="activeNav"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[var(--accent-cyan)] rounded-r-full shadow-[0_0_12px_var(--accent-cyan)]"
                     aria-hidden="true"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
                 <Icon
                   className={cn(
-                    "h-5 w-5 transition-all duration-200",
-                    isActive
-                      ? "text-accent-cyan drop-shadow-[0_0_8px_rgba(71,215,255,0.3)]"
-                      : "group-hover:drop-shadow-[0_0_6px_rgba(71,215,255,0.2)]",
+                    "h-5 w-5 transition-all duration-150",
+                    isActive && "drop-shadow-[0_0_8px_var(--accent-cyan)]",
                   )}
                   aria-hidden="true"
                 />
-                {item.name}
+                <span>{item.name}</span>
               </Link>
             )
           })}
         </nav>
+
+        {/* Footer info */}
+        <div className="p-4 border-t border-[var(--bg-elev-1)]">
+          <div className="text-[10px] font-mono text-[var(--text-secondary)] space-y-0.5">
+            <div>v2.1.0-beta</div>
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--risk-low)] animate-pulse" />
+              System Operational
+            </div>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
         <header
-          className="h-16 border-b border-border bg-card text-foreground flex items-center justify-between px-6"
+          className="sticky top-0 z-20 h-16 border-b border-[var(--bg-elev-1)] bg-[var(--bg-elev-0)]/95 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.2)] flex items-center justify-between px-6"
           role="banner"
         >
-          <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-semibold text-foreground">{getPageTitle()}</h2>
-            <div className="flex items-center gap-2 text-xs text-foreground" aria-live="polite" aria-atomic="true">
+          <div className="flex flex-col gap-0.5">
+            <h2 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">{getPageTitle()}</h2>
+            <div
+              className="flex items-center gap-1.5 text-[10px] font-mono text-[var(--text-secondary)]"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               <Clock className="h-3 w-3" aria-hidden="true" />
               <span>Last updated: {lastUpdated.toLocaleTimeString()}</span>
             </div>
           </div>
 
-          {/* Persona Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="secondary"
-                className="gap-2 rounded-full px-4 py-2 hover:shadow-[0_0_12px_rgba(71,215,255,0.2)] transition-all duration-200"
-                onClick={() => console.log("[v0] Dropdown trigger clicked")}
+                className={cn(
+                  "gap-2 rounded-full pl-2 pr-4 h-10 border border-[var(--bg-elev-1)] shadow-sm",
+                  "hover:shadow-[0_0_12px_rgba(71,215,255,0.15)] hover:border-[var(--accent-cyan)]/30",
+                  "transition-all duration-150",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2",
+                )}
                 aria-label={`Current persona: ${persona}. Click to change persona`}
               >
-                {persona}
-                <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
+                <Avatar className="h-7 w-7">
+                  <AvatarFallback className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] text-xs font-bold">
+                    {currentPersona?.initial || "SO"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="font-semibold text-sm">{persona}</span>
+                <ChevronDown className="h-3.5 w-3.5 opacity-50" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuContent
+              align="end"
+              className="w-48 bg-[var(--bg-elev-1)] border-[var(--text-secondary)]/20 shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
+            >
               {personas.map((p) => (
                 <DropdownMenuItem
                   key={p.id}
-                  onClick={() => {
-                    console.log("[v0] MenuItem clicked:", p.id)
-                    handlePersonaChange(p.id)
-                  }}
-                  className={cn(persona === p.id && "bg-accent text-accent-foreground")}
+                  onClick={() => handlePersonaChange(p.id)}
+                  className={cn(
+                    "flex items-center gap-3 cursor-pointer",
+                    "focus:bg-[var(--accent-cyan)]/10 focus:text-[var(--text-primary)]",
+                    persona === p.id && "bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)] font-semibold",
+                  )}
                 >
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback
+                      className={cn(
+                        "text-[10px] font-bold",
+                        persona === p.id
+                          ? "bg-[var(--accent-cyan)]/30 text-[var(--accent-cyan)]"
+                          : "bg-[var(--bg-elev-0)] text-[var(--text-secondary)]",
+                      )}
+                    >
+                      {p.initial}
+                    </AvatarFallback>
+                  </Avatar>
                   {p.label}
                 </DropdownMenuItem>
               ))}
@@ -160,15 +204,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Main Content */}
-        <main id="main-content" className="flex-1 overflow-auto p-6" role="main">
+        <main id="main-content" className="flex-1 overflow-auto p-6 bg-[var(--bg-elev-0)]" role="main">
           {children}
         </main>
       </div>
 
-      {/* NotifyModal */}
       <NotifyModal />
-
-      {/* Keyboard Help Modal */}
       <KeyboardHelpModal />
     </div>
   )
