@@ -320,9 +320,7 @@ export default function SettingsPage() {
                   </AlertDescription>
                   <div className="pt-2">
                     <Button asChild size="sm" variant="default" className="h-8 text-xs gap-1.5">
-                      <Link
-                        href={`/inventory?focus=${previewApp?.id || "app_sketchymail"}&plan=${previewApp?.id || "app_sketchymail"}`}
-                      >
+                      <Link href={`/inventory?focus=${previewApp?.id || "app_sketchymail"}`}>
                         Review & Remediate
                         <ExternalLink className="h-3 w-3" />
                       </Link>
