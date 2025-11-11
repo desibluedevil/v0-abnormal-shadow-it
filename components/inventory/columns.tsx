@@ -16,7 +16,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -72,6 +71,8 @@ function ActionsCell({ app }: { app: ShadowApp }) {
   const { sanctionApp, unsanctionApp, dismissApp, undismissApp, revokeApp, unrevokeApp, persona } = useShadowStore()
   const { toast } = useToast()
   const [revokeDialogOpen, setRevokeDialogOpen] = useState(false)
+  const [sanctionDialogOpen, setSanctionDialogOpen] = useState(false)
+  const [dismissDialogOpen, setDismissDialogOpen] = useState(false)
   const notify = useNotify()
 
   const handleExplain = () => {
@@ -96,15 +97,17 @@ function ActionsCell({ app }: { app: ShadowApp }) {
     }
   }
 
-  const handleSanction = () => {
+  const handleSanctionConfirm = () => {
     if (app.status === "Sanctioned") {
       unsanctionApp(app.id)
+      setSanctionDialogOpen(false)
       toast({
         title: "Sanction Removed",
         description: `${app.name} sanction has been removed`,
       })
     } else {
       sanctionApp(app.id)
+      setSanctionDialogOpen(false)
       toast({
         title: "App Sanctioned",
         description: `${app.name} has been sanctioned`,
@@ -116,20 +119,26 @@ function ActionsCell({ app }: { app: ShadowApp }) {
     notify.openFor(app.id)
   }
 
-  const handleDismiss = () => {
+  const handleDismissConfirm = () => {
     if (app.status === "Dismissed") {
       undismissApp(app.id)
+      setDismissDialogOpen(false)
       toast({
         title: "Dismiss Removed",
         description: `${app.name} has been restored`,
       })
     } else {
       dismissApp(app.id)
+      setDismissDialogOpen(false)
       toast({
         title: "App Dismissed",
         description: `${app.name} has been dismissed`,
       })
     }
+  }
+
+  const handleViewDetails = () => {
+    router.push(`/inventory?focus=${app.id}`)
   }
 
   const isCISO = persona === "CISO"
@@ -141,7 +150,7 @@ function ActionsCell({ app }: { app: ShadowApp }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="secondary"
+              variant="primary"
               size="sm"
               onClick={handleExplain}
               aria-label={`Explain risk analysis for ${app.name}`}
@@ -172,13 +181,28 @@ function ActionsCell({ app }: { app: ShadowApp }) {
           </Tooltip>
         </TooltipProvider>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuLabel>More Actions</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
+              handleViewDetails()
+            }}
+          >
+            View App Details
+          </DropdownMenuItem>
+
           <DropdownMenuSeparator />
 
           {!isCISO && (
             <Dialog open={revokeDialogOpen} onOpenChange={setRevokeDialogOpen}>
               <DialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                  onSelect={(e) => {
+                    e.preventDefault()
+                  }}
+                >
                   {app.status === "Revoked" ? "Restore Access" : "Revoke Access"}
                 </DropdownMenuItem>
               </DialogTrigger>
@@ -204,9 +228,38 @@ function ActionsCell({ app }: { app: ShadowApp }) {
           )}
 
           {!isCISO && (
-            <DropdownMenuItem onClick={handleSanction}>
-              {app.status === "Sanctioned" ? "Remove Sanction" : "Sanction App"}
-            </DropdownMenuItem>
+            <Dialog open={sanctionDialogOpen} onOpenChange={setSanctionDialogOpen}>
+              <DialogTrigger asChild>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                  onSelect={(e) => {
+                    e.preventDefault()
+                  }}
+                >
+                  {app.status === "Sanctioned" ? "Remove Sanction" : "Sanction App"}
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{app.status === "Sanctioned" ? "Remove Sanction" : "Sanction App"}</DialogTitle>
+                  <DialogDescription>
+                    {app.status === "Sanctioned"
+                      ? `Are you sure you want to remove the sanction from ${app.name}? This will mark it as unsanctioned.`
+                      : `Are you sure you want to sanction ${app.name}? This will approve it for company use.`}
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setSanctionDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="primary" onClick={handleSanctionConfirm}>
+                    {app.status === "Sanctioned" ? "Remove Sanction" : "Sanction App"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
 
           <DropdownMenuItem
@@ -224,9 +277,38 @@ function ActionsCell({ app }: { app: ShadowApp }) {
           </DropdownMenuItem>
 
           {!isCISO && (
-            <DropdownMenuItem onClick={handleDismiss}>
-              {app.status === "Dismissed" ? "Restore" : "Dismiss"}
-            </DropdownMenuItem>
+            <Dialog open={dismissDialogOpen} onOpenChange={setDismissDialogOpen}>
+              <DialogTrigger asChild>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                  onSelect={(e) => {
+                    e.preventDefault()
+                  }}
+                >
+                  {app.status === "Dismissed" ? "Restore" : "Dismiss"}
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{app.status === "Dismissed" ? "Restore App" : "Dismiss App"}</DialogTitle>
+                  <DialogDescription>
+                    {app.status === "Dismissed"
+                      ? `Are you sure you want to restore ${app.name}? This will bring it back to the active inventory.`
+                      : `Are you sure you want to dismiss ${app.name}? This will hide it from the review queue.`}
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setDismissDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="secondary" onClick={handleDismissConfirm}>
+                    {app.status === "Dismissed" ? "Restore" : "Dismiss"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
 
           {isCISO && (
