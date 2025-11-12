@@ -317,22 +317,6 @@ function AuditPageContent() {
                 Refine results by search, action type, status, or date range
               </CardDescription>
             </div>
-            <Button
-              onClick={exportToCSV}
-              variant="primary"
-              size="sm"
-              disabled={filteredReceipts.length === 0}
-              aria-label={
-                filteredReceipts.length === 0
-                  ? "Export becomes available once results are visible"
-                  : `Export ${filteredReceipts.length} receipts to CSV file`
-              }
-              title={filteredReceipts.length === 0 ? "Export becomes available once results are visible" : undefined}
-              className="gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Export CSV
-            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
@@ -525,18 +509,36 @@ function AuditPageContent() {
               </CardTitle>
               <CardDescription className="mt-1">Chronological record of all remediation actions</CardDescription>
             </div>
-            {selectedReceipts.size > 0 && (
+            <div className="flex items-center gap-2">
               <Button
-                onClick={exportSelectedToCSV}
+                onClick={exportToCSV}
                 variant="primary"
                 size="sm"
+                disabled={filteredReceipts.length === 0}
+                aria-label={
+                  filteredReceipts.length === 0
+                    ? "Export becomes available once results are visible"
+                    : `Export ${filteredReceipts.length} receipts to CSV file`
+                }
+                title={filteredReceipts.length === 0 ? "Export becomes available once results are visible" : undefined}
                 className="gap-2"
-                aria-label={`Export ${selectedReceipts.size} selected receipts to CSV file`}
               >
                 <Download className="h-4 w-4" />
-                Export Selected ({selectedReceipts.size})
+                Export CSV
               </Button>
-            )}
+              {selectedReceipts.size > 0 && (
+                <Button
+                  onClick={exportSelectedToCSV}
+                  variant="primary"
+                  size="sm"
+                  className="gap-2"
+                  aria-label={`Export ${selectedReceipts.size} selected receipts to CSV file`}
+                >
+                  <Download className="h-4 w-4" />
+                  Export Selected ({selectedReceipts.size})
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">

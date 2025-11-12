@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronDown, ChevronRight, FolderSearch } from "lucide-react"
+import { ChevronDown, ChevronRight, FolderSearch, Sparkles } from "lucide-react"
 import type { ShadowApp } from "@/types/shadow-it"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
 import { Badge } from "@/components/ui/badge"
@@ -181,6 +181,22 @@ const MemoizedDataTableRow = memo(function DataTableRow({
                   </div>
                 </div>
               </div>
+
+              {row.aiExplanation && (
+                <div className="md:col-span-2 space-y-3 border-t border-border pt-3 mt-2">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="h-4 w-4 text-[#47D7FF]" />
+                      <div className="text-xs font-semibold text-foreground uppercase tracking-wide">
+                        AI Explanation
+                      </div>
+                    </div>
+                    <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line bg-gradient-to-br from-[#47D7FF]/5 to-[#47D7FF]/10 p-4 rounded-lg border border-[#47D7FF]/20">
+                      {row.aiExplanation}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </TableCell>
         </TableRow>

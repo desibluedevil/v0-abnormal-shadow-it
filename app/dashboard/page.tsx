@@ -15,7 +15,7 @@ import { ChartSkeleton } from "@/components/skeletons/chart-skeleton"
 import { CardSkeleton } from "@/components/skeletons/card-skeleton"
 import { ErrorBoundary } from "@/components/errors/error-boundary"
 import DonutChart from "@/components/dashboard/donut-chart"
-import { AlertCircle, Play } from "lucide-react"
+import { AlertCircle, Play, Sparkles } from "lucide-react"
 import { motion, useInView } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { computeOverview } from "@/lib/overview-math"
@@ -180,10 +180,10 @@ function DashboardPageContent() {
             High-Risk Apps
           </a>
           <a
-            href="#summary-section"
+            href="#risk-posture-section"
             className="px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-elev-1)] text-[var(--text-primary)] hover:bg-[var(--accent-cyan)]/10 hover:text-[var(--accent-cyan)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2 transition-colors"
           >
-            Summary
+            Risk Posture - AI Brief
           </a>
         </div>
       </nav>
@@ -382,7 +382,12 @@ function DashboardPageContent() {
         </section>
 
         <section>
-          <StickyHeader id="summary-section">Summary</StickyHeader>
+          <StickyHeader id="risk-posture-section">
+            <div className="flex items-center gap-2">
+              <span>Risk Posture - AI Brief</span>
+              <Sparkles className="w-5 h-5 text-[var(--accent-cyan)]" aria-label="AI Generated" />
+            </div>
+          </StickyHeader>
           <AnimatedCard>
             <GeneratedSummary />
           </AnimatedCard>
@@ -543,25 +548,81 @@ function GeneratedSummary() {
   return (
     <Card className="border-dashed shadow-abnormal">
       <CardHeader>
-        <CardTitle className="text-base">Generated Summary</CardTitle>
+        <CardTitle className="text-base">This Week - Changes, Exposure, and Recommended Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-2 text-sm text-foreground">
+        <ul className="space-y-3 text-sm text-foreground">
           <li className="flex items-start gap-2">
-            <span className="text-accent-cyan mt-0.5">•</span>
-            <span>Monitoring 5 unsanctioned apps; 2 high-risk need immediate action.</span>
+            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
+            <span>
+              <strong>Exposure snapshot:</strong> Monitoring 5 unsanctioned OAuth apps (2 High, 2 Medium, 1 Low) across
+              54 users; exec impact present.
+            </span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-accent-cyan mt-0.5">•</span>
-            <span>54 users affected; Avg TTRemediation 9.6h (14d).</span>
+            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
+            <div className="space-y-1.5">
+              <div>
+                <strong>High-risk drivers:</strong>
+              </div>
+              <ul className="space-y-1.5 ml-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-muted-foreground mt-0.5 flex-shrink-0">◦</span>
+                  <span>
+                    SketchyMailApp → Files.Read.All + Mail.Read on CFO mailbox; first-seen Jan 5; active until Jan 9.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-muted-foreground mt-0.5 flex-shrink-0">◦</span>
+                  <span>CalendarSync → Calendars.ReadWrite on 7 users, write access used on exec/admin calendars.</span>
+                </li>
+              </ul>
+            </div>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-accent-cyan mt-0.5">•</span>
-            <span>Priority: Revoke high-risk OAuth grants + notify impacted users.</span>
+            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
+            <span>
+              <strong>Trend & velocity:</strong> Avg TTR (14-day) is 9.6h; last week improved by 18%; current queue 2
+              cases (P0/P1).
+            </span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-accent-cyan mt-0.5">•</span>
-            <span>Expected risk reduction after today's actions: –62% (8→3 users).</span>
+            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
+            <div className="space-y-1.5">
+              <div>
+                <strong>Priority actions (today):</strong>
+              </div>
+              <ul className="space-y-1.5 ml-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-muted-foreground mt-0.5 flex-shrink-0">◦</span>
+                  <span>
+                    Revoke SketchyMailApp on CFO; end sessions; notify exec + SecOps; open ticket to review large Graph
+                    calls.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-muted-foreground mt-0.5 flex-shrink-0">◦</span>
+                  <span>
+                    Revoke CalendarSync on all 7 authorizers; notify owners; convert to sanctioned, least-privilege
+                    calendar integration.
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
+            <span>
+              <strong>Projected impact:</strong> High-risk user count down 8 → 3 (≈62% reduction) within the next review
+              cycle; residual risk Medium (Notion/Dropbox).
+            </span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
+            <span>
+              <strong>Compliance & proof:</strong> Agent will emit 4 receipts per remediation (revoke, sessions, notify,
+              ticket); CSV export available in Case Audit for leadership/GRC.
+            </span>
           </li>
         </ul>
       </CardContent>
