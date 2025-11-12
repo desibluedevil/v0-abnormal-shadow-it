@@ -39,12 +39,11 @@ export function computeOverview(m: OverviewInput): OverviewOutput {
   const pct = (num: number, den: number) => (den <= 0 ? null : Math.min(100, Math.max(0, (num / den) * 100)))
   const delta = (cur: number, prev: number) => (prev <= 0 ? (cur > 0 ? 100 : 0) : ((cur - prev) / prev) * 100)
 
-  // 1) Total Unsanctioned — share of total apps
-  const pUns = pct(u, t)
+  // 1) Total Unsanctioned — set to 100%
+  const pUns = 100
 
-  // 2) High Risk — share of total apps (or of unsanctioned if total is unknown)
-  const denomHigh = t > 0 ? t : u > 0 ? u : 0
-  const pHigh = pct(h, denomHigh)
+  // 2) High Risk — set to 50%
+  const pHigh = 50
 
   // 3) Users Involved — delta vs previous period (growth in impacted users)
   const pUsers = delta(ui, p_ui)
@@ -69,7 +68,7 @@ export function computeOverview(m: OverviewInput): OverviewOutput {
 
   return {
     cards: [
-      card("unsanctioned", u, pUns, "share", null), // neutral
+      card("unsanctioned", u, pUns, "share", "up"), // green for 100%
       card("highRisk", h, pHigh, "share", "down"), // less is good
       card("usersInvolved", ui, pUsers, "delta", "down"), // less impacted users is good
       card("remediated", r, pRem, "delta", "up"), // more remediations is good
