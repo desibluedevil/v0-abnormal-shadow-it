@@ -32,10 +32,10 @@ export const PersonaSwitcher: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false)
 
   React.useEffect(() => {
-    console.log("[v0] PersonaSwitcher mounted")
-    console.log("[v0] Current persona:", persona)
-    console.log("[v0] Available personas:", PERSONAS)
-    console.log("[v0] Personas are deduped:", new Set(PERSONAS).size === PERSONAS.length)
+    // console.log("[v0] PersonaSwitcher mounted")
+    // console.log("[v0] Current persona:", persona)
+    // console.log("[v0] Available personas:", PERSONAS)
+    // console.log("[v0] Personas are deduped:", new Set(PERSONAS).size === PERSONAS.length)
   }, [persona])
 
   return (
@@ -49,6 +49,7 @@ export const PersonaSwitcher: React.FC = () => {
             "border-[var(--bg-elev-1)] bg-[var(--bg-elev-0)]/60",
             "hover:bg-[var(--bg-elev-1)] hover:border-[var(--accent-cyan)]/30",
             "hover:shadow-[0_0_12px_rgba(71,215,255,0.15)]",
+            "hover:text-[var(--text-primary)]", // Ensure text stays white on hover
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-elev-0)]",
             "transition-all duration-200",
             "text-[var(--text-primary)] font-semibold text-sm",
@@ -84,7 +85,7 @@ export const PersonaSwitcher: React.FC = () => {
             <DropdownMenuItem
               key={p}
               onClick={() => {
-                console.log("[v0] Switching persona to:", p)
+                // console.log("[v0] Switching persona to:", p)
                 setPersona(p)
                 setIsOpen(false)
               }}

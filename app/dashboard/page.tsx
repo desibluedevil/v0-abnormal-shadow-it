@@ -551,58 +551,64 @@ function GeneratedSummary() {
         <CardTitle className="text-base">This Week - Changes, Exposure, and Recommended Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-3 text-sm text-foreground">
-          <li className="flex items-start gap-2">
-            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
-            <span>
-              <strong>Exposure snapshot:</strong> Monitoring 5 unsanctioned OAuth apps (2 High, 2 Medium, 1 Low) across
-              54 users; exec impact present.
+        <ul className="space-y-4 text-[15px] leading-relaxed text-foreground">
+          <li className="flex items-start gap-3">
+            <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+            <span className="leading-relaxed">
+              <strong className="font-semibold text-foreground">Exposure snapshot:</strong>{" "}
+              <span className="text-foreground/90">
+                Monitoring 5 unsanctioned OAuth apps (2 High, 2 Medium, 1 Low) across 54 users; exec impact present.
+              </span>
             </span>
           </li>
-          <li className="flex items-start gap-2">
-            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
-            <div className="space-y-1.5">
+          <li className="flex items-start gap-3">
+            <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+            <div className="space-y-2 leading-relaxed">
               <div>
-                <strong>High-risk drivers:</strong>
+                <strong className="font-semibold text-foreground">High-risk drivers:</strong>
               </div>
-              <ul className="space-y-1.5 ml-4">
-                <li className="flex items-start gap-2">
-                  <span className="text-muted-foreground mt-0.5 flex-shrink-0">◦</span>
-                  <span>
+              <ul className="space-y-2 ml-5">
+                <li className="flex items-start gap-2.5">
+                  <span className="text-muted-foreground mt-1 flex-shrink-0">◦</span>
+                  <span className="text-foreground/90 leading-relaxed">
                     SketchyMailApp → Files.Read.All + Mail.Read on CFO mailbox; first-seen Jan 5; active until Jan 9.
                   </span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-muted-foreground mt-0.5 flex-shrink-0">◦</span>
-                  <span>CalendarSync → Calendars.ReadWrite on 7 users, write access used on exec/admin calendars.</span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-muted-foreground mt-1 flex-shrink-0">◦</span>
+                  <span className="text-foreground/90 leading-relaxed">
+                    CalendarSync → Calendars.ReadWrite on 7 users, write access used on exec/admin calendars.
+                  </span>
                 </li>
               </ul>
             </div>
           </li>
-          <li className="flex items-start gap-2">
-            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
-            <span>
-              <strong>Trend & velocity:</strong> Avg TTR (14-day) is 9.6h; last week improved by 18%; current queue 2
-              cases (P0/P1).
+          <li className="flex items-start gap-3">
+            <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+            <span className="leading-relaxed">
+              <strong className="font-semibold text-foreground">Trend & velocity:</strong>{" "}
+              <span className="text-foreground/90">
+                Avg TTR (14-day) is 9.6h; last week improved by 18%; current queue 2 cases (P0/P1).
+              </span>
             </span>
           </li>
-          <li className="flex items-start gap-2">
-            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
-            <div className="space-y-1.5">
+          <li className="flex items-start gap-3">
+            <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+            <div className="space-y-2 leading-relaxed">
               <div>
-                <strong>Priority actions (today):</strong>
+                <strong className="font-semibold text-foreground">Priority actions (today):</strong>
               </div>
-              <ul className="space-y-1.5 ml-4">
-                <li className="flex items-start gap-2">
-                  <span className="text-muted-foreground mt-0.5 flex-shrink-0">◦</span>
-                  <span>
+              <ul className="space-y-2 ml-5">
+                <li className="flex items-start gap-2.5">
+                  <span className="text-muted-foreground mt-1 flex-shrink-0">◦</span>
+                  <span className="text-foreground/90 leading-relaxed">
                     Revoke SketchyMailApp on CFO; end sessions; notify exec + SecOps; open ticket to review large Graph
                     calls.
                   </span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-muted-foreground mt-0.5 flex-shrink-0">◦</span>
-                  <span>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-muted-foreground mt-1 flex-shrink-0">◦</span>
+                  <span className="text-foreground/90 leading-relaxed">
                     Revoke CalendarSync on all 7 authorizers; notify owners; convert to sanctioned, least-privilege
                     calendar integration.
                   </span>
@@ -610,18 +616,24 @@ function GeneratedSummary() {
               </ul>
             </div>
           </li>
-          <li className="flex items-start gap-2">
-            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
-            <span>
-              <strong>Projected impact:</strong> High-risk user count down 8 → 3 (≈62% reduction) within the next review
-              cycle; residual risk Medium (Notion/Dropbox).
+          <li className="flex items-start gap-3">
+            <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+            <span className="leading-relaxed">
+              <strong className="font-semibold text-foreground">Projected impact:</strong>{" "}
+              <span className="text-foreground/90">
+                High-risk user count down 8 → 3 (≈62% reduction) within the next review cycle; residual risk Medium
+                (Notion/Dropbox).
+              </span>
             </span>
           </li>
-          <li className="flex items-start gap-2">
-            <span className="text-accent-cyan mt-0.5 flex-shrink-0">•</span>
-            <span>
-              <strong>Compliance & proof:</strong> Agent will emit 4 receipts per remediation (revoke, sessions, notify,
-              ticket); CSV export available in Case Audit for leadership/GRC.
+          <li className="flex items-start gap-3">
+            <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+            <span className="leading-relaxed">
+              <strong className="font-semibold text-foreground">Compliance & proof:</strong>{" "}
+              <span className="text-foreground/90">
+                Agent will emit 4 receipts per remediation (revoke, sessions, notify, ticket); CSV export available in
+                Case Audit for leadership/GRC.
+              </span>
             </span>
           </li>
         </ul>
