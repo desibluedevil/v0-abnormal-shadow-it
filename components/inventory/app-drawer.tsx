@@ -289,17 +289,6 @@ function AppDrawer() {
   return (
     <Drawer open={localOpen} onOpenChange={handleOpenChange}>
       <DrawerContent className="h-full p-0 bg-[#0B0F12] max-w-2xl border-l border-[#47D7FF]/20">
-        {isCISO && (
-          <div className="px-6 pt-4">
-            <Alert className="border-[#47D7FF]/30 bg-[#47D7FF]/10" data-testid="ciso-banner-drawer">
-              <AlertDescription className="text-[#47D7FF] font-medium text-sm flex items-center gap-2">
-                <Lock className="h-4 w-4" />
-                Read-only view (CISO). Only SecOps can perform actions.
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
         <DrawerHeader className="sticky top-0 z-10 bg-[#0B0F12]/95 backdrop-blur-md border-b border-[#47D7FF]/20 shadow-[0_2px_16px_rgba(0,0,0,0.35)] px-6 py-4">
           <div className="flex items-start justify-between gap-4 w-full">
             <div className="flex items-start gap-4 flex-1 min-w-0">

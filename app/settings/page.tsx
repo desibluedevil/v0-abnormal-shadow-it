@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
-import { CISOBanner } from "@/components/rbac/ciso-banner"
 import { Mail, MessageSquare, Shield, AlertTriangle, CheckCircle2, ExternalLink } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
@@ -105,8 +104,6 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Alert Settings</h1>
         <p className="text-sm text-muted-foreground">Configure notification preferences and alert channels</p>
       </div>
-
-      {isReadOnly && <CISOBanner />}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="shadow-abnormal">
@@ -319,11 +316,24 @@ export default function SettingsPage() {
                       "High-risk OAuth app with organization-wide read scopes, installed by an executive."}
                   </AlertDescription>
                   <div className="pt-2">
-                    <Button asChild size="sm" variant="default" className="h-8 text-xs gap-1.5">
-                      <Link href={`/inventory?focus=${previewApp?.id || "app_sketchymail"}`}>
-                        Review & Remediate
-                        <ExternalLink className="h-3 w-3" />
-                      </Link>
+                    <Button
+                      asChild={!isReadOnly}
+                      size="sm"
+                      variant="default"
+                      className="h-8 text-xs gap-1.5"
+                      disabled={isReadOnly}
+                    >
+                      {isReadOnly ? (
+                        <>
+                          Review & Remediate
+                          <ExternalLink className="h-3 w-3" />
+                        </>
+                      ) : (
+                        <Link href={`/inventory?focus=${previewApp?.id || "app_sketchymail"}`}>
+                          Review & Remediate
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      )}
                     </Button>
                   </div>
                 </div>

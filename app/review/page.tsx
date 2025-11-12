@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import { CISOBanner } from "@/components/rbac/ciso-banner"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { CardSkeleton } from "@/components/skeletons/card-skeleton"
 import { ErrorBoundary } from "@/components/errors/error-boundary"
@@ -271,7 +270,6 @@ function ReviewPageContent() {
   if (isBooting) {
     return (
       <div className="space-y-6">
-        {persona === "CISO" && <CISOBanner />}
         <div className="space-y-2">
           <div className="h-8 w-48 bg-muted rounded animate-pulse" />
           <div className="h-4 w-64 bg-muted rounded animate-pulse" />
@@ -287,8 +285,6 @@ function ReviewPageContent() {
 
   return (
     <div className="space-y-6">
-      {isCISO && <CISOBanner />}
-
       <div className="space-y-4">
         <div>
           <h1 className="text-3xl font-semibold text-foreground text-balance">Review Queue</h1>

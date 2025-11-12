@@ -8,7 +8,7 @@ import { useShadowStore } from "@/store/shadowStore"
 import NotifyModal from "@/components/notify/notify-modal"
 import { KeyboardHelpModal } from "@/components/keyboard/help-modal"
 import { PersonaSwitcher } from "@/components/persona/persona-switcher"
-import { LayoutDashboard, Package, FileSearch, ShieldCheck, Settings, RefreshCw } from "lucide-react"
+import { LayoutDashboard, Package, FileSearch, ShieldCheck, Settings, RefreshCw, Shield } from "lucide-react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -29,6 +29,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const { persona } = useShadowStore()
+  const isCISO = persona === "CISO"
   const [lastUpdated, setLastUpdated] = React.useState(new Date())
 
   React.useEffect(() => {
@@ -177,6 +178,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Main Content */}
         <main id="main-content" className="flex-1 overflow-auto p-6 bg-[var(--bg-elev-0)]" role="main" tabIndex={-1}>
+          {/* CISO banner at top of all pages when in CISO view */}
+          {isCISO && (
+            <div className="mb-6 p-4 rounded-lg border-2 border-[var(--accent-cyan)]/30 bg-[var(--accent-cyan)]/5 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-cyan)]/10 border border-[var(--accent-cyan)]/30">
+                  <Shield className="h-5 w-5 text-[var(--accent-cyan)]" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-bold text-[var(--text-primary)]">CISO: Executive View - Read Only</div>
+                  <div className="text-xs text-[var(--text-secondary)] mt-0.5">
+                    Monitoring and reporting mode. Switch to SecOps persona to take action.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {children}
         </main>
       </div>

@@ -15,13 +15,14 @@ import { ChartSkeleton } from "@/components/skeletons/chart-skeleton"
 import { CardSkeleton } from "@/components/skeletons/card-skeleton"
 import { ErrorBoundary } from "@/components/errors/error-boundary"
 import DonutChart from "@/components/dashboard/donut-chart"
-import { AlertCircle, Play, Sparkles } from "lucide-react"
+import { AlertCircle, Play, Sparkles, Copy, Check } from "lucide-react"
 import { motion, useInView } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { computeOverview } from "@/lib/overview-math"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import LineChart from "@/components/dashboard/line-chart" // Import LineChart
-import Sparkline from "@/components/dashboard/sparkline" // Import Sparkline
+import LineChart from "@/components/dashboard/line-chart"
+import Sparkline from "@/components/dashboard/sparkline"
+import { useToast } from "@/hooks/use-toast"
 
 function StickyHeader({ children, id }: { children: React.ReactNode; id?: string }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -106,14 +107,25 @@ function AnimatedCard({ children, delay = 0 }: { children: React.ReactNode; dela
 
 function DashboardPageContent() {
   const [isBooting, setIsBooting] = useState(true)
-  const [timePeriod, setTimePeriod] = useState<"today" | "week" | "month" | "quarter">("week")
+  const { persona, kpis, riskDistribution, weeklyNewApps, ttrSeries, receipts, apps } = useShadowStore()
+  const isCISO = persona === "CISO"
+  const [timePeriod, setTimePeriod] = useState<"today" | "week" | "month" | "quarter">("month")
+  const [copied, setCopied] = useState(false)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    if (isCISO) {
+      setTimePeriod("month")
+    } else {
+      setTimePeriod("week")
+    }
+  }, [isCISO])
 
   useEffect(() => {
     const timer = setTimeout(() => setIsBooting(false), 400)
     return () => clearTimeout(timer)
   }, [])
 
-  const { kpis, riskDistribution, weeklyNewApps, ttrSeries, receipts, apps } = useShadowStore()
   const { totalUnsanctioned, highRisk, usersInvolved, remediated } = kpis()
   const risk = riskDistribution()
   const weekly = weeklyNewApps()
@@ -134,6 +146,42 @@ function DashboardPageContent() {
 
   const [unsanctionedCard, highRiskCard, usersCard, remediatedCard] = overviewData.cards
 
+  const handleCopySnapshot = async () => {
+    const snapshotText = `Executive Snapshot - This Week
+
+• Exposure snapshot: Monitoring 5 unsanctioned OAuth apps (2 High, 2 Medium, 1 Low) across 54 users; exec impact present.
+
+• High-risk drivers:
+  ◦ SketchyMailApp → Files.Read.All + Mail.Read on CFO mailbox; first-seen Jan 5; active until Jan 9.
+  ◦ CalendarSync → Calendars.ReadWrite on 7 users, write access used on exec/admin calendars.
+
+• Trend & velocity: Avg TTR (14-day) is 9.6h; last week improved by 18%; current queue 2 cases (P0/P1).
+
+• Priority actions (today):
+  ◦ Revoke SketchyMailApp on CFO; end sessions; notify exec + SecOps; open ticket to review large Graph calls.
+  ◦ Revoke CalendarSync on all 7 authorizers; notify owners; convert to sanctioned, least-privilege calendar integration.
+
+• Projected impact: High-risk user count down 8 → 3 (≈62% reduction) within the next review cycle; residual risk Medium (Notion/Dropbox).
+
+• Compliance & proof: Agent will emit 4 receipts per remediation (revoke, sessions, notify, ticket); CSV export available in Case Audit for leadership/GRC.`
+
+    try {
+      await navigator.clipboard.writeText(snapshotText)
+      setCopied(true)
+      toast({
+        title: "Copied to clipboard",
+        description: "Executive Snapshot content has been copied",
+      })
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      toast({
+        title: "Copy failed",
+        description: "Failed to copy content to clipboard",
+        variant: "destructive",
+      })
+    }
+  }
+
   if (isBooting) {
     return (
       <div className="space-y-6">
@@ -147,6 +195,8 @@ function DashboardPageContent() {
 
   return (
     <>
+      {/* CISO banner moved to dashboard-layout.tsx to appear on all pages */}
+
       <nav
         aria-label="Section navigation"
         className="mb-6 p-4 rounded-lg border border-[var(--bg-elev-1)] bg-[var(--bg-elev-0)]/50 backdrop-blur-sm"
@@ -155,6 +205,14 @@ function DashboardPageContent() {
           Jump to section:
         </div>
         <div className="flex flex-wrap gap-2">
+          {isCISO && (
+            <a
+              href="#executive-snapshot-section"
+              className="px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-elev-1)] text-[var(--text-primary)] hover:bg-[var(--accent-cyan)]/10 hover:text-[var(--accent-cyan)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2 transition-colors"
+            >
+              Executive Snapshot
+            </a>
+          )}
           <a
             href="#overview-section"
             className="px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-elev-1)] text-[var(--text-primary)] hover:bg-[var(--accent-cyan)]/10 hover:text-[var(--accent-cyan)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2 transition-colors"
@@ -179,72 +237,261 @@ function DashboardPageContent() {
           >
             High-Risk Apps
           </a>
-          <a
-            href="#risk-posture-section"
-            className="px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-elev-1)] text-[var(--text-primary)] hover:bg-[var(--accent-cyan)]/10 hover:text-[var(--accent-cyan)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2 transition-colors"
-          >
-            Risk Posture - AI Brief
-          </a>
+          {!isCISO && (
+            <a
+              href="#risk-posture-section"
+              className="px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-elev-1)] text-[var(--text-primary)] hover:bg-[var(--accent-cyan)]/10 hover:text-[var(--accent-cyan)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)] focus:ring-offset-2 transition-colors"
+            >
+              Risk Posture - AI Brief
+            </a>
+          )}
         </div>
       </nav>
 
       <div className="space-y-8">
+        {isCISO && (
+          <section>
+            <div className="sticky top-0 z-10 -mx-6 px-6 py-3 mb-4 backdrop-blur-md bg-[var(--bg-elev-0)]/90 border-b border-[var(--bg-elev-1)] shadow-[0_2px_12px_rgba(0,0,0,0.25)]">
+              <div className="flex items-center justify-between">
+                <h2
+                  id="executive-snapshot-section"
+                  className="text-xl font-bold text-[var(--text-primary)] tracking-tight flex items-center gap-2"
+                >
+                  <span>Executive Snapshot</span>
+                  <Sparkles className="w-5 h-5 text-[var(--accent-cyan)]" aria-label="AI Generated" />
+                </h2>
+                <ToggleGroup
+                  type="single"
+                  value={timePeriod}
+                  onValueChange={(value) => {
+                    if (value) setTimePeriod(value as typeof timePeriod)
+                  }}
+                  className="border border-[var(--bg-elev-1)] rounded-lg p-1 bg-[var(--bg-elev-0)]"
+                >
+                  <ToggleGroupItem
+                    value="today"
+                    className={cn(
+                      "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                      "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                      "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                    )}
+                  >
+                    Today
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="week"
+                    className={cn(
+                      "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                      "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                      "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                    )}
+                  >
+                    This Week
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="month"
+                    className={cn(
+                      "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                      "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                      "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                    )}
+                  >
+                    This Month
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="quarter"
+                    className={cn(
+                      "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                      "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                      "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                    )}
+                  >
+                    This Quarter
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </div>
+            <AnimatedCard>
+              <Card className="border-dashed shadow-abnormal">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-base">This Week - Changes, Exposure, and Recommended Actions</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopySnapshot}
+                    className="gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4 text-[var(--accent-cyan)]" />
+                        <span>Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-4 text-[15px] leading-relaxed text-foreground">
+                    <li className="flex items-start gap-3">
+                      <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+                      <span className="leading-relaxed">
+                        <strong className="font-semibold text-foreground">Exposure snapshot:</strong>{" "}
+                        <span className="text-foreground/90">
+                          Monitoring 5 unsanctioned OAuth apps (2 High, 2 Medium, 1 Low) across 54 users; exec impact
+                          present.
+                        </span>
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+                      <div className="space-y-2 leading-relaxed">
+                        <div>
+                          <strong className="font-semibold text-foreground">High-risk drivers:</strong>
+                        </div>
+                        <ul className="space-y-2 ml-5">
+                          <li className="flex items-start gap-2.5">
+                            <span className="text-muted-foreground mt-1 flex-shrink-0">◦</span>
+                            <span className="text-foreground/90 leading-relaxed">
+                              SketchyMailApp → Files.Read.All + Mail.Read on CFO mailbox; first-seen Jan 5; active until
+                              Jan 9.
+                            </span>
+                          </li>
+                          <li className="flex items-start gap-2.5">
+                            <span className="text-muted-foreground mt-1 flex-shrink-0">◦</span>
+                            <span className="text-foreground/90 leading-relaxed">
+                              CalendarSync → Calendars.ReadWrite on 7 users, write access used on exec/admin calendars.
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+                      <span className="leading-relaxed">
+                        <strong className="font-semibold text-foreground">Trend & velocity:</strong>{" "}
+                        <span className="text-foreground/90">
+                          Avg TTR (14-day) is 9.6h; last week improved by 18%; current queue 2 cases (P0/P1).
+                        </span>
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+                      <div className="space-y-2 leading-relaxed">
+                        <div>
+                          <strong className="font-semibold text-foreground">Priority actions (today):</strong>
+                        </div>
+                        <ul className="space-y-2 ml-5">
+                          <li className="flex items-start gap-2.5">
+                            <span className="text-muted-foreground mt-1 flex-shrink-0">◦</span>
+                            <span className="text-foreground/90 leading-relaxed">
+                              Revoke SketchyMailApp on CFO; end sessions; notify exec + SecOps; open ticket to review
+                              large Graph calls.
+                            </span>
+                          </li>
+                          <li className="flex items-start gap-2.5">
+                            <span className="text-muted-foreground mt-1 flex-shrink-0">◦</span>
+                            <span className="text-foreground/90 leading-relaxed">
+                              Revoke CalendarSync on all 7 authorizers; notify owners; convert to sanctioned,
+                              least-privilege calendar integration.
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+                      <span className="leading-relaxed">
+                        <strong className="font-semibold text-foreground">Projected impact:</strong>{" "}
+                        <span className="text-foreground/90">
+                          High-risk user count down 8 → 3 (≈62% reduction) within the next review cycle; residual risk
+                          Medium (Notion/Dropbox).
+                        </span>
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-accent-cyan mt-1 flex-shrink-0 font-bold">•</span>
+                      <span className="leading-relaxed">
+                        <strong className="font-semibold text-foreground">Compliance & proof:</strong>{" "}
+                        <span className="text-foreground/90">
+                          Agent will emit 4 receipts per remediation (revoke, sessions, notify, ticket); CSV export
+                          available in Case Audit for leadership/GRC.
+                        </span>
+                      </span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </AnimatedCard>
+          </section>
+        )}
+
         <section>
           <StickyHeader id="overview-section">Overview</StickyHeader>
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-[var(--text-secondary)]">
+          {!isCISO && (
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm text-[var(--text-secondary)]">
+                Monitoring activity and risk across all connected applications
+              </p>
+              <ToggleGroup
+                type="single"
+                value={timePeriod}
+                onValueChange={(value) => {
+                  if (value) setTimePeriod(value as typeof timePeriod)
+                }}
+                className="border border-[var(--bg-elev-1)] rounded-lg p-1 bg-[var(--bg-elev-0)]"
+              >
+                <ToggleGroupItem
+                  value="today"
+                  className={cn(
+                    "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                    "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                    "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                  )}
+                >
+                  Today
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="week"
+                  className={cn(
+                    "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                    "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                    "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                  )}
+                >
+                  This Week
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="month"
+                  className={cn(
+                    "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                    "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                    "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                  )}
+                >
+                  This Month
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="quarter"
+                  className={cn(
+                    "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                    "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
+                    "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
+                  )}
+                >
+                  This Quarter
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          )}
+          {isCISO && (
+            <p className="text-sm text-[var(--text-secondary)] mb-4">
               Monitoring activity and risk across all connected applications
             </p>
-            <ToggleGroup
-              type="single"
-              value={timePeriod}
-              onValueChange={(value) => {
-                if (value) setTimePeriod(value as typeof timePeriod)
-              }}
-              className="border border-[var(--bg-elev-1)] rounded-lg p-1 bg-[var(--bg-elev-0)]"
-            >
-              <ToggleGroupItem
-                value="today"
-                className={cn(
-                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
-                  "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
-                  "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
-                )}
-              >
-                Today
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="week"
-                className={cn(
-                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
-                  "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
-                  "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
-                )}
-              >
-                This Week
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="month"
-                className={cn(
-                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
-                  "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
-                  "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
-                )}
-              >
-                This Month
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="quarter"
-                className={cn(
-                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
-                  "data-[state=on]:bg-[var(--accent-cyan)] data-[state=on]:text-[var(--bg-elev-0)] data-[state=on]:shadow-sm",
-                  "data-[state=off]:text-[var(--text-secondary)] data-[state=off]:hover:text-[var(--text-primary)]",
-                )}
-              >
-                This Quarter
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <AnimatedCard delay={0}>
               <KpiCard
@@ -297,22 +544,24 @@ function DashboardPageContent() {
           <StickyHeader id="trends-section">Trends</StickyHeader>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <AnimatedCard delay={0}>
-              <Card className="lg:col-span-2">
+              <Card className="h-full flex flex-col">
                 <CardHeader>
                   <CardTitle className="text-balance">New Apps per Week (12w)</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <LineChart data={weekly} />
+                <CardContent className="flex-1 flex flex-col">
+                  <div className="flex-1 min-h-[300px]">
+                    <LineChart data={weekly} />
+                  </div>
                   <p className="text-xs text-muted-foreground mt-3 italic">Q4 vendor pilots drove weeks 9–12.</p>
                 </CardContent>
               </Card>
             </AnimatedCard>
             <AnimatedCard delay={0.1}>
-              <Card className="lg:col-span-2">
+              <Card className="h-full flex flex-col">
                 <CardHeader>
                   <CardTitle className="text-balance">Risk Distribution</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 flex items-center justify-center min-h-[300px]">
                   <DonutChart high={risk.high} med={risk.med} low={risk.low} />
                 </CardContent>
               </Card>
@@ -381,17 +630,19 @@ function DashboardPageContent() {
           </AnimatedCard>
         </section>
 
-        <section>
-          <StickyHeader id="risk-posture-section">
-            <div className="flex items-center gap-2">
-              <span>Risk Posture - AI Brief</span>
-              <Sparkles className="w-5 h-5 text-[var(--accent-cyan)]" aria-label="AI Generated" />
-            </div>
-          </StickyHeader>
-          <AnimatedCard>
-            <GeneratedSummary />
-          </AnimatedCard>
-        </section>
+        {!isCISO && (
+          <section>
+            <StickyHeader id="risk-posture-section">
+              <div className="flex items-center gap-2">
+                <span>Risk Posture - AI Brief</span>
+                <Sparkles className="w-5 h-5 text-[var(--accent-cyan)]" aria-label="AI Generated" />
+              </div>
+            </StickyHeader>
+            <AnimatedCard>
+              <GeneratedSummary />
+            </AnimatedCard>
+          </section>
+        )}
       </div>
     </>
   )

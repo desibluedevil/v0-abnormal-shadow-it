@@ -14,7 +14,6 @@ import { columns } from "@/components/inventory/columns"
 import { DataTable } from "@/components/inventory/data-table"
 import AppDrawer from "@/components/inventory/app-drawer"
 import PlanPreview from "@/components/agent/plan-preview"
-import { CISOBanner } from "@/components/rbac/ciso-banner"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { ErrorBoundary } from "@/components/errors/error-boundary"
 import Link from "next/link"
@@ -172,7 +171,6 @@ function InventoryPageContent() {
   if (isBooting) {
     return (
       <div className="p-6 space-y-4">
-        {persona === "CISO" && <CISOBanner />}
         <TableSkeleton />
       </div>
     )
@@ -182,8 +180,6 @@ function InventoryPageContent() {
 
   return (
     <div className="p-6 space-y-4">
-      {persona === "CISO" && <CISOBanner />}
-
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="text-2xl font-semibold">Shadow App Inventory</CardTitle>
