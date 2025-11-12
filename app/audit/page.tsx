@@ -110,11 +110,14 @@ function AuditPageContent() {
     })
   }
 
-  const exportToCSV = () => {
+  const handleExport = () => {
+    const receiptsToExport =
+      selectedReceipts.size > 0 ? filteredReceipts.filter((r) => selectedReceipts.has(r.id)) : filteredReceipts
+
     const headers = ["ts", "actor", "appName", "tool", "id", "status", "details"]
     const csvRows = [headers.join(",")]
 
-    filteredReceipts.forEach((receipt) => {
+    receiptsToExport.forEach((receipt) => {
       const app = apps.find((a) => a.id === receipt.appId)
       const row = [
         receipt.ts,
@@ -133,13 +136,21 @@ function AuditPageContent() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = "audit_receipts.csv"
+    const filename =
+      selectedReceipts.size > 0 ? `audit_receipts_selected_${selectedReceipts.size}.csv` : "audit_receipts.csv"
+    link.download = filename
     link.click()
     URL.revokeObjectURL(url)
 
+    const count = receiptsToExport.length
+    const description =
+      selectedReceipts.size > 0
+        ? `Successfully exported ${count} selected receipt${count === 1 ? "" : "s"}`
+        : `Successfully exported ${count} receipt${count === 1 ? "" : "s"}`
+
     toast({
       title: "CSV exported",
-      description: `Successfully exported ${filteredReceipts.length} receipt${filteredReceipts.length === 1 ? "" : "s"} to audit_receipts.csv`,
+      description,
       duration: 3000,
     })
 
@@ -150,61 +161,14 @@ function AuditPageContent() {
       ts: nowIso(),
       tool: "notify.email",
       status: "ok",
-      details: `Exported ${filteredReceipts.length} audit receipts to CSV`,
-      appId: "system",
-      actor: "Sam (SecOps)",
-    })
-  }
-
-  const exportSelectedToCSV = () => {
-    if (selectedReceipts.size === 0) return
-
-    const selectedReceiptList = filteredReceipts.filter((r) => selectedReceipts.has(r.id))
-    const headers = ["ts", "actor", "appName", "tool", "id", "status", "details"]
-    const csvRows = [headers.join(",")]
-
-    selectedReceiptList.forEach((receipt) => {
-      const app = apps.find((a) => a.id === receipt.appId)
-      const row = [
-        receipt.ts,
-        `"${receipt.actor}"`,
-        `"${app?.name || receipt.appId}"`,
-        receipt.tool,
-        receipt.id,
-        receipt.status,
-        `"${(receipt.details || "").replace(/"/g, '""')}"`,
-      ]
-      csvRows.push(row.join(","))
-    })
-
-    const csvContent = csvRows.join("\n")
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement("a")
-    link.href = url
-    link.download = "audit_receipts_selected.csv"
-    link.click()
-    URL.revokeObjectURL(url)
-
-    toast({
-      title: "CSV exported",
-      description: `Successfully exported ${selectedReceipts.size} selected receipt${selectedReceipts.size === 1 ? "" : "s"} to audit_receipts_selected.csv`,
-      duration: 3000,
-    })
-
-    const nowIso = () => new Date().toISOString()
-    const genId = (prefix: string) => `${prefix}_${Math.random().toString(36).slice(2, 10)}`
-    appendReceipt({
-      id: genId("export"),
-      ts: nowIso(),
-      tool: "notify.email",
-      status: "ok",
-      details: `Exported ${selectedReceipts.size} selected audit receipts to CSV`,
+      details: description,
       appId: "system",
       actor: "Sam (SecOps)",
     })
 
-    setSelectedReceipts(new Set())
+    if (selectedReceipts.size > 0) {
+      setSelectedReceipts(new Set())
+    }
   }
 
   const toggleReceiptSelection = (receiptId: string) => {
@@ -509,36 +473,30 @@ function AuditPageContent() {
               </CardTitle>
               <CardDescription className="mt-1">Chronological record of all remediation actions</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={exportToCSV}
-                variant="primary"
-                size="sm"
-                disabled={filteredReceipts.length === 0}
-                aria-label={
-                  filteredReceipts.length === 0
-                    ? "Export becomes available once results are visible"
-                    : `Export ${filteredReceipts.length} receipts to CSV file`
-                }
-                title={filteredReceipts.length === 0 ? "Export becomes available once results are visible" : undefined}
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Export CSV
-              </Button>
-              {selectedReceipts.size > 0 && (
-                <Button
-                  onClick={exportSelectedToCSV}
-                  variant="primary"
-                  size="sm"
-                  className="gap-2"
-                  aria-label={`Export ${selectedReceipts.size} selected receipts to CSV file`}
-                >
-                  <Download className="h-4 w-4" />
-                  Export Selected ({selectedReceipts.size})
-                </Button>
-              )}
-            </div>
+            <Button
+              onClick={handleExport}
+              variant="primary"
+              size="sm"
+              disabled={filteredReceipts.length === 0}
+              aria-label={
+                filteredReceipts.length === 0
+                  ? "Export becomes available once results are visible"
+                  : selectedReceipts.size > 0
+                    ? `Export ${selectedReceipts.size} selected receipts to CSV file`
+                    : `Export all ${filteredReceipts.length} receipts to CSV file`
+              }
+              title={
+                filteredReceipts.length === 0
+                  ? "Export becomes available once results are visible"
+                  : selectedReceipts.size > 0
+                    ? `Export ${selectedReceipts.size} selected receipts`
+                    : `Export all ${filteredReceipts.length} receipts`
+              }
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              {selectedReceipts.size > 0 ? `Export Selected (${selectedReceipts.size})` : "Export CSV"}
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="p-0">
