@@ -38,6 +38,8 @@ import {
   Users,
   Lock,
   Sparkles,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 import Link from "next/link"
 import PlanPreview from "@/components/agent/plan-preview"
@@ -56,6 +58,7 @@ function ReviewPageContent() {
   const [selectedCases, setSelectedCases] = useState<Set<string>>(new Set())
   const [showApproveDialog, setShowApproveDialog] = useState(false)
   const [showDismissDialog, setShowDismissDialog] = useState(false)
+  const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set())
 
   const focusedAppId = searchParams.get("focus")
   const planAppId = searchParams.get("plan")
@@ -234,6 +237,16 @@ function ReviewPageContent() {
     }
   }
 
+  const handleToggleCollapse = (caseId: string) => {
+    const newCollapsed = new Set(collapsedCards)
+    if (newCollapsed.has(caseId)) {
+      newCollapsed.delete(caseId)
+    } else {
+      newCollapsed.add(caseId)
+    }
+    setCollapsedCards(newCollapsed)
+  }
+
   const enrichedCases = useMemo(() => {
     const joined = cases
       .map((c) => ({
@@ -295,16 +308,28 @@ function ReviewPageContent() {
 
         {enrichedCases.length > 0 && (
           <div className="space-y-3">
+            <Card className="bg-[#12171C] border-border/50">
+              <CardContent className="py-3 px-4">
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    checked={selectedCases.size === enrichedCases.length}
+                    onCheckedChange={handleToggleSelectAll}
+                    className="data-[state=checked]:bg-[#47D7FF] data-[state=checked]:border-[#47D7FF]"
+                    disabled={isCISO}
+                  />
+                  <span className="text-sm font-medium text-foreground">Select All ({enrichedCases.length})</span>
+                  {selectedCases.size > 0 && (
+                    <span className="text-sm text-[#47D7FF]">— {selectedCases.size} selected</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {selectedCases.size > 0 && (
               <Card className="bg-[#47D7FF]/10 border-[#47D7FF]/30 border-2">
                 <CardContent className="py-3 px-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <Checkbox
-                        checked={selectedCases.size === enrichedCases.length}
-                        onCheckedChange={handleToggleSelectAll}
-                        className="data-[state=checked]:bg-[#47D7FF] data-[state=checked]:border-[#47D7FF]"
-                      />
                       <span className="text-sm font-medium text-[#47D7FF]">
                         {selectedCases.size} case{selectedCases.size !== 1 ? "s" : ""} selected
                       </span>
@@ -342,7 +367,7 @@ function ReviewPageContent() {
                               disabled={isCISO || isBatchProcessing}
                               className="bg-[#12171C] hover:bg-[#1A2128] border border-border/50 gap-2"
                             >
-                              <XCircle className="h-4 w-4" />
+                              <XCircle className="h-4 w-4 mr-1.5" />
                               Dismiss All
                             </Button>
                           </TooltipTrigger>
@@ -479,6 +504,7 @@ function ReviewPageContent() {
             const isProcessing = actionInProgress === app.id
             const isSelected = selectedCases.has(reviewCase.id)
             const isSanctioned = app.status === "Sanctioned"
+            const isCollapsed = collapsedCards.has(reviewCase.id)
 
             const getTagColor = (tag: string) => {
               const tagLower = tag.toLowerCase()
@@ -520,6 +546,18 @@ function ReviewPageContent() {
                       <div className="space-y-4 flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="text-xl font-bold text-foreground text-balance">{app.name}</h3>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleToggleCollapse(reviewCase.id)}
+                            className="h-7 w-7 p-0 hover:bg-[#47D7FF]/10"
+                          >
+                            {isCollapsed ? (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
                           <Badge
                             className={`font-semibold text-xs px-2.5 py-1 border ${getPriorityColor(reviewCase.priority)}`}
                           >
@@ -537,39 +575,41 @@ function ReviewPageContent() {
                           )}
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="space-y-1.5">
-                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
-                              <Building2 className="h-3.5 w-3.5" />
-                              Publisher
+                        {!isCollapsed && (
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="space-y-1.5">
+                              <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                                <Building2 className="h-3.5 w-3.5" />
+                                Publisher
+                              </div>
+                              <div className="font-semibold text-sm text-foreground truncate">{app.publisher}</div>
                             </div>
-                            <div className="font-semibold text-sm text-foreground truncate">{app.publisher}</div>
-                          </div>
 
-                          <div className="space-y-1.5">
-                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
-                              <Users className="h-3.5 w-3.5" />
-                              Users
+                            <div className="space-y-1.5">
+                              <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                                <Users className="h-3.5 w-3.5" />
+                                Users
+                              </div>
+                              <div className="font-bold text-xl text-[#47D7FF]">{app.users.length}</div>
                             </div>
-                            <div className="font-bold text-xl text-[#47D7FF]">{app.users.length}</div>
-                          </div>
 
-                          <div className="space-y-1.5">
-                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
-                              <Lock className="h-3.5 w-3.5" />
-                              Permissions
+                            <div className="space-y-1.5">
+                              <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                                <Lock className="h-3.5 w-3.5" />
+                                Permissions
+                              </div>
+                              <div className="font-bold text-xl text-[#FFB02E]">{app.scopes.length}</div>
                             </div>
-                            <div className="font-bold text-xl text-[#FFB02E]">{app.scopes.length}</div>
-                          </div>
 
-                          <div className="space-y-1.5">
-                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
-                              <AlertTriangle className="h-3.5 w-3.5" />
-                              Risk Factors
+                            <div className="space-y-1.5">
+                              <div className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                Risk Factors
+                              </div>
+                              <div className="font-bold text-xl text-[#FF4D4D]">{reviewCase.tags.length}</div>
                             </div>
-                            <div className="font-bold text-xl text-[#FF4D4D]">{reviewCase.tags.length}</div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
 
@@ -637,111 +677,115 @@ function ReviewPageContent() {
                   </div>
                 </CardHeader>
 
-                <CardContent className="pt-6 space-y-6">
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-[#47D7FF]" />
-                      AI Explanation
-                    </h4>
-                    <div className="bg-gradient-to-br from-[#47D7FF]/5 to-[#47D7FF]/10 border border-[#47D7FF]/20 rounded-lg p-4">
-                      {app.aiExplanation ? (
-                        <p className="text-sm text-foreground leading-relaxed text-balance">{app.aiExplanation}</p>
-                      ) : app.rationale?.summary ? (
-                        <p className="text-sm text-foreground leading-relaxed text-balance">{app.rationale.summary}</p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground italic">
-                          No AI explanation available for this application.
-                        </p>
-                      )}
+                {!isCollapsed && (
+                  <CardContent className="pt-6 space-y-6">
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-[#47D7FF]" />
+                        AI Explanation
+                      </h4>
+                      <div className="bg-gradient-to-br from-[#47D7FF]/5 to-[#47D7FF]/10 border border-[#47D7FF]/20 rounded-lg p-4">
+                        {app.aiExplanation ? (
+                          <p className="text-sm text-foreground leading-relaxed text-balance">{app.aiExplanation}</p>
+                        ) : app.rationale?.summary ? (
+                          <p className="text-sm text-foreground leading-relaxed text-balance">
+                            {app.rationale.summary}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic">
+                            No AI explanation available for this application.
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <Separator className="bg-border/50" />
+                    <Separator className="bg-border/50" />
 
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-[#47D7FF]" />
-                      Timeline
-                      <Badge variant="secondary" className="text-xs bg-muted/50 font-medium">
-                        {reviewCase.timeline.length} event{reviewCase.timeline.length !== 1 ? "s" : ""}
-                      </Badge>
-                    </h4>
-                    <div className="space-y-4 pl-6 border-l-2 border-[#47D7FF]/30 relative">
-                      {reviewCase.timeline.map((event, idx) => (
-                        <div key={idx} className="flex flex-col gap-1.5 relative group">
-                          <div className="absolute -left-[29px] top-1.5 w-4 h-4 rounded-full bg-[#47D7FF] border-2 border-[#0B0F12] shadow-[0_0_10px_rgba(71,215,255,0.6)] group-hover:shadow-[0_0_14px_rgba(71,215,255,0.8)] transition-shadow" />
-                          <div className="text-xs text-muted-foreground font-mono font-medium">
-                            {new Date(event.ts).toLocaleString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </div>
-                          <div className="text-sm text-foreground leading-relaxed">{event.event}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Separator className="bg-border/50" />
-
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-[#47D7FF]" />
-                      Recommendations
-                      <Badge variant="secondary" className="text-xs bg-muted/50 font-medium">
-                        {reviewCase.recommendations.length}
-                      </Badge>
-                    </h4>
-                    <Accordion type="single" collapsible className="space-y-2">
-                      {reviewCase.recommendations.map((rec, idx) => (
-                        <AccordionItem
-                          key={idx}
-                          value={`rec-${idx}`}
-                          className="border border-border/50 rounded-lg bg-[#0B0F12] overflow-hidden transition-all duration-200 hover:border-[#47D7FF]/30"
-                        >
-                          <AccordionTrigger className="px-4 py-3 hover:bg-[#12171C] transition-colors text-sm font-medium text-foreground hover:no-underline [&[data-state=open]]:bg-[#12171C]">
-                            <span className="text-left text-balance">{rec}</span>
-                          </AccordionTrigger>
-                          <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground">
-                            <div className="space-y-3 pt-2">
-                              <p className="leading-relaxed">
-                                This recommendation helps mitigate the risk associated with {app.name}. Review the
-                                details and take appropriate action based on your organization's security policies.
-                              </p>
-                              <div className="flex gap-2 pt-1">
-                                <Button
-                                  variant="primary"
-                                  size="sm"
-                                  className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 text-xs font-semibold shadow-[0_0_8px_rgba(71,215,255,0.3)]"
-                                  onClick={() => handleEscalate(app.id)}
-                                >
-                                  <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                                  Take Action
-                                </Button>
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  className="bg-[#12171C] border border-border/50 hover:bg-[#1A2128] text-xs font-medium"
-                                  onClick={() => {
-                                    toast({
-                                      title: "Recommendation Dismissed",
-                                      description: "This recommendation has been marked as not applicable",
-                                    })
-                                  }}
-                                >
-                                  Not Applicable
-                                </Button>
-                              </div>
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-[#47D7FF]" />
+                        Timeline
+                        <Badge variant="secondary" className="text-xs bg-muted/50 font-medium">
+                          {reviewCase.timeline.length} event{reviewCase.timeline.length !== 1 ? "s" : ""}
+                        </Badge>
+                      </h4>
+                      <div className="space-y-4 pl-6 border-l-2 border-[#47D7FF]/30 relative">
+                        {reviewCase.timeline.map((event, idx) => (
+                          <div key={idx} className="flex flex-col gap-1.5 relative group">
+                            <div className="absolute -left-[29px] top-1.5 w-4 h-4 rounded-full bg-[#47D7FF] border-2 border-[#0B0F12] shadow-[0_0_10px_rgba(71,215,255,0.6)] group-hover:shadow-[0_0_14px_rgba(71,215,255,0.8)] transition-shadow" />
+                            <div className="text-xs text-muted-foreground font-mono font-medium">
+                              {new Date(event.ts).toLocaleString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </div>
-                </CardContent>
+                            <div className="text-sm text-foreground leading-relaxed">{event.event}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Separator className="bg-border/50" />
+
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-[#47D7FF]" />
+                        Recommendations
+                        <Badge variant="secondary" className="text-xs bg-muted/50 font-medium">
+                          {reviewCase.recommendations.length}
+                        </Badge>
+                      </h4>
+                      <Accordion type="single" collapsible className="space-y-2">
+                        {reviewCase.recommendations.map((rec, idx) => (
+                          <AccordionItem
+                            key={idx}
+                            value={`rec-${idx}`}
+                            className="border border-border/50 rounded-lg bg-[#0B0F12] overflow-hidden transition-all duration-200 hover:border-[#47D7FF]/30"
+                          >
+                            <AccordionTrigger className="px-4 py-3 hover:bg-[#12171C] transition-colors text-sm font-medium text-foreground hover:no-underline [&[data-state=open]]:bg-[#12171C]">
+                              <span className="text-left text-balance">{rec}</span>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground">
+                              <div className="space-y-3 pt-2">
+                                <p className="leading-relaxed">
+                                  This recommendation helps mitigate the risk associated with {app.name}. Review the
+                                  details and take appropriate action based on your organization's security policies.
+                                </p>
+                                <div className="flex gap-2 pt-1">
+                                  <Button
+                                    variant="primary"
+                                    size="sm"
+                                    className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 text-xs font-semibold shadow-[0_0_8px_rgba(71,215,255,0.3)]"
+                                    onClick={() => handleEscalate(app.id)}
+                                  >
+                                    <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                                    Take Action
+                                  </Button>
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    className="bg-[#12171C] border border-border/50 hover:bg-[#1A2128] text-xs font-medium"
+                                    onClick={() => {
+                                      toast({
+                                        title: "Recommendation Dismissed",
+                                        description: "This recommendation has been marked as not applicable",
+                                      })
+                                    }}
+                                  >
+                                    Not Applicable
+                                  </Button>
+                                </div>
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
+                    </div>
+                  </CardContent>
+                )}
               </Card>
             )
           })

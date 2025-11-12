@@ -10,6 +10,7 @@ import { ChevronDown, ChevronRight, FolderSearch, Sparkles } from "lucide-react"
 import type { ShadowApp } from "@/types/shadow-it"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface Column {
   id: string
@@ -28,6 +29,8 @@ interface DataTableProps {
   data: ShadowApp[]
   focusId?: string
   changedRowIds?: Set<string>
+  selectedRowIds?: Set<string>
+  onSelectedRowsChange?: (selectedIds: Set<string>) => void
 }
 
 const MemoizedDataTableRow = memo(function DataTableRow({
@@ -40,6 +43,8 @@ const MemoizedDataTableRow = memo(function DataTableRow({
   expandedRows,
   onRowClick,
   onToggleExpansion,
+  isSelected,
+  onSelectChange,
 }: {
   row: ShadowApp
   columns: Column[]
@@ -50,6 +55,8 @@ const MemoizedDataTableRow = memo(function DataTableRow({
   expandedRows: Set<string>
   onRowClick: (appId: string, e: React.MouseEvent) => void
   onToggleExpansion: (rowId: string) => void
+  isSelected: boolean
+  onSelectChange: (checked: boolean) => void
 }) {
   if (!row || !row.id) {
     return null
@@ -75,11 +82,19 @@ const MemoizedDataTableRow = memo(function DataTableRow({
           isFocused ? "ring-2 ring-[#47D7FF] ring-inset bg-[#47D7FF]/10" : ""
         } ${isKeyboardFocused ? "ring-2 ring-[#47D7FF] ring-inset" : ""} ${
           isRevoked ? "text-muted-foreground opacity-60" : ""
-        } ${isChanged ? "animate-pulse bg-[#39D98A]/10" : ""}`}
+        } ${isChanged ? "animate-pulse bg-[#39D98A]/10" : ""} ${isSelected ? "bg-[#47D7FF]/5" : ""}`}
         role="button"
         aria-label={`${row.name} - ${row.riskLevel} risk. Press Enter to expand details`}
         aria-expanded={isExpanded}
       >
+        <TableCell className="w-12" onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={onSelectChange}
+            aria-label={`Select ${row.name}`}
+            className="data-[state=checked]:bg-[#47D7FF] data-[state=checked]:border-[#47D7FF]"
+          />
+        </TableCell>
         <TableCell className="w-12">
           <Button
             variant="ghost"
@@ -98,7 +113,9 @@ const MemoizedDataTableRow = memo(function DataTableRow({
         {columns.map((column) => (
           <TableCell
             key={column.id}
-            className={`px-3 py-2 text-sm ${column.className || ""}`}
+            className={`px-3 py-2 text-sm ${column.className || ""} ${
+              column.id === "actions" ? "sticky right-0 bg-card shadow-[-4px_0_8px_rgba(0,0,0,0.1)]" : ""
+            }`}
             style={{
               width: column.size ? `${column.size}px` : undefined,
               minWidth: column.size ? `${column.size}px` : undefined,
@@ -110,7 +127,7 @@ const MemoizedDataTableRow = memo(function DataTableRow({
       </TableRow>
       {isExpanded && (
         <TableRow className="bg-[#12171C] border-t border-[#47D7FF]/20">
-          <TableCell colSpan={columns.length + 1} className="p-6">
+          <TableCell colSpan={columns.length + 2} className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="lg:hidden space-y-3">
                 <div>
@@ -220,7 +237,14 @@ function getStatusBadgeClass(status: ShadowApp["status"]) {
   return colors[status]
 }
 
-export function DataTable({ columns, data, focusId, changedRowIds = new Set() }: DataTableProps) {
+export function DataTable({
+  columns,
+  data,
+  focusId,
+  changedRowIds = new Set(),
+  selectedRowIds = new Set(),
+  onSelectedRowsChange,
+}: DataTableProps) {
   const [sorting, setSorting] = useState<{ column: string; direction: "asc" | "desc" } | null>(null)
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize, setPageSize] = useState(25)
@@ -274,7 +298,36 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
     return sortedData.slice(start, start + pageSize)
   }, [sortedData, pageIndex, pageSize])
 
-  const pageCount = Math.ceil(sortedData.length / pageSize)
+  const handleSelectAll = (checked: boolean) => {
+    if (!onSelectedRowsChange) return
+
+    if (checked) {
+      // Select all rows on current page
+      const allIds = new Set(selectedRowIds)
+      paginatedData.forEach((row) => allIds.add(row.id))
+      onSelectedRowsChange(allIds)
+    } else {
+      // Deselect all rows on current page
+      const remainingIds = new Set(selectedRowIds)
+      paginatedData.forEach((row) => remainingIds.delete(row.id))
+      onSelectedRowsChange(remainingIds)
+    }
+  }
+
+  const handleSelectRow = (rowId: string, checked: boolean) => {
+    if (!onSelectedRowsChange) return
+
+    const newSelected = new Set(selectedRowIds)
+    if (checked) {
+      newSelected.add(rowId)
+    } else {
+      newSelected.delete(rowId)
+    }
+    onSelectedRowsChange(newSelected)
+  }
+
+  const allCurrentPageSelected = paginatedData.length > 0 && paginatedData.every((row) => selectedRowIds.has(row.id))
+  const someCurrentPageSelected = paginatedData.some((row) => selectedRowIds.has(row.id)) && !allCurrentPageSelected
 
   const handleSort = (columnId: string) => {
     const column = columns.find((c) => c.id === columnId)
@@ -372,6 +425,15 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
             <TableHeader className="sticky top-0 z-10 bg-card border-b border-border">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="w-12">
+                  <Checkbox
+                    checked={allCurrentPageSelected}
+                    indeterminate={someCurrentPageSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all rows on this page"
+                    className="data-[state=checked]:bg-[#47D7FF] data-[state=checked]:border-[#47D7FF]"
+                  />
+                </TableHead>
+                <TableHead className="w-12">
                   <span className="sr-only">Expand</span>
                 </TableHead>
                 {columns.map((column) => (
@@ -381,7 +443,9 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
                       width: column.size ? `${column.size}px` : undefined,
                       minWidth: column.size ? `${column.size}px` : undefined,
                     }}
-                    className={`h-11 px-3 text-xs font-semibold text-foreground uppercase tracking-wide whitespace-nowrap ${column.className || ""}`}
+                    className={`h-11 px-3 text-xs font-semibold text-foreground uppercase tracking-wide whitespace-nowrap ${column.className || ""} ${
+                      column.id === "actions" ? "sticky right-0 bg-card shadow-[-4px_0_8px_rgba(0,0,0,0.1)]" : ""
+                    }`}
                   >
                     <div
                       className={
@@ -403,6 +467,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
                 paginatedData.map((row, index) => {
                   const isFocused = focusId === row.id
                   const isKeyboardFocused = focusedRowIndex === index
+                  const isSelected = selectedRowIds.has(row.id)
                   return (
                     <MemoizedDataTableRow
                       key={row.id}
@@ -415,12 +480,14 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
                       expandedRows={expandedRows}
                       onRowClick={handleRowClick}
                       onToggleExpansion={toggleRowExpansion}
+                      isSelected={isSelected}
+                      onSelectChange={(checked) => handleSelectRow(row.id, checked)}
                     />
                   )
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length + 1} className="h-48">
+                  <TableCell colSpan={columns.length + 2} className="h-48">
                     <Empty className="border-0 bg-transparent">
                       <EmptyHeader>
                         <EmptyMedia variant="icon">
@@ -457,7 +524,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
 
         <div className="flex items-center gap-6">
           <div className="text-sm text-muted-foreground font-mono">
-            Page {pageIndex + 1} of {pageCount || 1}
+            Page {pageIndex + 1} of {Math.ceil(sortedData.length / pageSize) || 1}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -473,7 +540,7 @@ export function DataTable({ columns, data, focusId, changedRowIds = new Set() }:
               variant="outline"
               size="sm"
               onClick={() => setPageIndex((prev) => prev + 1)}
-              disabled={pageIndex >= pageCount - 1}
+              disabled={pageIndex >= Math.ceil(sortedData.length / pageSize) - 1}
               className="focus:ring-2 focus:ring-[#47D7FF]"
             >
               Next

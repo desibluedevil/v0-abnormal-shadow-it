@@ -423,6 +423,7 @@ export const columns = [
     id: "actions",
     header: () => <div className="text-left">Actions</div>,
     size: 140,
+    sortable: false,
     cell: (app: ShadowApp) => <ActionsCell app={app} />,
   },
 ]

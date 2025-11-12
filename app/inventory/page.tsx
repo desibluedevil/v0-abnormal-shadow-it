@@ -23,6 +23,9 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyCont
 function InventoryPageContent() {
   const [isBooting, setIsBooting] = useState(true)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set())
+  const [changedRowIds, setChangedRowIds] = useState<Set<string>>(new Set())
+  const [hasActiveFilters, setHasActiveFilters] = useState(false) // Declare hasActiveFilters variable
 
   useEffect(() => {
     const timer = setTimeout(() => setIsBooting(false), 500)
@@ -37,8 +40,6 @@ function InventoryPageContent() {
 
   const isInitialMount = useRef(true)
 
-  const [changedRowIds, setChangedRowIds] = useState<Set<string>>(new Set())
-
   useEffect(() => {
     if (!isInitialMount.current) return
     isInitialMount.current = false
@@ -52,6 +53,9 @@ function InventoryPageContent() {
       status: status || "All",
       q,
     })
+
+    // Update hasActiveFilters based on filters
+    setHasActiveFilters((risk !== "All" || status !== "All" || q !== "") && filteredApps().length > 0)
   }, [searchParams, setFilters])
 
   useEffect(() => {
@@ -99,8 +103,10 @@ function InventoryPageContent() {
   }
 
   const handleExportCsv = () => {
+    const appsToExport = selectedRowIds.size > 0 ? apps.filter((app) => selectedRowIds.has(app.id)) : apps
+
     const headers = ["Name", "Publisher", "Risk", "Users", "First Seen", "Last Seen", "Status", "Tags"]
-    const rows = apps.map((a) => [
+    const rows = appsToExport.map((a) => [
       a.name,
       a.publisher,
       a.riskLevel,
@@ -117,7 +123,7 @@ function InventoryPageContent() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = "shadow_apps.csv"
+    a.download = selectedRowIds.size > 0 ? `shadow_apps_selected_${appsToExport.length}.csv` : "shadow_apps.csv"
     a.click()
     URL.revokeObjectURL(url)
 
@@ -126,24 +132,32 @@ function InventoryPageContent() {
       ts: new Date().toISOString(),
       tool: "notify.email",
       status: "ok",
-      details: `Exported ${apps.length} app${apps.length === 1 ? "" : "s"} to CSV (shadow_apps.csv)`,
+      details:
+        selectedRowIds.size > 0
+          ? `Exported ${appsToExport.length} selected app${appsToExport.length === 1 ? "" : "s"} to CSV`
+          : `Exported ${appsToExport.length} app${appsToExport.length === 1 ? "" : "s"} to CSV (shadow_apps.csv)`,
       appId: "system",
       actor: persona === "CISO" ? "CISO" : "Sam (SecOps)",
     })
 
     toast({
       title: "CSV exported",
-      description: `Successfully exported ${apps.length} app${apps.length === 1 ? "" : "s"} to shadow_apps.csv`,
+      description:
+        selectedRowIds.size > 0
+          ? `Successfully exported ${appsToExport.length} selected app${appsToExport.length === 1 ? "" : "s"}`
+          : `Successfully exported ${appsToExport.length} app${appsToExport.length === 1 ? "" : "s"} to shadow_apps.csv`,
       duration: 3000,
     })
+
+    if (selectedRowIds.size > 0) {
+      setSelectedRowIds(new Set())
+    }
   }
 
   const handleClearFilters = () => {
     setFilters({ risk: "All", status: "All", q: "" })
     router.push("/inventory", { scroll: false })
   }
-
-  const hasActiveFilters = filters.risk !== "All" || filters.status !== "All" || filters.q !== ""
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -219,17 +233,29 @@ function InventoryPageContent() {
                       variant="primary"
                       onClick={handleExportCsv}
                       disabled={!canExport}
-                      aria-label="Export inventory to CSV"
+                      aria-label={
+                        selectedRowIds.size > 0
+                          ? `Export ${selectedRowIds.size} selected app${selectedRowIds.size === 1 ? "" : "s"} to CSV`
+                          : "Export all filtered apps to CSV"
+                      }
                       className="gap-2"
                     >
                       <FileDown className="size-4" />
-                      Export CSV
+                      {selectedRowIds.size > 0 ? `Export Selected (${selectedRowIds.size})` : "Export CSV"}
                     </Button>
                   </span>
                 </TooltipTrigger>
-                {!canExport && (
+                {!canExport ? (
                   <TooltipContent>
                     <p>Export becomes available once a search returns results.</p>
+                  </TooltipContent>
+                ) : (
+                  <TooltipContent>
+                    <p>
+                      {selectedRowIds.size > 0
+                        ? `Export ${selectedRowIds.size} selected app${selectedRowIds.size === 1 ? "" : "s"} to CSV`
+                        : `Export all ${apps.length} filtered app${apps.length === 1 ? "" : "s"} to CSV`}
+                    </p>
                   </TooltipContent>
                 )}
               </Tooltip>
@@ -348,7 +374,14 @@ function InventoryPageContent() {
               </EmptyContent>
             </Empty>
           ) : (
-            <DataTable columns={columns} data={apps} focusId={focusAppId || undefined} changedRowIds={changedRowIds} />
+            <DataTable
+              columns={columns}
+              data={apps}
+              focusId={focusAppId || undefined}
+              changedRowIds={changedRowIds}
+              selectedRowIds={selectedRowIds}
+              onSelectedRowsChange={setSelectedRowIds}
+            />
           )}
         </CardContent>
       </Card>
