@@ -46,10 +46,10 @@ export const PersonaSwitcher: React.FC = () => {
           size="sm"
           className={cn(
             "h-9 px-3 gap-2 rounded-lg",
-            "border-[var(--bg-elev-1)] bg-[var(--bg-elev-0)]/60",
-            "hover:bg-[var(--bg-elev-1)] hover:border-[var(--accent-cyan)]/30",
+            "border-[var(--accent-cyan)] bg-[var(--bg-elev-0)]/60",
+            "hover:bg-[var(--bg-elev-1)] hover:border-[var(--accent-cyan)]",
             "hover:shadow-[0_0_12px_rgba(71,215,255,0.15)]",
-            "hover:text-[var(--text-primary)]", // Ensure text stays white on hover
+            "hover:text-[var(--text-primary)]",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-elev-0)]",
             "transition-all duration-200",
             "text-[var(--text-primary)] font-semibold text-sm",

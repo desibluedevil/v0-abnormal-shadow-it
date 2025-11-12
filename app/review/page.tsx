@@ -44,6 +44,7 @@ import {
 import Link from "next/link"
 import PlanPreview from "@/components/agent/plan-preview"
 import { AppDrawer } from "@/components/inventory/app-drawer"
+import type { Receipt } from "@/types/receipt"
 
 type SortOption = "priority" | "impact" | "confidence" | "lastEvent"
 
@@ -51,7 +52,7 @@ function ReviewPageContent() {
   const [isBooting, setIsBooting] = useState(true)
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { cases, apps, sanctionApp, unsanctionApp, dismissApp, kpis, persona } = useShadowStore()
+  const { cases, apps, sanctionApp, unsanctionApp, dismissApp, kpis, persona, appendReceipt } = useShadowStore()
   const { toast } = useToast()
 
   const [actionInProgress, setActionInProgress] = useState<string | null>(null)
@@ -59,6 +60,7 @@ function ReviewPageContent() {
   const [showApproveDialog, setShowApproveDialog] = useState(false)
   const [showDismissDialog, setShowDismissDialog] = useState(false)
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set())
+  const [completedRecommendations, setCompletedRecommendations] = useState<Set<string>>(new Set())
 
   const focusedAppId = searchParams.get("focus")
   const planAppId = searchParams.get("plan")
@@ -245,6 +247,42 @@ function ReviewPageContent() {
       newCollapsed.add(caseId)
     }
     setCollapsedCards(newCollapsed)
+  }
+
+  const handleTakeAction = (appId: string, recIndex: number) => {
+    const recKey = `${appId}-${recIndex}`
+    setCompletedRecommendations((prev) => new Set(prev).add(recKey))
+
+    const app = apps.find((a) => a.id === appId)
+    const reviewCase = cases.find((c) => c.appId === appId)
+    const recommendation = reviewCase?.recommendations[recIndex]
+
+    if (app && recommendation) {
+      const getToolType = (recText: string): Receipt["tool"] => {
+        const lower = recText.toLowerCase()
+        if (lower.includes("revoke") || lower.includes("oauth")) return "graph.revokeGrant"
+        if (lower.includes("end") && lower.includes("session")) return "end.sessions"
+        if (lower.includes("notify") && lower.includes("slack")) return "notify.slack"
+        if (lower.includes("notify") || lower.includes("email")) return "notify.email"
+        return "ticket.create"
+      }
+
+      const receipt: Receipt = {
+        id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        ts: new Date().toISOString(),
+        tool: getToolType(recommendation),
+        status: "ok" as const,
+        details: `Action taken on ${app.name} (Risk: ${app.riskLevel}, Score: ${app.riskScore}). Recommendation #${recIndex + 1}: "${recommendation}". Initiated from Review Queue by ${persona === "CISO" ? "CISO" : "Sam (SecOps)"}.`,
+        appId: app.id,
+        actor: persona === "CISO" ? "CISO" : "Sam (SecOps)",
+      }
+      appendReceipt(receipt)
+    }
+
+    toast({
+      title: "Action Completed",
+      description: "Recommendation action has been processed and logged to audit trail",
+    })
   }
 
   const enrichedCases = useMemo(() => {
@@ -739,49 +777,79 @@ function ReviewPageContent() {
                         </Badge>
                       </h4>
                       <Accordion type="single" collapsible className="space-y-2">
-                        {reviewCase.recommendations.map((rec, idx) => (
-                          <AccordionItem
-                            key={idx}
-                            value={`rec-${idx}`}
-                            className="border border-border/50 rounded-lg bg-[#0B0F12] overflow-hidden transition-all duration-200 hover:border-[#47D7FF]/30"
-                          >
-                            <AccordionTrigger className="px-4 py-3 hover:bg-[#12171C] transition-colors text-sm font-medium text-foreground hover:no-underline [&[data-state=open]]:bg-[#12171C]">
-                              <span className="text-left text-balance">{rec}</span>
-                            </AccordionTrigger>
-                            <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground">
-                              <div className="space-y-3 pt-2">
-                                <p className="leading-relaxed">
-                                  This recommendation helps mitigate the risk associated with {app.name}. Review the
-                                  details and take appropriate action based on your organization's security policies.
-                                </p>
-                                <div className="flex gap-2 pt-1">
-                                  <Button
-                                    variant="primary"
-                                    size="sm"
-                                    className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 text-xs font-semibold shadow-[0_0_8px_rgba(71,215,255,0.3)]"
-                                    onClick={() => handleEscalate(app.id)}
-                                  >
-                                    <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                                    Take Action
-                                  </Button>
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    className="bg-[#12171C] border border-border/50 hover:bg-[#1A2128] text-xs font-medium"
-                                    onClick={() => {
-                                      toast({
-                                        title: "Recommendation Dismissed",
-                                        description: "This recommendation has been marked as not applicable",
-                                      })
-                                    }}
-                                  >
-                                    Not Applicable
-                                  </Button>
+                        {reviewCase.recommendations.map((rec, idx) => {
+                          const recKey = `${app.id}-${idx}`
+                          const isCompleted = completedRecommendations.has(recKey)
+
+                          return (
+                            <AccordionItem
+                              key={idx}
+                              value={`rec-${idx}`}
+                              className="border border-border/50 rounded-lg bg-[#0B0F12] overflow-hidden transition-all duration-200 hover:border-[#47D7FF]/30"
+                            >
+                              <AccordionTrigger className="px-4 py-3 hover:bg-[#12171C] transition-colors text-sm font-medium text-foreground hover:no-underline [&[data-state=open]]:bg-[#12171C]">
+                                <span className="text-left text-balance">{rec}</span>
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground">
+                                <div className="space-y-3 pt-2">
+                                  <p className="leading-relaxed">
+                                    This recommendation helps mitigate the risk associated with {app.name}. Review the
+                                    details and take appropriate action based on your organization's security policies.
+                                  </p>
+                                  <div className="flex gap-2 pt-1">
+                                    {isCompleted ? (
+                                      <>
+                                        <Button
+                                          variant="primary"
+                                          size="sm"
+                                          disabled
+                                          className="bg-emerald-500 text-white hover:bg-emerald-500 text-xs font-semibold shadow-[0_0_8px_rgba(16,185,129,0.3)] cursor-default"
+                                        >
+                                          <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                                          Action Complete
+                                        </Button>
+                                        <Link href="/audit">
+                                          <Button
+                                            variant="link"
+                                            size="sm"
+                                            className="text-[#47D7FF] hover:text-[#47D7FF]/80 text-xs font-medium px-2"
+                                          >
+                                            View Audit
+                                            <ExternalLink className="h-3 w-3 ml-1.5" />
+                                          </Button>
+                                        </Link>
+                                      </>
+                                    ) : (
+                                      <Button
+                                        variant="primary"
+                                        size="sm"
+                                        className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 text-xs font-semibold shadow-[0_0_8px_rgba(71,215,255,0.3)]"
+                                        onClick={() => handleTakeAction(app.id, idx)}
+                                        disabled={isCISO}
+                                      >
+                                        <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                                        Take Action
+                                      </Button>
+                                    )}
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      className="bg-[#12171C] border border-border/50 hover:bg-[#1A2128] text-xs font-medium"
+                                      onClick={() => {
+                                        toast({
+                                          title: "Recommendation Dismissed",
+                                          description: "This recommendation has been marked as not applicable",
+                                        })
+                                      }}
+                                    >
+                                      Not Applicable
+                                    </Button>
+                                  </div>
                                 </div>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
+                              </AccordionContent>
+                            </AccordionItem>
+                          )
+                        })}
                       </Accordion>
                     </div>
                   </CardContent>

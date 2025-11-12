@@ -312,7 +312,7 @@ function AuditPageContent() {
           <Separator />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="text-sm font-medium text-foreground">Action Type</label>
               <ToggleGroup
                 type="single"
@@ -360,7 +360,7 @@ function AuditPageContent() {
               </ToggleGroup>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="text-sm font-medium text-foreground">Status</label>
               <ToggleGroup
                 type="single"
