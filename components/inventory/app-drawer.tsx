@@ -69,7 +69,7 @@ const StatusPill = memo(function StatusPill({ status }: { status: ShadowApp["sta
   return <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${cls}`}>{status}</span>
 })
 
-export default function AppDrawer() {
+function AppDrawer() {
   const params = useSearchParams()
   const router = useRouter()
   const focusId = params.get("focus")
@@ -824,3 +824,6 @@ export default function AppDrawer() {
     </Drawer>
   )
 }
+
+export { AppDrawer }
+export default AppDrawer

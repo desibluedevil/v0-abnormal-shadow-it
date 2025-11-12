@@ -31,7 +31,8 @@ const seedData = {
       about: "Mailbox assistant with file side-panel; requests org-wide read.",
       topUsers: "Alex Rivera (CFO)",
       riskFactors: "Files.Read.All enables org-wide content discovery; CFO mailbox access; first-seen this week",
-      aiExplanation: "High-risk due to broad scopes on an executive account, enabling silent exfiltration.",
+      aiExplanation:
+        "This app holds Files.Read.All and Mail.Read on the CFO's account, first seen this week—an uncommon combo that enables quiet, org-wide content discovery and targeted finance email scanning. The vendor is unknown and unsanctioned, so there are no enterprise guardrails or retention controls. Given executive impact and broad read scopes, the likeliest abuse path is automated crawling of finance docs and mailbox threads followed by silent export. Action: revoke the OAuth grant and end active sessions immediately; notify the CFO and SecOps; open a ticket to review file access during the window and block this vendor in the allowlist.",
       rationale: {
         summary: "High-risk OAuth app with organization-wide read scopes, installed by an executive.",
         reasons: [
@@ -77,7 +78,8 @@ const seedData = {
       about: "Exec calendar sync across devices; bi-directional writes.",
       topUsers: "Priya Shah, Miguel Santos, Jamie Chen, Taylor Kim, Jordan Lee, Casey Morgan, Riley Brooks",
       riskFactors: "Cross-tenant calendar writes; rapid cohort growth; admin/EAs included",
-      aiExplanation: "Write scope increases meeting-poisoning risk.",
+      aiExplanation:
+        "CalendarSync requests write access to user calendars across 7 accounts, has grown rapidly over two weeks, and can persist by creating or editing meetings without user interaction. That enables malicious link injection in recurring events, auto-invites to external actors, or exposure of invite notes and attachments. The vendor is not sanctioned and has no documented business justification. Action: revoke across all authorizers and end sessions; notify affected users with guidance; create a ticket to evaluate a least-privilege, IT-approved calendar integration and restrict calendar write scopes to a service account.",
       rationale: {
         summary: "Elevated risk due to write permissions and growing adoption.",
         reasons: [{ text: "Can modify calendars across multiple users" }, { text: "Rapid adoption within one week" }],
@@ -122,7 +124,8 @@ const seedData = {
       about: "External file storage; used by Marketing for assets.",
       topUsers: "Sara Ali, Leo Park, Nina Patel, Ken Adams, Dana Wilson",
       riskFactors: "Off-tenant asset movement; overlap with paid Box instance",
-      aiExplanation: "Medium risk; monitor exports >100 files/day.",
+      aiExplanation:
+        "Dropbox is used by Marketing for external file export across 15 users, which increases egress risk and bypasses corporate retention, DLP, and region policies. While not inherently malicious, the unsanctioned, personal-tenant usage means we lack visibility into shared folders and public links. Data such as brand assets, campaign briefs, or contact lists could be shared beyond org boundaries. Action: migrate to a sanctioned enterprise tenant (SSO/retention/DLP) or block personal tenants; notify current users; open a ticket to inventory externally shared folders and remove stale public links.",
       rationale: {
         summary: "Moderate risk due to external storage and multi-team adoption.",
         reasons: [
@@ -159,7 +162,8 @@ const seedData = {
       about: "Docs & project hub for ad-hoc teams.",
       topUsers: "Olivia Turner, Mark Liu, Finley Reed, Harper Stone, Indigo Price",
       riskFactors: "External guests; links shared to personal addresses",
-      aiExplanation: "Medium risk from external collaborators & link sprawl.",
+      aiExplanation:
+        'Notion acts as an unofficial documentation hub with external sharing enabled by some spaces across 9 users, making inadvertent leaks of roadmaps, pricing, or requirements plausible. There are no dangerous OAuth scopes here, but the unsanctioned state lacks access lifecycle, retention, or standardized link policies. Action: sanction Notion with SSO and default "invite-only" sharing; notify space owners to review/disable public links; create a ticket to expire external links older than 30 days and to enforce workspace-level retention.',
       rationale: {
         summary: "Medium risk collaboration tool used by Marketing.",
         reasons: [{ text: "External docs repository used by multiple users" }],
@@ -206,7 +210,8 @@ const seedData = {
       about: "Corporate conferencing (SAML SSO, IT managed).",
       topUsers: "",
       riskFactors: "Approved exception with SSO; quarterly re-validation",
-      aiExplanation: "Low risk; sanctioned & SSO-enforced.",
+      aiExplanation:
+        "Zoom is IT-approved, has SSO and enterprise controls in place, and shows a stable usage pattern across 22 users with no high-risk OAuth scopes. Current posture is appropriate and residual risk is operational rather than security-critical. Action: no remediation required; continue monitoring for scope changes or third-party Zoom apps added by end users and renew sanction on a regular cadence.",
       rationale: {
         summary: "Low risk communication app with broad organizational usage.",
         reasons: [{ text: "Widely used across all departments" }],

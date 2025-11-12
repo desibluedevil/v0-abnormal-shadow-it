@@ -41,6 +41,8 @@ import {
   Sparkles,
 } from "lucide-react"
 import Link from "next/link"
+import PlanPreview from "@/components/agent/plan-preview"
+import { AppDrawer } from "@/components/inventory/app-drawer"
 
 type SortOption = "priority" | "impact" | "confidence" | "lastEvent"
 
@@ -55,6 +57,9 @@ function ReviewPageContent() {
   const [selectedCases, setSelectedCases] = useState<Set<string>>(new Set())
   const [showApproveDialog, setShowApproveDialog] = useState(false)
   const [showDismissDialog, setShowDismissDialog] = useState(false)
+
+  const focusedAppId = searchParams.get("focus")
+  const planAppId = searchParams.get("plan")
 
   useEffect(() => {
     const timer = setTimeout(() => setIsBooting(false), 450)
@@ -73,6 +78,26 @@ function ReviewPageContent() {
     router.push(`/inventory?focus=${appId}`)
   }
 
+  const handleViewAppDetails = (appId: string) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set("focus", appId)
+    router.push(url.pathname + url.search, { scroll: false })
+  }
+
+  const handlePreparePlan = (appId: string) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set("focus", appId)
+    url.searchParams.set("plan", appId)
+    router.push(url.pathname + url.search, { scroll: false })
+  }
+
+  const handleCloseDrawer = () => {
+    const url = new URL(window.location.href)
+    url.searchParams.delete("focus")
+    url.searchParams.delete("plan")
+    router.push(url.pathname + url.search, { scroll: false })
+  }
+
   const handleApprove = async (appId: string) => {
     const app = apps.find((a) => a.id === appId)
     if (!app) return
@@ -80,7 +105,6 @@ function ReviewPageContent() {
     setActionInProgress(appId)
     const before = kpis()
 
-    // Toggle between sanction and unsanction based on current status
     if (app.status === "Sanctioned") {
       unsanctionApp(appId)
     } else {
@@ -279,7 +303,7 @@ function ReviewPageContent() {
               <Card className="bg-[#47D7FF]/10 border-[#47D7FF]/30 border-2">
                 <CardContent className="py-3 px-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                       <Checkbox
                         checked={selectedCases.size === enrichedCases.length}
                         onCheckedChange={handleToggleSelectAll}
@@ -320,7 +344,7 @@ function ReviewPageContent() {
                               size="sm"
                               onClick={() => setShowDismissDialog(true)}
                               disabled={isCISO || isBatchProcessing}
-                              className="bg-[#12171C] hover:bg-[#12171C]/80 border border-border/50 gap-2"
+                              className="bg-[#12171C] hover:bg-[#1A2128] border border-border/50 gap-2"
                             >
                               <XCircle className="h-4 w-4" />
                               Dismiss All
@@ -423,7 +447,7 @@ function ReviewPageContent() {
             <AlertDialogCancel className="bg-[#0B0F12] border-border/50 hover:bg-[#12171C]">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleBatchDismiss}
-              className="bg-[#FFB02E] text-[#0B0F12] hover:bg-[#FFB02E]/90 shadow-[0_0_8px_rgba(255,176,46,0.3)]"
+              className="bg-[#FFB02E] text-[#0B0F12] hover:bg-[#FFB02E]/90 text-xs font-semibold shadow-[0_0_8px_rgba(255,176,46,0.3)]"
             >
               Dismiss All
             </AlertDialogAction>
@@ -560,22 +584,16 @@ function ReviewPageContent() {
                             <Button
                               variant="primary"
                               size="sm"
-                              onClick={() => handleApprove(app.id)}
-                              disabled={isCISO || isProcessing}
-                              className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 shadow-[0_0_12px_rgba(71,215,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed font-semibold min-w-[100px]"
+                              onClick={() => handleViewAppDetails(app.id)}
+                              disabled={isProcessing}
+                              className="bg-[#47D7FF] text-[#0B0F12] hover:bg-[#47D7FF]/90 shadow-[0_0_12px_rgba(71,215,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed font-semibold min-w-[140px]"
                             >
-                              <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                              {isProcessing ? "Processing..." : isSanctioned ? "Unsanction" : "Sanction"}
+                              <ExternalLink className="h-4 w-4 mr-1.5" />
+                              View App Details
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p className="text-xs">
-                              {isCISO
-                                ? restrictedTooltip
-                                : isSanctioned
-                                  ? "Remove sanction status"
-                                  : "Mark as sanctioned"}
-                            </p>
+                            <p className="text-xs">Open app drawer to view full details</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -588,7 +606,7 @@ function ReviewPageContent() {
                               size="sm"
                               onClick={() => handleDismiss(app.id)}
                               disabled={isCISO || isProcessing}
-                              className="bg-[#12171C] hover:bg-[#1A2128] border border-border/50 disabled:opacity-50 disabled:cursor-not-allowed font-medium min-w-[100px]"
+                              className="bg-[#12171C] hover:bg-[#1A2128] border border-border/50 disabled:opacity-50 disabled:cursor-not-allowed font-medium min-w-[140px]"
                             >
                               <XCircle className="h-4 w-4 mr-1.5" />
                               Dismiss
@@ -606,15 +624,9 @@ function ReviewPageContent() {
                             <Button
                               variant="secondary"
                               size="sm"
-                              onClick={() => {
-                                const url = new URL(window.location.href)
-                                url.pathname = "/inventory"
-                                url.searchParams.set("focus", app.id)
-                                url.searchParams.set("plan", app.id)
-                                router.push(url.pathname + url.search)
-                              }}
+                              onClick={() => handlePreparePlan(app.id)}
                               disabled={isCISO || isProcessing}
-                              className="bg-[#12171C] hover:bg-[#1A2128] border border-border/50 disabled:opacity-50 disabled:cursor-not-allowed font-medium min-w-[100px]"
+                              className="bg-[#12171C] hover:bg-[#1A2128] border border-border/50 disabled:opacity-50 disabled:cursor-not-allowed font-medium min-w-[140px]"
                             >
                               <FileText className="h-4 w-4 mr-1.5" />
                               Prepare Plan
@@ -633,7 +645,7 @@ function ReviewPageContent() {
                   <div className="space-y-3">
                     <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-[#47D7FF]" />
-                      AI Summary
+                      AI Explanation
                     </h4>
                     <div className="bg-gradient-to-br from-[#47D7FF]/5 to-[#47D7FF]/10 border border-[#47D7FF]/20 rounded-lg p-4">
                       {app.aiExplanation ? (
@@ -642,7 +654,7 @@ function ReviewPageContent() {
                         <p className="text-sm text-foreground leading-relaxed text-balance">{app.rationale.summary}</p>
                       ) : (
                         <p className="text-sm text-muted-foreground italic">
-                          No AI summary available for this application.
+                          No AI explanation available for this application.
                         </p>
                       )}
                     </div>
@@ -733,24 +745,15 @@ function ReviewPageContent() {
                       ))}
                     </Accordion>
                   </div>
-
-                  <div className="pt-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEscalate(app.id)}
-                      className="text-[#47D7FF] hover:text-[#47D7FF] hover:bg-[#47D7FF]/10 text-sm font-medium"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                      View details in Inventory
-                    </Button>
-                  </div>
                 </CardContent>
               </Card>
             )
           })
         )}
       </div>
+
+      {focusedAppId && <AppDrawer />}
+      <PlanPreview />
     </div>
   )
 }
