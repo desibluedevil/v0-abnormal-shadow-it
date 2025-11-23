@@ -96,17 +96,70 @@ High-level folders you’ll see in this repo:
 **🚀 Getting Started (Local Development)**
 
 1. Clone the repo
-
+```
+git clone https://github.com/desibluedevil/v0-abnormal-shadow-it.git
+cd v0-abnormal-shadow-it
+```
 2. Install dependencies
-
+```
+pnpm install
+```
+Or with npm
+```
+npm install
+```
 3. Run the dev server
-
+```
+pnpm dev
+# or
+npm run dev
+```
 4. Open in your browser
-
+Go to
+```
+http://localhost:3000
+```
 You should see the Shadow IT dashboard load with the default mock tenant data.
 
 --- 
 
+**🧪 Testing & Linting**
+
+If you want to extend this project, you can typically run (depending on scripts defined):
+```
+pnpm lint        # Lint the codebase
+pnpm test        # Run tests (if configured)
+```
+Or the equivalent npm run lint / npm test.
+
+---
+
+**🧭 How to Use This as a Case Study**
+
+This repo is meant to help you:
+- Tell a product story – Show how you’d approach Shadow IT detection and management for an AI-native security platform.
+- Demo UX flows – Walk interviewers or stakeholders through analyst and CISO journeys end-to-end.
+- Show technical fluency – Talk through architecture, trade-offs, and how you’d evolve this into a production-grade module (detections, policies, agents, evaluations, etc.).
 
 
+You can pair this with:
+- A short Loom walkthrough of the flows
+- A one-pager PRD / product brief
+- Notes on how AI would power detection, triage explanations, and agentic remediation
 
+--- 
+
+**📌 Roadmap Ideas (If You Want to Extend It)**
+
+- Plug in real identity / app inventory data via APIs (M365, Google Workspace, Okta, etc.)
+- Add policy definitions (sanctioned / unsanctioned apps, data residency constraints, SOC2 constraints)
+- Implement AI-generated remediation playbooks (NL → structured actions)
+- Build audit-ready evidence packs for revocations and exception approvals
+- Add multi-tenant support for MSSPs or large enterprises
+
+--- 
+
+**📄 License**
+
+This repository is provided primarily as an interview / demo artifact.
+You’re welcome to fork it for learning and inspiration.
