@@ -1,30 +1,15 @@
-# SaaS admin dashboard (2)
+# Abnormal AI - Shadow IT Security 
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+This repository contains an interactive Shadow IT detection and management dashboard built for the Abnormal AI – Senior Product Manager, Shadow IT Security Module take-home assignment. It showcases product thinking, UX flows, and a realistic security analyst / CISO experience for an AI-native cybersecurity platform.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/basudebdeep-1991-projects/v0-abnormal-shadow-it)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/2svBG3OqOc1)
+Live app: https://v0-abnormal-shadow-it.vercel.app
 
-## Overview
+**🧩 What This Prototype Does**
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+The app simulates an AI-powered Shadow IT Security Module that helps security teams:
+- Discover unauthorized / risky OAuth apps connected to a SaaS tenant
+- Assess risk using a Shadow IT Risk Score, scopes, vendor context, and user behavior
+- Triage and remediate issues via guided workflows that don’t break productivity
+- Give CISOs an executive-ready overview of risk posture and trends
 
-## Deployment
-
-Your project is live at:
-
-**[https://vercel.com/basudebdeep-1991-projects/v0-abnormal-shadow-it](https://vercel.com/basudebdeep-1991-projects/v0-abnormal-shadow-it)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/2svBG3OqOc1](https://v0.app/chat/2svBG3OqOc1)**
-
-## How It Works
-
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+It is meant as a product + UX demo, not a production detection engine.
