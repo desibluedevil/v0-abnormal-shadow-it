@@ -13,3 +13,25 @@ The app simulates an AI-powered Shadow IT Security Module that helps security te
 - Give CISOs an executive-ready overview of risk posture and trends
 
 It is meant as a product + UX demo, not a production detection engine.
+
+**🎯 Core Personas & Use Cases**
+
+1. Security Operations Analyst
+- See a prioritized list of apps with risk scores and categories (AI, Storage, Productivity, etc.)
+- Drill into an app to review:
+  - Connected users and departments
+  - OAuth scopes and data access
+  - Risk rationale and AI-style explanation
+- Take actions such as:
+  - Recommend revoking access
+  - Flag for review / exception
+  - Add notes or justification
+2. CISO / Head of Security
+- Get a tenant-level overview of:
+  - Shadow IT risk score over time
+  - Trend of new OAuth apps and risky categories
+  - Top vendors and exposure surface area
+- Answer board/auditor questions like:
+  - “How many high-risk unsanctioned apps do we have?”
+  - “Is our risk trending up or down this quarter?”
+
