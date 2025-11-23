@@ -93,6 +93,20 @@ High-level folders you’ll see in this repo:
 
 ---
 
+**🚀 Getting Started (Local Development)**
+
+1. Clone the repo
+
+2. Install dependencies
+
+3. Run the dev server
+
+4. Open in your browser
+
+You should see the Shadow IT dashboard load with the default mock tenant data.
+
+--- 
+
 
 
 
